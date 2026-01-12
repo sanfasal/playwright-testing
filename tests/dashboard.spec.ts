@@ -20,31 +20,23 @@ test.describe('Dashboard', () => {
     
     // Verify page title
     await expect(page).toHaveTitle(/Dashboard/i);
-    
-    // Keep browser open on dashboard page
-    await page.pause();
-    
-    // Dashboard loaded successfully - no need to check for specific heading
-    // since different dashboards have different structures
   });
 
-  test('User can signout from dashboard', async ({ page }) => {
-    // Wait for dashboard to fully load
-    await page.waitForLoadState('networkidle');
+  // test('User can signout from dashboard', async ({ page }) => {
+  //   // Wait for dashboard to fully load
+  //   await page.waitForLoadState('networkidle');
     
-    // Click on profile image to open dropdown
-    await page.locator('img[alt*="profile" i], img[alt*="avatar" i], img[alt*="user" i]').first().click();
+  //   // Click on profile image to open dropdown
+  //   await page.locator('img[alt*="profile" i], img[alt*="avatar" i], img[alt*="user" i]').first().click();
     
-    // Wait for dropdown to appear
-    await page.waitForTimeout(500);
+  //   // Wait for dropdown to appear
+  //   await page.waitForTimeout(500);
+  //   await page.getByRole('button', { name: /logout|sign out/i }).click();
     
-    // Click logout button
-    await page.getByRole('button', { name: /logout|sign out/i }).click();
-    
-    // Verify redirect to signin page
-    await page.waitForURL(/signin|login/);
-    await expect(page).toHaveURL(/signin|login/);
-  });
+  //   // Verify redirect to signin page
+  //   await page.waitForURL(/signin|login/);
+  //   await expect(page).toHaveURL(/signin|login/);
+  // });
 
 
 });

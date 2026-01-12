@@ -6,19 +6,16 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: 'list', // Use list reporter instead of HTML
+  reporter: 'list', 
 
   use: {
     baseURL: 'https://dif4vj7xnw6g0.cloudfront.net/',
     trace: 'on-first-retry',
     
-    // Video recording - stored in test-results folder
-    video: 'retain-on-failure', // Options: 'on', 'off', 'retain-on-failure', 'on-first-retry'
+    video: 'retain-on-failure', 
     
-    // Screenshot on failure - stored in test-results folder
-    screenshot: 'only-on-failure', // Options: 'on', 'off', 'only-on-failure'
+    screenshot: 'only-on-failure', 
     
-    // Browser visibility
     headless: false, // Always show browser
     
     // Larger viewport for better visibility

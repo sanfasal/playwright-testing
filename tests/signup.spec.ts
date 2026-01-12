@@ -12,7 +12,7 @@ test.describe('Sign Up', () => {
     await page.getByRole('textbox', { name: /first name/i }).fill('sal');
     await page.getByRole('textbox', { name: /last name/i }).fill('san');
     await page.getByRole('textbox', { name: /company/i }).fill('seksaa');
-    await page.getByRole('textbox', { name: /email/i }).fill('nanasiku2005@gmail.com');
+    await page.getByRole('textbox', { name: /email/i }).fill('nunisika2405@gmail.com');
     await page.getByRole('textbox', { name: /^password$/i }).fill('Password@123');
     await page.getByRole('textbox', { name: /confirm password/i }).fill('Password@123');
 
