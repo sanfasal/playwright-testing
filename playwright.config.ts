@@ -10,11 +10,11 @@ export default defineConfig({
 
   use: {
     baseURL: 'https://dif4vj7xnw6g0.cloudfront.net/',
-    trace: 'on-first-retry',
+    trace: 'on', // Always capture trace for documentation
     
-    video: 'retain-on-failure', 
+    video: 'on', // ✅ Always record video for documentation
     
-    screenshot: 'only-on-failure', 
+    screenshot: 'on', // ✅ Always capture screenshots for documentation 
     
     headless: false, // Always show browser
     
