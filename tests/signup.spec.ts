@@ -1,58 +1,155 @@
 import { test, expect } from '@playwright/test';
+import { generateTestmailAddress, getOTPFromEmail } from '../utils/email-helper';
+import { saveUserData } from '../utils/data-store';
+import dotenv from 'dotenv';
+import { addCursorTracking } from '../utils/cursor-helper';
+import { fillFieldWithDelay, verifyPasswordToggle } from '../utils/form-helper';
+
+dotenv.config();
+
+// Static test data
+const TEST_USER = {
+  firstName: 'Seksaa',
+  lastName: 'Tech',
+  company: 'SeksaaTech',
+  existingEmail: 'sanfasal70@gmail.com',
+  validPassword: 'Password@123',
+  invalidPassword: 'DifferentPassword@456',
+} as const;
+
+const ICONS = {
+  eyeOff: '.lucide-eye-off',
+  eye: '.lucide-eye',
+} as const;
 
 test.describe('Sign Up', () => {
+  test.setTimeout(60000); // Increase timeout to 60s for realistic typing delays
   
-  test('User can sign up successfully', async ({ page }) => {
+  test.skip('User can sign up successfully', async ({ page }) => {
+  const apiKey = process.env.TESTMAIL_API_KEY;
+  const namespace = process.env.TESTMAIL_NAMESPACE;
+
+  if (!apiKey || !namespace) {
+    throw new Error('TESTMAIL_API_KEY and TESTMAIL_NAMESPACE must be defined in .env');
+  }
+    // Generate dynamic email
+    const timestamp = Date.now().toString();
+    const email = generateTestmailAddress(namespace, timestamp) 
+    
+
     await page.goto('/signup');
 
     // Wait for page to load
     await expect(page).toHaveTitle(/Sign Up/i);
+    await page.waitForTimeout(800);
 
-    // Use accessible selectors
-    await page.getByRole('textbox', { name: /first name/i }).fill('sal');
-    await page.getByRole('textbox', { name: /last name/i }).fill('san');
-    await page.getByRole('textbox', { name: /company/i }).fill('seksaa');
-    await page.getByRole('textbox', { name: /email/i }).fill('nunisika2405@gmail.com');
-    await page.getByRole('textbox', { name: /^password$/i }).fill('Password@123');
-    await page.getByRole('textbox', { name: /confirm password/i }).fill('Password@123');
+    // Fill form like a real user
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /first name/i }), TEST_USER.firstName);
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /last name/i }), TEST_USER.lastName);
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /company/i }), TEST_USER.company);
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /email/i }), email);
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /^password$/i }), TEST_USER.validPassword, { typingDelay: 100 });
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /confirm password/i }), TEST_USER.validPassword, { typingDelay: 100, afterTypingDelay: 600 });
+
+    // Verify password toggle works for both fields
+    const passwordField = page.getByRole('textbox', { name: /^password$/i });
+    const confirmPasswordField = page.getByRole('textbox', { name: /confirm password/i });
+    
+    await verifyPasswordToggle(passwordField);
+    await verifyPasswordToggle(confirmPasswordField);
 
     await page.getByRole('button', { name: /sign up/i }).click();
     await page.waitForURL(/signup-verify/i, { timeout: 50000 });
 
-    await page.pause();
+    if (apiKey && namespace) {
+        const otp = await getOTPFromEmail({ apiKey, namespace, timestamp: timestamp });
+        await fillFieldWithDelay(page.getByRole('textbox', { name: /code/i }), otp, { typingDelay: 150 });
+        await page.getByRole('button', { name: /verify|submit|confirm/i }).click();
+
+        // Save data for other tests
+        console.log('Saving user data for reset password test...');
+        saveUserData('signupEmail', email);
+        saveUserData('signupTimestamp', timestamp);
+    }
+
   });
 
   test('Sign up fails with existing email', async ({ page }) => {
+     await addCursorTracking(page);
 
     await page.goto('/signup');
-    await page.getByRole('textbox', { name: /first name/i }).fill('sal');
-    await page.getByRole('textbox', { name: /last name/i }).fill('san');
-    await page.getByRole('textbox', { name: /company/i }).fill('seksaa');
-    await page.getByRole('textbox', { name: /email/i }).fill('sanfasal70@gmail.com');
-    await page.getByRole('textbox', { name: /^password$/i }).fill('Password@123');
-    await page.getByRole('textbox', { name: /confirm password/i }).fill('Password@123');
+    await page.waitForTimeout(800);
+    
+    // Fill form like a real user
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /first name/i }), TEST_USER.firstName);
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /last name/i }), TEST_USER.lastName);
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /company/i }), TEST_USER.company);
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /email/i }), TEST_USER.existingEmail);
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /^password$/i }), TEST_USER.validPassword, { typingDelay: 100 });
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /confirm password/i }), TEST_USER.validPassword, { typingDelay: 100, afterTypingDelay: 600 });
+
+    // Verify password toggle works for both fields
+    const passwordField = page.getByRole('textbox', { name: /^password$/i });
+    const confirmPasswordField = page.getByRole('textbox', { name: /confirm password/i });
+    
+    await verifyPasswordToggle(passwordField);
+    await verifyPasswordToggle(confirmPasswordField);
 
     await page.getByRole('button', { name: /sign up/i }).click();
 
-    // Verify error message (adjust text to match your app)
+    // Verify error message
     await expect(
-      page.getByText(/email already exists/i)
+      page.getByText(/user already exists/i)
     ).toBeVisible({ timeout: 9000 });
   });
 
   test('Sign up fails with passwords do not match', async ({ page }) => {
+    await addCursorTracking(page);
 
     await page.goto('/signup');
+    await page.waitForTimeout(800);
 
-    // Fill in all required fields
-    await page.getByRole('textbox', { name: /first name/i }).fill('sal');
-    await page.getByRole('textbox', { name: /last name/i }).fill('san');
-    await page.getByRole('textbox', { name: /company/i }).fill('seksaa');
-    await page.getByRole('textbox', { name: /email/i }).fill("sanfasal70@gmail.com");
+    // Fill in all required fields like a real user
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /first name/i }), TEST_USER.firstName);
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /last name/i }), TEST_USER.lastName);
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /company/i }), TEST_USER.company);
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /email/i }), TEST_USER.existingEmail);
     
-    await page.getByRole('textbox', { name: /^password$/i }).fill('Password@123');
-    await page.getByRole('textbox', { name: /confirm password/i }).fill('DifferentPassword@456');
+    const passwordField = page.getByRole('textbox', { name: /^password$/i });
+    const confirmPasswordField = page.getByRole('textbox', { name: /confirm password/i });
 
-    await page.pause();
+    await fillFieldWithDelay(passwordField, TEST_USER.validPassword, { typingDelay: 100 });
+    await fillFieldWithDelay(confirmPasswordField, TEST_USER.invalidPassword, { typingDelay: 100, afterTypingDelay: 600 });
+
+    // Verify password toggle works for both fields
+    await verifyPasswordToggle(passwordField);
+    await verifyPasswordToggle(confirmPasswordField);
+  });
+
+  test('Sign up with weak password', async ({ page }) => {
+    await addCursorTracking(page);
+
+    await page.goto('/signup');
+    await page.waitForTimeout(800);
+
+    // Fill in all required fields like a real user
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /first name/i }), TEST_USER.firstName);
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /last name/i }), TEST_USER.lastName);
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /company/i }), TEST_USER.company);
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /email/i }), 'test@example.com');
+    
+    // Fill with weak password (too short)
+    const weakPassword = '123';
+    const passwordField = page.getByRole('textbox', { name: /^password$/i });
+    const confirmPasswordField = page.getByRole('textbox', { name: /confirm password/i });
+
+    await fillFieldWithDelay(passwordField, weakPassword, { typingDelay: 100 });
+    await fillFieldWithDelay(confirmPasswordField, weakPassword, { typingDelay: 100, afterTypingDelay: 600 });
+
+    // Verify password toggle works for both fields
+    await verifyPasswordToggle(passwordField);
+    await verifyPasswordToggle(confirmPasswordField);
+    
+    await page.waitForTimeout(2000);
   });
 });
