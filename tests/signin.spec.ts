@@ -1,11 +1,12 @@
 import { test, expect } from '@playwright/test';
 import { addCursorTracking } from '../utils/cursor-helper';
 import { fillFieldWithDelay } from '../utils/form-helper';
+import { getUserData } from '../utils/data-store';
 
 // Static test data
 const SIGNIN_USER = {
-  email: 'sanfasal.its@gmail.com',
-  validPassword: 'Sal@2025',
+  email: getUserData('signupEmail') || 'sanfasal.its@gmail.com',
+  validPassword: getUserData('signupPassword') || 'Sal@2025',
   invalidPassword: 'Sal@12345',
 } as const;
 
@@ -18,49 +19,55 @@ const ICONS = {
 
 test.describe('Sign In', () => {
   
-  test('User sign in with valid credentials', async ({ page }) => {
+    test('Sign in with valid credentials', async ({ page }) => {
     await addCursorTracking(page);
     await page.goto('/signin');
     await expect(page).toHaveTitle(/signin|login/i);
-    await page.waitForTimeout(800);
+    await page.waitForTimeout(50);
     const emailField = page.getByRole('textbox', { name: /email/i });
-    await fillFieldWithDelay(emailField, SIGNIN_USER.email);
+    await fillFieldWithDelay(emailField, SIGNIN_USER.email, {
+      typingDelay: 20,
+      afterTypingDelay: 50
+    });
     const passwordField = page.getByRole('textbox', { name: /password/i });
     await fillFieldWithDelay(passwordField, SIGNIN_USER.validPassword, {
-      typingDelay: 100,
-      afterTypingDelay: 600
+      typingDelay: 20,
+      afterTypingDelay: 50
     });
     await page.locator(ICONS.eyeOff).click();
-    await page.waitForTimeout(800);
+    await page.waitForTimeout(50);
     await page.locator(ICONS.eye).click();
-    await page.waitForTimeout(800);
+    await page.waitForTimeout(50);
     await page.getByRole('button', { name: /signin|login/i }).click();
     await page.waitForURL(/dashboard/i);
     await expect(page).toHaveURL(/dashboard/i);
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(100);
   });
-
+  
   test('User sign in with invalid credentials', async ({ page }) => {
     await addCursorTracking(page);
     await page.goto('/signin');
     await expect(page).toHaveTitle(/signin|login/i);
-    await page.waitForTimeout(800);
+    await page.waitForTimeout(50);
 
     const emailField = page.getByRole('textbox', { name: /email/i });
-    await fillFieldWithDelay(emailField, SIGNIN_USER.email);
+    await fillFieldWithDelay(emailField, SIGNIN_USER.email, {
+      typingDelay: 20,
+      afterTypingDelay: 50
+    });
   
     const passwordField = page.getByRole('textbox', { name: /password/i });
     await fillFieldWithDelay(passwordField, SIGNIN_USER.invalidPassword, {
-      typingDelay: 100,
-      afterTypingDelay: 600
+      typingDelay: 20,
+      afterTypingDelay: 50
     });
     await page.locator(ICONS.eyeOff).click();
-    await page.waitForTimeout(800);
+    await page.waitForTimeout(50);
     await page.locator(ICONS.eye).click();
-    await page.waitForTimeout(800);
+    await page.waitForTimeout(50);
 
     await page.getByRole('button', { name: /signin|login/i }).click();
-    await page.waitForTimeout(800);
+    await page.waitForTimeout(100);
 
     await expect(page).toHaveURL(/signin/i);
   });

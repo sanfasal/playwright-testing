@@ -13,16 +13,25 @@ export async function fillFieldWithDelay(
     clickDelay?: number;      // Delay after clicking the field (default: 300ms)
     typingDelay?: number;     // Delay between each character (default: 80ms)
     afterTypingDelay?: number; // Delay after typing completes (default: 500ms)
+    skipClear?: boolean;      // Skip clearing the field (default: false)
   }
 ) {
   const {
     clickDelay = 300,
     typingDelay = 80,
-    afterTypingDelay = 200
+    afterTypingDelay = 200,
+    skipClear = false
   } = options || {};
 
   await field.click();
   await field.page().waitForTimeout(clickDelay);
+  
+  // Clear the field first unless skipClear is true
+  if (!skipClear) {
+    await field.clear();
+    await field.page().waitForTimeout(100);
+  }
+  
   await field.pressSequentially(value, { delay: typingDelay });
   await field.page().waitForTimeout(afterTypingDelay);
 }

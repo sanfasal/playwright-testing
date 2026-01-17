@@ -15,9 +15,10 @@ const TEST_USER = {
   validPassword: 'Password@123',
   invalidPassword: 'DPassword@456',
 } as const;
+// Static test data
 const SIGNIN_USER = {
-  email: 'sanfasal.its@gmail.com',
-  validPassword: 'Sal@2025',
+  email: getUserData('signupEmail') || 'sanfasal.its@gmail.com',
+  validPassword: getUserData('signupPassword') || 'Sal@2025',
   invalidPassword: 'Sal@12345',
 } as const;
 
@@ -126,7 +127,7 @@ test.describe.serial('User sign up', () => {
     await page.waitForTimeout(1000);
   });
 
-  test('User sign up successfully', async ({ page }) => {
+  test.skip('Sign up successfully', async ({ page }) => {
       await addCursorTracking(page);
   const apiKey = process.env.TESTMAIL_API_KEY;
   const namespace = process.env.TESTMAIL_NAMESPACE;
@@ -181,28 +182,30 @@ test.describe.serial('User sign up', () => {
   // Sign In
   // ======================================== 
 
-  test('User sign in with valid credentials', async ({ page }) => {
-      await addCursorTracking(page);
-      // Start at the signin page
-      await page.goto('/signin');
-  
-      // Wait for signin page to load
-      await expect(page).toHaveTitle(/signin|login/i);
-      await page.waitForTimeout(800);
-
-      await fillFieldWithDelay(page.getByRole('textbox', { name: /email/i }), SIGNIN_USER.email, FAST_TYPING);
-      const passwordField = page.getByRole('textbox', { name: /password/i });
-      await fillFieldWithDelay(passwordField, SIGNIN_USER.validPassword, { ...FAST_PASSWORD, afterTypingDelay: 600 });
-      
-      // Verify password toggle
-      await verifyPasswordToggle(passwordField);
-      await page.getByRole('button', { name: /signin|login/i }).click();
-      
-      // Wait for redirect to dashboard (takes 3-5 seconds)
-      await page.waitForURL(/dashboard/i);
-      await expect(page).toHaveURL(/dashboard/i);
-      await page.waitForTimeout(1000);
+    test('Sign in with valid credentials', async ({ page }) => {
+    await addCursorTracking(page);
+    await page.goto('/signin');
+    await expect(page).toHaveTitle(/signin|login/i);
+    await page.waitForTimeout(50);
+    const emailField = page.getByRole('textbox', { name: /email/i });
+    await fillFieldWithDelay(emailField, SIGNIN_USER.email, {
+      typingDelay: 20,
+      afterTypingDelay: 50
     });
+    const passwordField = page.getByRole('textbox', { name: /password/i });
+    await fillFieldWithDelay(passwordField, SIGNIN_USER.validPassword, {
+      typingDelay: 20,
+      afterTypingDelay: 50
+    });
+    await page.locator(ICONS.eyeOff).click();
+    await page.waitForTimeout(50);
+    await page.locator(ICONS.eye).click();
+    await page.waitForTimeout(50);
+    await page.getByRole('button', { name: /signin|login/i }).click();
+    await page.waitForURL(/dashboard/i);
+    await expect(page).toHaveURL(/dashboard/i);
+    await page.waitForTimeout(100);
+  });
   
   test('User sign in with invalid credentials', async ({ page }) => {
       await addCursorTracking(page);

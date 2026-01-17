@@ -22,21 +22,4 @@ test.describe('Dashboard', () => {
     await expect(page).toHaveTitle(/Dashboard/i);
   });
 
-  // test('User can signout from dashboard', async ({ page }) => {
-  //   // Wait for dashboard to fully load
-  //   await page.waitForLoadState('networkidle');
-    
-  //   // Click on profile image to open dropdown
-  //   await page.locator('img[alt*="profile" i], img[alt*="avatar" i], img[alt*="user" i]').first().click();
-    
-  //   // Wait for dropdown to appear
-  //   await page.waitForTimeout(500);
-  //   await page.getByRole('button', { name: /logout|sign out/i }).click();
-    
-  //   // Verify redirect to signin page
-  //   await page.waitForURL(/signin|login/);
-  //   await expect(page).toHaveURL(/signin|login/);
-  // });
-
-
 });

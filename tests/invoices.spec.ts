@@ -28,6 +28,59 @@ test.describe('Invoices Page', () => {
     // Verify we're on the invoices page
     await expect(page).toHaveTitle(/Invoice/i);
     
+    // Handle view toggle buttons (grid/list view) before accessing invoice rows
+    await page.waitForTimeout(1000);
+    
+    // Method 1: Try using JavaScript to add IDs to the view toggle buttons
+    await page.evaluate(() => {
+      const buttons = document.querySelectorAll('button');
+      buttons.forEach((btn, index) => {
+        const svg = btn.querySelector('svg');
+        if (svg) {
+          const classes = svg.className.baseVal || svg.getAttribute('class') || '';
+          if (classes.includes('lucide-layout-grid')) {
+            btn.id = 'grid-view-btn';
+          } else if (classes.includes('lucide-list')) {
+            btn.id = 'list-view-btn';
+          }
+        }
+      });
+    });
+    
+    // Try clicking with ID first
+    let clicked = false;
+    
+    // Try to click grid view
+    const gridBtn = page.locator('#grid-view-btn');
+    if (await gridBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await gridBtn.click();
+      await page.waitForTimeout(800);
+      clicked = true;
+    }
+    
+    // Try to click list view
+    const listBtn = page.locator('#list-view-btn');
+    if (await listBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await listBtn.click();
+      await page.waitForTimeout(800);
+      clicked = true;
+    }
+    
+    // Method 2: If IDs didn't work, try direct SVG selectors
+    if (!clicked) {
+      const gridSvg = page.locator('svg.lucide-layout-grid').first();
+      if (await gridSvg.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await gridSvg.click();
+        await page.waitForTimeout(800);
+      }
+      
+      const listSvg = page.locator('svg.lucide-list').first();
+      if (await listSvg.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await listSvg.click();
+        await page.waitForTimeout(800);
+      }
+    }
+    
     // Get all invoice rows (adjust selector based on your actual HTML structure)
     // Common patterns: table rows, list items, or divs with specific classes
     const invoiceRows = page.locator('table tbody tr, [role="row"], .invoice-row');
@@ -48,10 +101,6 @@ test.describe('Invoices Page', () => {
     
     // Wait for download to initiate
     await page.waitForTimeout(2000);
-    
-    // Set up print dialog handler - this will intercept the print dialog
-    // The print dialog is triggered by window.print() in the browser
-    let printDialogOpened = false;
     
     // Listen for the beforeprint event which fires when print is triggered
     await page.evaluate(() => {
@@ -115,14 +164,10 @@ test.describe('Invoices Page', () => {
     await page.getByLabel(/Due Date/i).fill('2026-01-14');
     
     // Fill Amount
-    await page.getByLabel(/Amount \(\$\)/i).fill('1000');
+    await page.getByLabel(/Amount \(\$\)/i).fill('500');
     
     // Fill Discount (optional field)
     await page.getByLabel(/Discount \(\$\)/i).fill('50');
-    
-    // Select Reference Invoice (optional dropdown)
-    // await page.getByRole('combobox', { name: /Reference Invoice/i }).click();
-    // await page.getByRole('option').first().click();
     
     // Fill Note (optional textarea)
     await page.getByLabel(/Note/i).fill('Test invoice note');

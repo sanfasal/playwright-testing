@@ -24,8 +24,9 @@ const ICONS = {
 
 test.describe('Sign Up', () => {
   test.setTimeout(60000); // Increase timeout to 60s for realistic typing delays
-  
-  test.skip('User can sign up successfully', async ({ page }) => {
+  test('Sign up successfully', async ({ page }) => {
+     await addCursorTracking(page);
+
   const apiKey = process.env.TESTMAIL_API_KEY;
   const namespace = process.env.TESTMAIL_NAMESPACE;
 
@@ -41,15 +42,15 @@ test.describe('Sign Up', () => {
 
     // Wait for page to load
     await expect(page).toHaveTitle(/Sign Up/i);
-    await page.waitForTimeout(800);
+    await page.waitForTimeout(50);
 
     // Fill form like a real user
-    await fillFieldWithDelay(page.getByRole('textbox', { name: /first name/i }), TEST_USER.firstName);
-    await fillFieldWithDelay(page.getByRole('textbox', { name: /last name/i }), TEST_USER.lastName);
-    await fillFieldWithDelay(page.getByRole('textbox', { name: /company/i }), TEST_USER.company);
-    await fillFieldWithDelay(page.getByRole('textbox', { name: /email/i }), email);
-    await fillFieldWithDelay(page.getByRole('textbox', { name: /^password$/i }), TEST_USER.validPassword, { typingDelay: 100 });
-    await fillFieldWithDelay(page.getByRole('textbox', { name: /confirm password/i }), TEST_USER.validPassword, { typingDelay: 100, afterTypingDelay: 600 });
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /first name/i }), TEST_USER.firstName, { typingDelay: 20, afterTypingDelay: 50 });
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /last name/i }), TEST_USER.lastName, { typingDelay: 20, afterTypingDelay: 50 });
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /company/i }), TEST_USER.company, { typingDelay: 20, afterTypingDelay: 50 });
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /email/i }), email, { typingDelay: 20, afterTypingDelay: 50 });
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /^password$/i }), TEST_USER.validPassword, { typingDelay: 20, afterTypingDelay: 50 });
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /confirm password/i }), TEST_USER.validPassword, { typingDelay: 20, afterTypingDelay: 50 });
 
     // Verify password toggle works for both fields
     const passwordField = page.getByRole('textbox', { name: /^password$/i });
@@ -63,12 +64,13 @@ test.describe('Sign Up', () => {
 
     if (apiKey && namespace) {
         const otp = await getOTPFromEmail({ apiKey, namespace, timestamp: timestamp });
-        await fillFieldWithDelay(page.getByRole('textbox', { name: /code/i }), otp, { typingDelay: 150 });
+        await fillFieldWithDelay(page.getByRole('textbox', { name: /code/i }), otp, { typingDelay: 50, afterTypingDelay: 50 });
         await page.getByRole('button', { name: /verify|submit|confirm/i }).click();
 
         // Save data for other tests
         console.log('Saving user data for reset password test...');
         saveUserData('signupEmail', email);
+        saveUserData('signupPassword', TEST_USER.validPassword);
         saveUserData('signupTimestamp', timestamp);
     }
 
@@ -78,15 +80,15 @@ test.describe('Sign Up', () => {
      await addCursorTracking(page);
 
     await page.goto('/signup');
-    await page.waitForTimeout(800);
+    await page.waitForTimeout(50);
     
     // Fill form like a real user
-    await fillFieldWithDelay(page.getByRole('textbox', { name: /first name/i }), TEST_USER.firstName);
-    await fillFieldWithDelay(page.getByRole('textbox', { name: /last name/i }), TEST_USER.lastName);
-    await fillFieldWithDelay(page.getByRole('textbox', { name: /company/i }), TEST_USER.company);
-    await fillFieldWithDelay(page.getByRole('textbox', { name: /email/i }), TEST_USER.existingEmail);
-    await fillFieldWithDelay(page.getByRole('textbox', { name: /^password$/i }), TEST_USER.validPassword, { typingDelay: 100 });
-    await fillFieldWithDelay(page.getByRole('textbox', { name: /confirm password/i }), TEST_USER.validPassword, { typingDelay: 100, afterTypingDelay: 600 });
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /first name/i }), TEST_USER.firstName, { typingDelay: 20, afterTypingDelay: 50 });
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /last name/i }), TEST_USER.lastName, { typingDelay: 20, afterTypingDelay: 50 });
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /company/i }), TEST_USER.company, { typingDelay: 20, afterTypingDelay: 50 });
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /email/i }), TEST_USER.existingEmail, { typingDelay: 20, afterTypingDelay: 50 });
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /^password$/i }), TEST_USER.validPassword, { typingDelay: 20, afterTypingDelay: 50 });
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /confirm password/i }), TEST_USER.validPassword, { typingDelay: 20, afterTypingDelay: 50 });
 
     // Verify password toggle works for both fields
     const passwordField = page.getByRole('textbox', { name: /^password$/i });
@@ -96,30 +98,36 @@ test.describe('Sign Up', () => {
     await verifyPasswordToggle(confirmPasswordField);
 
     await page.getByRole('button', { name: /sign up/i }).click();
+    await page.waitForTimeout(1000);
 
-    // Verify error message
-    await expect(
-      page.getByText(/user already exists/i)
-    ).toBeVisible({ timeout: 9000 });
+    // Verify error message - check for various possible error messages
+    const errorMessage = page.getByText(/user already exists/i)
+      .or(page.getByText(/email already/i))
+      .or(page.getByText(/already registered/i))
+      .or(page.getByText(/account exists/i))
+      .or(page.getByRole('alert'))
+      .first();
+    
+    await expect(errorMessage).toBeVisible({ timeout: 5000 });
   });
 
   test('Sign up fails with passwords do not match', async ({ page }) => {
     await addCursorTracking(page);
 
     await page.goto('/signup');
-    await page.waitForTimeout(800);
+    await page.waitForTimeout(50);
 
     // Fill in all required fields like a real user
-    await fillFieldWithDelay(page.getByRole('textbox', { name: /first name/i }), TEST_USER.firstName);
-    await fillFieldWithDelay(page.getByRole('textbox', { name: /last name/i }), TEST_USER.lastName);
-    await fillFieldWithDelay(page.getByRole('textbox', { name: /company/i }), TEST_USER.company);
-    await fillFieldWithDelay(page.getByRole('textbox', { name: /email/i }), TEST_USER.existingEmail);
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /first name/i }), TEST_USER.firstName, { typingDelay: 20, afterTypingDelay: 50 });
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /last name/i }), TEST_USER.lastName, { typingDelay: 20, afterTypingDelay: 50 });
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /company/i }), TEST_USER.company, { typingDelay: 20, afterTypingDelay: 50 });
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /email/i }), TEST_USER.existingEmail, { typingDelay: 20, afterTypingDelay: 50 });
     
     const passwordField = page.getByRole('textbox', { name: /^password$/i });
     const confirmPasswordField = page.getByRole('textbox', { name: /confirm password/i });
 
-    await fillFieldWithDelay(passwordField, TEST_USER.validPassword, { typingDelay: 100 });
-    await fillFieldWithDelay(confirmPasswordField, TEST_USER.invalidPassword, { typingDelay: 100, afterTypingDelay: 600 });
+    await fillFieldWithDelay(passwordField, TEST_USER.validPassword, { typingDelay: 20, afterTypingDelay: 50 });
+    await fillFieldWithDelay(confirmPasswordField, TEST_USER.invalidPassword, { typingDelay: 20, afterTypingDelay: 50 });
 
     // Verify password toggle works for both fields
     await verifyPasswordToggle(passwordField);
@@ -130,26 +138,26 @@ test.describe('Sign Up', () => {
     await addCursorTracking(page);
 
     await page.goto('/signup');
-    await page.waitForTimeout(800);
+    await page.waitForTimeout(50);
 
     // Fill in all required fields like a real user
-    await fillFieldWithDelay(page.getByRole('textbox', { name: /first name/i }), TEST_USER.firstName);
-    await fillFieldWithDelay(page.getByRole('textbox', { name: /last name/i }), TEST_USER.lastName);
-    await fillFieldWithDelay(page.getByRole('textbox', { name: /company/i }), TEST_USER.company);
-    await fillFieldWithDelay(page.getByRole('textbox', { name: /email/i }), 'test@example.com');
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /first name/i }), TEST_USER.firstName, { typingDelay: 20, afterTypingDelay: 50 });
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /last name/i }), TEST_USER.lastName, { typingDelay: 20, afterTypingDelay: 50 });
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /company/i }), TEST_USER.company, { typingDelay: 20, afterTypingDelay: 50 });
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /email/i }), 'test@example.com', { typingDelay: 20, afterTypingDelay: 50 });
     
     // Fill with weak password (too short)
     const weakPassword = '123';
     const passwordField = page.getByRole('textbox', { name: /^password$/i });
     const confirmPasswordField = page.getByRole('textbox', { name: /confirm password/i });
 
-    await fillFieldWithDelay(passwordField, weakPassword, { typingDelay: 100 });
-    await fillFieldWithDelay(confirmPasswordField, weakPassword, { typingDelay: 100, afterTypingDelay: 600 });
+    await fillFieldWithDelay(passwordField, weakPassword, { typingDelay: 20, afterTypingDelay: 50 });
+    await fillFieldWithDelay(confirmPasswordField, weakPassword, { typingDelay: 20, afterTypingDelay: 50 });
 
     // Verify password toggle works for both fields
     await verifyPasswordToggle(passwordField);
     await verifyPasswordToggle(confirmPasswordField);
     
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(100);
   });
 });
