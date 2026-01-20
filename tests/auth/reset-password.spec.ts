@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test';
-import { generateTestmailAddress, getOTPFromEmail } from '../utils/email-helper';
-import { getUserData } from '../utils/data-store';
+import { generateTestmailAddress, getOTPFromEmail } from '../../utils/email-helper';
+import { getUserData } from '../../utils/data-store';
 import dotenv from 'dotenv';
-import { addCursorTracking } from '../utils/cursor-helper';
+import { addCursorTracking } from '../../utils/cursor-helper';
 
 
 dotenv.config();

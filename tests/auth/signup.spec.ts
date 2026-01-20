@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { generateTestmailAddress, getOTPFromEmail } from '../utils/email-helper';
-import { saveUserData } from '../utils/data-store';
+import { generateTestmailAddress, getOTPFromEmail } from '../../utils/email-helper';
+import { saveUserData } from '../../utils/data-store';
 import dotenv from 'dotenv';
-import { addCursorTracking } from '../utils/cursor-helper';
-import { fillFieldWithDelay, verifyPasswordToggle } from '../utils/form-helper';
+import { addCursorTracking } from '../../utils/cursor-helper';
+import { fillFieldWithDelay, verifyPasswordToggle } from '../../utils/form-helper';
 
 dotenv.config();
 

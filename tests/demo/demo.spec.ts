@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { generateTestmailAddress, getOTPFromEmail } from '../utils/email-helper';
-import { saveUserData, getUserData } from '../utils/data-store';
-import { login } from '../utils/auth-helper';
+import { generateTestmailAddress, getOTPFromEmail } from '../../utils/email-helper';
+import { saveUserData, getUserData } from '../../utils/data-store';
+import { login } from '../../utils/auth-helper';
 import dotenv from 'dotenv';
-import { addCursorTracking } from '../utils/cursor-helper';
-import { fillFieldWithDelay, verifyPasswordToggle } from '../utils/form-helper';
+import { addCursorTracking } from '../../utils/cursor-helper';
+import { fillFieldWithDelay, verifyPasswordToggle } from '../../utils/form-helper';
 
 // Static test data
 const TEST_USER = {

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
-import { addCursorTracking } from '../utils/cursor-helper';
-import { fillFieldWithDelay } from '../utils/form-helper';
-import { getUserData } from '../utils/data-store';
+import { addCursorTracking } from '../../utils/cursor-helper';
+import { fillFieldWithDelay } from '../../utils/form-helper';
+import { getUserData } from '../../utils/data-store';
 
 // Static test data
 const SIGNIN_USER = {

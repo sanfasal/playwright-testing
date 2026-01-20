@@ -17,9 +17,9 @@ export async function fillFieldWithDelay(
   }
 ) {
   const {
-    clickDelay = 300,
-    typingDelay = 80,
-    afterTypingDelay = 200,
+    clickDelay = 5,
+    typingDelay = 0.3,
+    afterTypingDelay = 0.3,
     skipClear = false
   } = options || {};
 

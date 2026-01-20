@@ -10,14 +10,14 @@ export async function login(page: Page) {
   
   const emailField = page.getByRole('textbox', { name: /email/i });
   await fillFieldWithDelay(emailField, 'sanfasal.its@gmail.com', {
-    typingDelay: 20,
-    afterTypingDelay: 50
+    typingDelay: 3,
+    afterTypingDelay: 5
   });
   
   const passwordField = page.getByRole('textbox', { name: /password/i });
   await fillFieldWithDelay(passwordField, 'Sal@2025', {
-    typingDelay: 20,
-    afterTypingDelay: 50
+    typingDelay: 3,
+    afterTypingDelay: 5
   });
   
   // Toggle password visibility - show password
