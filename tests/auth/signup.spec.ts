@@ -45,10 +45,10 @@ test.describe('Sign Up', () => {
     await page.waitForTimeout(50);
 
     // Fill form like a real user
-    await fillFieldWithDelay(page.getByRole('textbox', { name: /first name/i }), TEST_USER.firstName, { typingDelay: 20, afterTypingDelay: 50 });
-    await fillFieldWithDelay(page.getByRole('textbox', { name: /last name/i }), TEST_USER.lastName, { typingDelay: 20, afterTypingDelay: 50 });
-    await fillFieldWithDelay(page.getByRole('textbox', { name: /company/i }), TEST_USER.company, { typingDelay: 20, afterTypingDelay: 50 });
-    await fillFieldWithDelay(page.getByRole('textbox', { name: /email/i }), email, { typingDelay: 20, afterTypingDelay: 50 });
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /first name/i }), TEST_USER.firstName);
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /last name/i }), TEST_USER.lastName);
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /company/i }), TEST_USER.company);
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /email/i }), email);
     await fillFieldWithDelay(page.getByRole('textbox', { name: /^password$/i }), TEST_USER.validPassword, { typingDelay: 20, afterTypingDelay: 50 });
     await fillFieldWithDelay(page.getByRole('textbox', { name: /confirm password/i }), TEST_USER.validPassword, { typingDelay: 20, afterTypingDelay: 50 });
 

@@ -5,15 +5,16 @@ import { fillFieldWithDelay } from '../utils/form-helper';
 import { deleteEntityViaActionMenu } from '../utils/delete-helper';
 import { toggleViewMode } from '../utils/view-helper';
 import { uploadThumbnail } from '../utils/upload-thumbnail-helper';
+import { generateTestmailAddress } from '../utils/email-helper';
 
 // Test data for adding a new student
 const studentDataAdd = {
   firstName: 'John',
   lastName: 'Doe',
-  email: 'john.doe4@gmail.com',
+  email: 'john.doe5@gmail.com',
   phone: '0975566777',
   telegram: '@sim_lina',
-  dob: new Date().toISOString().split('T')[0], // Today's date in YYYY-MM-DD format
+  dob: new Date().toISOString().split('T')[0], 
   address: {
     village: 'Toul Kork',
     commune: 'Prek leab',
@@ -187,10 +188,12 @@ test.describe('Student List', () => {
       await page.waitForTimeout(400);
     }
     
-    // Fill Email
+    // Fill Email (use testmail helper to generate a unique inbox)
+    const testEmail = generateTestmailAddress(process.env.TESTMAIL_NAMESPACE || 'studentName', String(Date.now()));
+    console.log('Using test email for new student:', testEmail);
     const emailField = page.getByLabel(/Email/i)
       .or(page.locator('#email, input[name="email"]'));
-    await fillFieldWithDelay(emailField, studentDataAdd.email);
+    await fillFieldWithDelay(emailField, testEmail);
 
     // Fill Date of Birth with today's date
     const dobField = page.getByLabel(/Date of Birth|DOB|Birth Date/i)
@@ -389,7 +392,6 @@ test.describe('Student List', () => {
 
       const isDisabled = await guardianDistrictField.isDisabled().catch(() => false);
       if (!isDisabled) {
-        // await guardianDistrictField.click(); // Removed to prevent scrolling jump
         await page.waitForTimeout(200);
         await fillFieldWithDelay(guardianDistrictField, studentDataAdd.guardian.address.district);
       }
@@ -401,7 +403,7 @@ test.describe('Student List', () => {
       .or(page.getByPlaceholder(/City|Province/i))
       .or(page.getByLabel(/City|Province/i));
     if (await guardianCityField.isVisible({ timeout: 2000 }).catch(() => false)) {
-       try {
+      try {
         await expect(guardianCityField).toBeEnabled({ timeout: 5000 });
       } catch (e) {
         console.log('Warning: Guardian City field did not become enabled:', e);

@@ -6,6 +6,7 @@ import { deleteEntityViaActionMenu } from '../utils/delete-helper';
 
 import { uploadThumbnail } from '../utils/upload-thumbnail-helper';
 import { toggleViewMode } from '../utils/view-helper';
+import { generateTestmailAddress } from '../utils/email-helper';
 
 
 
@@ -102,7 +103,13 @@ test.describe('Coach List', () => {
     
     // Contact Information
     const emailField = page.getByLabel(/Email/i).or(page.locator('#email, input[name="email"]'));
-    await fillFieldWithDelay(emailField, coachDataAdd.email);
+    // Generate a unique email for this test run. Use gmail-style alias if requested via env.
+    const useGmail = (process.env.TESTMAIL_USE_GMAIL || '').toLowerCase() === 'true';
+    const testEmail = useGmail
+      ? `${coachDataAdd.firstName.toLowerCase()}.${coachDataAdd.lastName.toLowerCase()}+${Date.now()}@gmail.com`
+      : generateTestmailAddress(process.env.TESTMAIL_NAMESPACE || 'coachName', String(Date.now()));
+    console.log('Using test email for new coach:', testEmail);
+    await fillFieldWithDelay(emailField, testEmail);
 
     const dobField = page.getByLabel(/Date of Birth/i).or(page.locator('input[name="dateOfBirth"]'));
     if (await dobField.isVisible({ timeout: 2000 }).catch(() => false)) {
