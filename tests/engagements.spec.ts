@@ -7,30 +7,17 @@ test.describe('Engagement Dashboard', () => {
   
   test.beforeEach(async ({ page }) => {
     await login(page);
-    
-    // Verify we are on dashboard
     await expect(page).toHaveURL(/dashboard/);
-
-    // Wait for the loading screen to disappear
     await expect(page.getByText('Please wait while we load your workspace')).toBeHidden({ timeout: 60000 });
-    
-    // Click on Engagement to open dropdown menu
     await page.getByText('Engagement', { exact: true }).click();
     await page.waitForTimeout(500);
-    
-    // Click on "Dashboard" from the dropdown (redirects to /engagements)
     await page.getByText('Dashboard', { exact: true }).last().click();
     await page.waitForTimeout(500);
-    
-    // Ensure we are on the engagement dashboard page
     await expect(page).toHaveURL('/engagements');
-    
-    // Slow down for better visibility
     await page.waitForTimeout(1000);
   });
 
   test('Dashboard page loads correctly', async ({ page }) => {
-    // Verify we're on the engagement dashboard
     await expect(page).toHaveTitle(/Engagement/i);
   });
 });

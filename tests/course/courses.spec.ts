@@ -4,6 +4,7 @@ import { addCursorTracking } from '../../utils/cursor-helper';
 import { fillFieldWithDelay } from '../../utils/form-helper';
 import { deleteEntityViaActionMenu } from '../../utils/delete-helper';
 import { toggleViewMode } from '../../utils/view-helper';
+import { uploadThumbnail } from '../../utils/upload-thumbnail-helper';
 
 test.describe('Courses', () => {
   
@@ -25,6 +26,9 @@ test.describe('Courses', () => {
     await expect(page).toHaveURL(/courses/); 
   });
 
+  // ===================================
+  // Course page
+  // ===================================
 
     test('Course page', async ({ page }) => {
       await page.waitForTimeout(2000);
@@ -81,10 +85,8 @@ test.describe('Courses', () => {
     await page.waitForTimeout(500);
     
     // Fill Title field
-    const titleField = page.locator('#title')
-        .or(page.getByLabel(/title/i))
-        .or(page.getByPlaceholder(/title/i));
-        
+    const titleField = page.locator('#title').or(page.getByLabel(/title/i)).first();
+    await titleField.waitFor({ state: 'visible', timeout: 5000 });
     await fillFieldWithDelay(titleField, 'Introduction to Advanced Programming');
 
     // Select Subject (Dropdown)
@@ -129,98 +131,61 @@ test.describe('Courses', () => {
     }
 
     // Fill Duration
-    await fillFieldWithDelay(page.getByLabel(/duration/i).or(page.getByPlaceholder(/duration/i)), '50');
+    const durationField = page.getByLabel(/duration/i).or(page.getByPlaceholder(/duration/i));
+    await durationField.scrollIntoViewIfNeeded();
+    await fillFieldWithDelay(durationField, '50');
 
     // Fill Prerequisite (Optional)
     const prerequisiteField = page.getByLabel(/prerequisite/i).or(page.getByPlaceholder(/prerequisite/i));
-    if (await prerequisiteField.isVisible()) {
+    if (await prerequisiteField.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await prerequisiteField.scrollIntoViewIfNeeded();
         await fillFieldWithDelay(prerequisiteField, 'Basic JS knowledge');
     }
 
     // Fill Preparation (Optional)
     const preparationField = page.getByLabel(/preparation/i).or(page.getByPlaceholder(/preparation/i));
-    if (await preparationField.isVisible()) {
+    if (await preparationField.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await preparationField.scrollIntoViewIfNeeded();
         await fillFieldWithDelay(preparationField, 'Basic JS knowledge');
     }
 
     // Fill Purpose
     const purposeField = page.getByLabel(/purpose/i).or(page.getByPlaceholder(/purpose/i));
-    if (await purposeField.isVisible()) {
+    if (await purposeField.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await purposeField.scrollIntoViewIfNeeded();
         await fillFieldWithDelay(purposeField, 'This course is designed to teach students the fundamentals of programming.');
     }
 
-    // Fill Overview (was Description)
-
-      const overviewField = page.getByLabel(/overview/i).or(page.getByPlaceholder(/overview/i));
-    if (await overviewField.isVisible()) {
+    // Fill Overview
+    const overviewField = page.getByLabel(/overview/i).or(page.getByPlaceholder(/overview/i));
+    if (await overviewField.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await overviewField.scrollIntoViewIfNeeded();
         await fillFieldWithDelay(overviewField, 'A comprehensive course on advanced programming concepts.');
     }
-    // const overviewField = page.locator('#overview')
-    //     .or(page.getByLabel(/overview/i))
-    //     .or(page.getByPlaceholder(/overview/i))
-    //     .or(page.locator('textarea').filter({ hasText: /overview/i }).first()); // Fallback
-        
-    // if (await overviewField.isVisible({ timeout: 3000 }).catch(() => false)) {
-    //     await fillFieldWithDelay(overviewField, 'A comprehensive course on advanced programming concepts.');
-    //     console.log('✓ Filled Overview field');
-    // }
-
-
+    
     // Fill Objective
     const objectiveField = page.getByLabel(/objective/i).or(page.getByPlaceholder(/objective/i));
-    if (await objectiveField.isVisible()) {
+    if (await objectiveField.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await objectiveField.scrollIntoViewIfNeeded();
         await fillFieldWithDelay(objectiveField, 'Master the core concepts of advanced programming.');
         console.log('✓ Filled Objective field');
     }
 
     // Fill Link (Optional)
     const linkField = page.getByLabel(/link/i).or(page.getByPlaceholder(/link/i));
-    if (await linkField.isVisible()) {
-         await fillFieldWithDelay(linkField, 'https://www.youtube.com/results?search_query=seksaatech');
+    if (await linkField.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await linkField.scrollIntoViewIfNeeded();
+        await fillFieldWithDelay(linkField, 'https://www.youtube.com/results?search_query=seksaatech');
     }
 
-
-
-    // Upload Thumbnail - Click on the upload area to open file picker
-    await page.waitForTimeout(1000); // Wait for form to fully render
-    
-    // Find the clickable upload area (the whole "Add thumbnail" box)
-    const uploadArea = page.getByText('Add thumbnail')
-        .or(page.locator('text=Click to upload new thumbnail'))
-        .or(page.locator('label[for="file-input"]'));
-    
-    const uploadCount = await uploadArea.count();
-    console.log(`Found ${uploadCount} upload area elements`);
-    
-    if (uploadCount > 0) {
-        // Set up file chooser handler BEFORE clicking
-        const fileChooserPromise = page.waitForEvent('filechooser', { timeout: 10000 });
-        
-        // Click on the upload area to open file picker
-        await uploadArea.first().scrollIntoViewIfNeeded();
-        await page.waitForTimeout(500);
-        await uploadArea.first().click({ force: true });
-        console.log('✓ Clicked on Add thumbnail area');
-        
-        try {
-            // Wait for file chooser dialog and select file
-            const fileChooser = await fileChooserPromise;
-            const imagePath = 'C:\\Users\\USER\\OneDrive - Royal University of Phnom Penh\\Desktop\\test.png';
-            await fileChooser.setFiles(imagePath);
-            await page.waitForTimeout(1500);
-            console.log('✓ Uploaded thumbnail');
-        } catch (e) {
-            console.log('⚠ File chooser timeout - upload area may not trigger file dialog');
-        }
-    } else {
-        console.log('⚠ Upload area not found - skipping thumbnail');
-    }
-    
-    await page.waitForTimeout(12000);
+    // Upload Thumbnail
+    await uploadThumbnail(page);
+    await page.waitForTimeout(1000);
 
     // Click "Next" button instead of Create/Submit
     const nextButton = page.getByRole('button', { name: /next/i });
     await expect(nextButton).toBeVisible();
+    await nextButton.scrollIntoViewIfNeeded();
     await nextButton.click();
 
     // Interact with Module and Lessons (Step 2)
@@ -300,7 +265,7 @@ test.describe('Courses', () => {
       await page.waitForTimeout(1500);
       
       // Edit Title field
-      const titleField = page.locator('#title').or(page.getByLabel(/title/i));
+      const titleField = page.locator('#title').or(page.getByLabel(/title/i)).first();
       await titleField.waitFor({ state: 'visible', timeout: 5000 });
       
       if (await titleField.isVisible().catch(() => false)) {
@@ -393,56 +358,6 @@ test.describe('Courses', () => {
            await fillFieldWithDelay(linkField, 'https://www.youtube.com/results?search_query=playwright');
       }
 
-
-
-      // Upload/Change Thumbnail - Click on "Add thumbnail" area to open modal
-      const thumbnailArea = page.getByText('Add thumbnail', { exact: false })
-          .or(page.locator('text=Add thumbnail'))
-          .or(page.locator('div, button, label').filter({ hasText: /add thumbnail/i }))
-          .or(page.locator('[class*="thumbnail"]'))
-          .or(page.locator('label[for*="file"]'))
-          .or(page.locator('div').filter({ hasText: /thumbnail/i }).first());
-      
-      const thumbnailCount = await thumbnailArea.count();
-      console.log(`Found ${thumbnailCount} thumbnail area elements`);
-      
-      if (thumbnailCount > 0 && await thumbnailArea.first().isVisible().catch(() => false)) {
-          // Scroll into view and click
-          await thumbnailArea.first().scrollIntoViewIfNeeded();
-          await page.waitForTimeout(300);
-          await thumbnailArea.first().click({ force: true });
-          console.log('✓ Clicked Add thumbnail area');
-          await page.waitForTimeout(800); // Wait for modal to appear
-          
-          // Click on the label "Click to upload new thumbnail" to trigger file input
-          const uploadLabel = page.getByText('Click to upload new thumbnail')
-              .or(page.locator('label[for="file-input"]'))
-              .or(page.locator('label').filter({ hasText: /click to upload/i }));
-          
-          if (await uploadLabel.isVisible().catch(() => false)) {
-              // Set up file chooser handler before clicking
-              const fileChooserPromise = page.waitForEvent('filechooser');
-              await uploadLabel.click();
-              const fileChooser = await fileChooserPromise;
-              
-              const imagePath = 'C:\\Users\\USER\\OneDrive\\Desktop\\thumbnail.png';
-              await fileChooser.setFiles(imagePath);
-              await page.waitForTimeout(1000); // Wait for upload to process
-              console.log('✓ Changed thumbnail');
-              
-              // Close modal if there's a save/confirm button
-              const confirmButton = page.getByRole('button', { name: /save|confirm|ok|done/i });
-              if (await confirmButton.isVisible().catch(() => false)) {
-                  await confirmButton.click();
-                  await page.waitForTimeout(500);
-              }
-          }
-      } else {
-          console.log('⚠ Add thumbnail area not found or not visible');
-      }
-             
-    await page.waitForTimeout(1000); 
-
     const nextButton = page.getByRole('button', { name: /next/i });
     await expect(nextButton).toBeVisible();
     await nextButton.scrollIntoViewIfNeeded();
@@ -470,19 +385,6 @@ test.describe('Courses', () => {
     await lessonsDropdown.click();
     
     await page.waitForTimeout(800);
-    
-    // const checkboxes = page.getByRole('checkbox');
-    // const checkboxCount = await checkboxes.count();
-    // for (let i = 0; i < checkboxCount; i++) {
-    //     const checkbox = checkboxes.nth(i);
-    //     const isChecked = await checkbox.isChecked();
-        
-    //     if (!isChecked) {
-    //         await checkbox.click({ force: true });
-    //         await page.waitForTimeout(300);
-    //         break;
-    //     }
-    // }
 
     await page.keyboard.press('Escape');
     

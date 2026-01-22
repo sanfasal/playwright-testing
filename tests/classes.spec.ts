@@ -4,6 +4,7 @@ import { addCursorTracking } from '../utils/cursor-helper';
 import { fillFieldWithDelay } from '../utils/form-helper';
 import { deleteEntityViaActionMenu } from '../utils/delete-helper';
 import { toggleViewMode } from '../utils/view-helper';
+import { uploadThumbnail } from '../utils/upload-thumbnail-helper';
 
 test.describe('Class', () => {
   
@@ -38,10 +39,7 @@ test.describe('Class', () => {
     
     // Fill Title field with realistic typing
     const titleField = page.locator('#title');
-    await fillFieldWithDelay(titleField, 'Class Webdevelopment', {
-      typingDelay: 50,
-      afterTypingDelay: 300
-    });
+    await fillFieldWithDelay(titleField, 'Class Webdevelopment');
     
     // Select Course dropdown
     await page.waitForTimeout(1000);
@@ -87,40 +85,28 @@ test.describe('Class', () => {
       .or(page.getByPlaceholder(/price/i))
       .or(page.locator('input[type="text"]').nth(1))
       .or(page.locator('input[type="number"]').first());
-    await fillFieldWithDelay(priceField, '500', {
-      typingDelay: 50,
-      afterTypingDelay: 300
-    });
+    await fillFieldWithDelay(priceField, '500');
     
     // Fill Progress field
     const progressField = page.getByLabel(/progress/i)
       .or(page.getByPlaceholder(/progress/i))
       .or(page.locator('input[type="text"]').nth(2))
       .or(page.locator('input[type="number"]').nth(1));
-    await fillFieldWithDelay(progressField, '50', {
-      typingDelay: 50,
-      afterTypingDelay: 200
-    });
+    await fillFieldWithDelay(progressField, '50');
     
     // Fill Start Date field (static date)
     const startDate = '01-12-2026'; // Static start date
     const startDateField = page.getByLabel(/start date/i)
       .or(page.getByPlaceholder(/start date/i))
       .or(page.locator('input[type="date"]').first());
-    await fillFieldWithDelay(startDateField, startDate, {
-      typingDelay: 30,
-      afterTypingDelay: 200
-    });
+    await fillFieldWithDelay(startDateField, startDate);
     
     // Fill End Date field (static date)
     const endDateFormatted = '04-16-2026'; // Static end date    
     const endDateField = page.getByLabel(/end date/i)
       .or(page.getByPlaceholder(/end date/i))
       .or(page.locator('input[type="date"]').nth(1));
-    await fillFieldWithDelay(endDateField, endDateFormatted, {
-      typingDelay: 30,
-      afterTypingDelay: 200
-    });
+    await fillFieldWithDelay(endDateField, endDateFormatted);
     
     // Fill Start Time field
     await page.waitForTimeout(500);
@@ -128,10 +114,7 @@ test.describe('Class', () => {
       .or(page.locator('#startTime'))
       .or(page.getByPlaceholder(/start time/i));
     
-    await fillFieldWithDelay(startTimeInput, '08:30AM', {
-      typingDelay: 50,
-      afterTypingDelay: 300
-    });
+    await fillFieldWithDelay(startTimeInput, '08:30AM');
     
     // Fill End Time field
     await page.waitForTimeout(500);
@@ -139,13 +122,13 @@ test.describe('Class', () => {
       .or(page.locator('#endTime'))
       .or(page.getByPlaceholder(/end time/i));
     
-    await fillFieldWithDelay(endTimeInput, '11:30AM', {
-      typingDelay: 50,
-      afterTypingDelay: 300
-    });
+    await fillFieldWithDelay(endTimeInput, '11:30AM');
     
     // Toggle Publish and Online buttons to TRUE (enabled)
     await page.waitForTimeout(500);
+
+        await uploadThumbnail(page, "Click to upload new thumbnail");
+        await page.waitForTimeout(500);
     
     // Set Publish toggle to TRUE
     const publishToggle = page.getByText('Publish', { exact: true })
@@ -174,7 +157,6 @@ test.describe('Class', () => {
       const isChecked = await onlineToggle.getAttribute('aria-checked').catch(() => 'false');
       if (isChecked !== 'true') {
         await onlineToggle.click();
-        console.log('✓ Set Online toggle to TRUE');
       }
       await page.waitForTimeout(500);
     }
@@ -185,17 +167,13 @@ test.describe('Class', () => {
     const nextButton = page.getByRole('button', { name: /next|next step/i });
     
     // Wait for the Next button to be enabled and visible
-    if (await nextButton.isVisible({ timeout: 5000 }).catch(() => false)) {
+    if (await nextButton.isVisible({ timeout: 2000 }).catch(() => false)) {
       // Check if button is enabled (not disabled)
       const isDisabled = await nextButton.isDisabled().catch(() => true);
       if (!isDisabled) {
         await nextButton.click();
-        console.log('✓ Clicked Next button - navigating to Coaches tab');
       } else {
-        console.log('⚠ Next button is disabled - check if all required fields are filled');
       }
-    } else {
-      console.log('⚠ Next button not found - skipping to next step');
     }
 
     
@@ -209,48 +187,22 @@ test.describe('Class', () => {
       .or(page.locator('button[role="combobox"]').last());
     
     // Click the dropdown to open it
-    if (await coachesDropdown.isVisible({ timeout: 3000 }).catch(() => false)) {
+    if (await coachesDropdown.isVisible({ timeout: 2000 }).catch(() => false)) {
       await coachesDropdown.click();
-      console.log('✓ Clicked to open coaches dropdown');
       await page.waitForTimeout(1200);
       
-      // Use JavaScript to add IDs to coach list items for reliable selection
-      await page.evaluate(() => {
-        // Find all list items or rows in the dropdown
-        const listItems = document.querySelectorAll('[role="option"], li, label');
-        listItems.forEach((item, index) => {
-          const text = item.textContent?.trim() || '';
-          if (text.includes('Case Maya') || text.includes('Sann Fasal') || 
-              text.includes('Talley') || text.includes('Cohen') || text.includes('Jonho')) {
-            item.id = `coach-item-${index}`;
-            console.log(`Added ID: coach-item-${index} for ${text}`);
-          }
-        });
-      });
-      
+      // Click on the first coach option (index 0)
       await page.waitForTimeout(500);
       
-      // Try to click on the coach list item at index 0 first
-      let selected = false;
+      // Select the first coach from the dropdown
+      const coachOptions = page.locator('[role="option"], li label, .coach-item, [class*="option"]');
+      const firstCoach = coachOptions.nth(0);
       
-      // Strategy 1: Click using the injected ID
-      const coachItemAtIndex0 = page.locator('#coach-item-0');
-      if (await coachItemAtIndex0.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await coachItemAtIndex0.click();
-        console.log('✓ Clicked coach item at index 0');
+      if (await firstCoach.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await firstCoach.click();
         await page.waitForTimeout(800);
-        selected = true;
       }
       
-      // Strategy 2: If index 0 fails, try index 1
-      if (!selected) {
-        const coachItemAtIndex1 = page.locator('#coach-item-1');
-        if (await coachItemAtIndex1.isVisible({ timeout: 2000 }).catch(() => false)) {
-          await coachItemAtIndex1.click();
-          await page.waitForTimeout(800);
-          selected = true;
-        }
-      }  
       // Close the dropdown by clicking outside or pressing Escape
       await page.keyboard.press('Escape');
       await page.waitForTimeout(500);
@@ -266,43 +218,7 @@ test.describe('Class', () => {
       await nextButton2.click();
       await page.waitForTimeout(2000);
     }
-    
-    // Upload thumbnail image
-    await page.waitForTimeout(500);
-    
-    // Path to image on desktop (update this path to match your actual image location)
-    const thumbnailPath = 'C:\\Users\\USER\\Desktop\\test-image.jpg';
-    
-    // Click on the upload area to trigger file selection
-    const uploadArea = page.getByText(/click to upload/i)
-      .or(page.getByText(/add thumbnail/i))
-      .or(page.locator('div').filter({ hasText: /click to upload new thumbnail/i }).first())
-      .or(page.locator('[class*="upload"]').first());
-    
-    if (await uploadArea.isVisible({ timeout: 2000 }).catch(() => false)) {
-      console.log('✓ Found upload area, clicking...');
-      await uploadArea.click();
-      await page.waitForTimeout(500);
-    }
-    
-    // Now find and set the file input
-    const fileInput = page.locator('input[type="file"]').first();
-    
-    if (await fileInput.isVisible({ timeout: 2000 }).catch(() => false)) {
-      try {
-        await fileInput.setInputFiles(thumbnailPath);
-        console.log('✓ Uploaded thumbnail image from desktop');
-        await page.waitForTimeout(1500);
-      } catch (error) {
-        console.log('⚠ Thumbnail upload failed. Please ensure image exists at:', thumbnailPath);
-      }
-    } else {
-      console.log('⚠ File input not found after clicking upload area');
-    }
-    
-    await page.waitForTimeout(2000);
- 
-    
+       
     // Step 5: Click final submit button (Add/Create)
     await page.waitForTimeout(500);
     const submitButton = page.getByRole('button', { name: /Add|Create|Submit/i });
@@ -350,10 +266,7 @@ test.describe('Class', () => {
       const titleField = page.locator('#title');
       if (await titleField.isVisible({ timeout: 3000 }).catch(() => false)) {
         await titleField.clear();
-        await fillFieldWithDelay(titleField, 'Updated Class Title', {
-          typingDelay: 50,
-          afterTypingDelay: 300
-        });
+        await fillFieldWithDelay(titleField, 'Updated Class Title');
       }
       
       // Edit Price field
@@ -363,10 +276,7 @@ test.describe('Class', () => {
         .or(page.locator('input[type="number"]').first());
       if (await priceField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await priceField.clear();
-        await fillFieldWithDelay(priceField, '1500', {
-          typingDelay: 50,
-          afterTypingDelay: 200
-        });
+        await fillFieldWithDelay(priceField, '1500');
       }
       
       // Edit Progress field
@@ -376,10 +286,7 @@ test.describe('Class', () => {
         .or(page.locator('input[type="number"]').nth(1));
       if (await progressField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await progressField.clear();
-        await fillFieldWithDelay(progressField, '75', {
-          typingDelay: 50,
-          afterTypingDelay: 200
-        });
+        await fillFieldWithDelay(progressField, '75');
       }
       
       // Edit Start Time
@@ -417,10 +324,8 @@ test.describe('Class', () => {
           const text = element.textContent?.trim() || '';
           if (text.includes('Publish')) {
             element.id = 'publish-toggle-edit';
-            console.log('Found Publish toggle:', element);
           } else if (text.includes('Online')) {
             element.id = 'online-toggle-edit';
-            console.log('Found Online toggle:', element);
           }
         });
       });
@@ -435,11 +340,9 @@ test.describe('Class', () => {
       if (await publishToggle.isVisible({ timeout: 2000 }).catch(() => false)) {
         // Check if toggle is currently enabled
         const isChecked = await publishToggle.getAttribute('aria-checked').catch(() => 'false');
-        console.log('Publish toggle current state:', isChecked);
         
         if (isChecked === 'true') {
           await publishToggle.click();
-          console.log('✓ Clicked Publish toggle to set FALSE (was TRUE)');
         } else {
           console.log('ℹ Publish toggle already FALSE, no click needed');
         }
@@ -456,11 +359,9 @@ test.describe('Class', () => {
       if (await onlineToggle.isVisible({ timeout: 2000 }).catch(() => false)) {
         // Check if toggle is currently enabled
         const isChecked = await onlineToggle.getAttribute('aria-checked').catch(() => 'false');
-        console.log('Online toggle current state:', isChecked);
         
         if (isChecked === 'true') {
           await onlineToggle.click();
-          console.log('✓ Clicked Online toggle to set FALSE (was TRUE)');
         } else {
           console.log('ℹ Online toggle already FALSE, no click needed');
         }
@@ -472,6 +373,7 @@ test.describe('Class', () => {
       // Step 2: Click Next button to go to Coaches tab
       await page.waitForTimeout(1000);
       const nextButton = page.getByRole('button', { name: /next|next step/i });
+      await nextButton.scrollIntoViewIfNeeded();
       
       if (await nextButton.isVisible({ timeout: 5000 }).catch(() => false)) {
         const isDisabled = await nextButton.isDisabled().catch(() => true);
@@ -493,14 +395,9 @@ test.describe('Class', () => {
             // Add IDs to coach list items
             await page.evaluate(() => {
               const listItems = document.querySelectorAll('[role="option"], li, label');
-              listItems.forEach((item, index) => {
-                const text = item.textContent?.trim() || '';
-                if (text.includes('Case Maya') || text.includes('Sann Fasal') || 
-                    text.includes('Talley') || text.includes('Cohen') || text.includes('Jonho')) {
-                  item.id = `coach-item-edit-${index}`;
-                  console.log(`Added ID: coach-item-edit-${index} for ${text}`);
-                }
-              });
+              // Add IDs to items at index 0 and 1
+              if (listItems[0]) listItems[0].id = 'coach-item-edit-0';
+              if (listItems[1]) listItems[1].id = 'coach-item-edit-1';
             });
             
             await page.waitForTimeout(500);

@@ -19,8 +19,8 @@ export async function deleteItem(
   
   if (await confirmInput.isVisible({ timeout: 3000 }).catch(() => false)) {
     await fillFieldWithDelay(confirmInput, confirmationText, {
-      typingDelay: 60,
-      afterTypingDelay: 500
+      typingDelay: 10,
+      afterTypingDelay: 100
     });
   } else {
     console.log('⚠ Confirmation input not found');

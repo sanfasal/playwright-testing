@@ -23,7 +23,7 @@ export default defineConfig({
     
     // Slow down operations for debugging (set SLOW_MO env variable)
     launchOptions: {
-      slowMo: process.env.SLOW_MO ? parseInt(process.env.SLOW_MO) : 500, 
+      slowMo: process.env.SLOW_MO ? parseInt(process.env.SLOW_MO) : 100, 
     },
   },
 

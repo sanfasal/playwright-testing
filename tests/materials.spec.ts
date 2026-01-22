@@ -1,6 +1,9 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 import { login } from '../utils/auth-helper';
 import { addCursorTracking } from '../utils/cursor-helper';
+import { toggleViewMode } from '../utils/view-helper';
+import { deleteItem } from '../utils/delete-helper';
+import { uploadThumbnail } from '../utils/upload-thumbnail-helper';
 
 test.describe('Materials Page', () => {
   
@@ -46,17 +49,17 @@ test.describe('Materials Page', () => {
   }
 
   test('View materials page', async ({ page }) => {
-    // Select and open material at index 1 (second material)
+    await page.waitForTimeout(1000);
+    await toggleViewMode(page);
+    await page.waitForTimeout(1000);
     await selectMaterial(page, 1);
-    
-    // Take a screenshot of the material details
-    await page.screenshot({ 
-      path: 'test-results/screenshots/material-details.png',
-      fullPage: true 
-    });
   });
 
-  test('Add new material', async ({ page }) => {
+  // ===================================
+  // Add new material with link
+  // ===================================
+
+  test('Add new material with link', async ({ page }) => {
     // Click the add button using the specific ID
     await page.locator('#add-material-button').click();
     
@@ -82,6 +85,25 @@ test.describe('Materials Page', () => {
     // Wait for success message or page update
     await page.waitForTimeout(2000);
   });
+
+  // ===================================
+  // Add new material with thumbnail
+  // ===================================
+
+  test('Add new material with thumbnail', async ({ page }) => {
+    await page.locator('#add-material-button').click();
+    await expect(page.getByRole('textbox').first()).toBeVisible({ timeout: 9000 });
+    await uploadThumbnail(page, "Click to upload new material");
+    await page.waitForTimeout(500);
+    const submitButton = page.getByRole('button', { name: /Create|Save|Submit/i });
+    await submitButton.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(500); // Brief pause for smooth scroll animation
+    await submitButton.click();
+  });
+
+  // ===================================
+  // Edit material
+  // ===================================
 
   test('Edit material', async ({ page }) => {
     // Select and open the first material
@@ -131,6 +153,10 @@ test.describe('Materials Page', () => {
     }
   });
 
+  // ===================================
+  // Delete material
+  // ===================================
+
   test('Delete material', async ({ page }) => {
     // Get all material rows for count verification
     const materialRows = page.locator('table tbody tr, [role="row"], .material-row');
@@ -152,25 +178,10 @@ test.describe('Materials Page', () => {
     
     if (await deleteButton.isVisible({ timeout: 3000 }).catch(() => false)) {
       await deleteButton.click();
-      
-      // Wait for confirmation modal to appear
       await page.waitForTimeout(1000);
       
-      // Type "Confirm Delete" in the input field
-      const confirmInput = page.getByPlaceholder(/Type here/i).or(page.locator('input[type="text"]').last());
-      if (await confirmInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await confirmInput.fill('Confirm Delete');
-        await page.waitForTimeout(500);
-      }
-      
-      // Click the "Permanently Delete" button
-      const permanentlyDeleteButton = page.getByRole('button', { name: /Permanently Delete/i });
-      if (await permanentlyDeleteButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await permanentlyDeleteButton.click();
-      }
-      
-      // Wait for deletion to complete
-      await page.waitForTimeout(2000);
+      // Use delete helper to handle confirmation
+      await deleteItem(page, 'Confirm Delete');
       
       // Verify material was deleted
       const newCount = await materialRows.count();
@@ -180,6 +191,10 @@ test.describe('Materials Page', () => {
     }
   });
 
+  // ===================================
+  // Export materials
+  // ===================================
+
   test('Export materials', async ({ page }) => {
     // Set up download promise before clicking the button
     await selectMaterial(page, 3);
@@ -188,3 +203,4 @@ test.describe('Materials Page', () => {
 
   });
 });
+
