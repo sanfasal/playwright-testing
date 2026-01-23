@@ -4,6 +4,11 @@ import { addCursorTracking } from '../utils/cursor-helper';
 import { fillFieldWithDelay } from '../utils/form-helper';
 import * as fs from 'fs';
 import * as path from 'path';
+import { getOTPFromEmail, generateTestmailAddress } from '../utils/email-helper2';
+import { updateUserEmail, getUserData } from '../utils/data-store';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const userDataPath = path.resolve(__dirname, '..', 'user-data.json');
 let secondUserEmail = 'test@example.com'; 
@@ -176,9 +181,21 @@ test.describe('Personal Life', () => {
 test('Change Gmail', async ({ page }) => {
     test.setTimeout(120000);
 
+    const apiKey = process.env.TESTMAIL_API_KEY2;
+    const namespace = process.env.TESTMAIL_NAMESPACE2;
+
+    if (!apiKey || !namespace) {
+      throw new Error("TESTMAIL_API_KEY and TESTMAIL_NAMESPACE must be defined in .env");
+    }
+
+    // Generate dynamic email
+    const timestamp = Date.now().toString();
+    const newEmail = generateTestmailAddress(namespace, timestamp);
+    console.log(`Changing email to: ${newEmail}`);
+
     // Prefer page-level update button (Update Settings / Update Profile), fallback to edit controls
     const pageUpdateBtn = page.getByRole('button', { name: /^(Change Email|Update Email)$/i }).first();
-    if (await pageUpdateBtn.isVisible({ timeout: 200 }).catch(() => false)) {
+    if (await pageUpdateBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
       await pageUpdateBtn.click();
       await page.waitForTimeout(600);
     } else {
@@ -198,7 +215,7 @@ test('Change Gmail', async ({ page }) => {
     const newEmailInput = page.locator('#newEmail');
     await newEmailInput.waitFor({ state: 'visible', timeout: 10000 });
     // await newEmailInput.fill(secondUserEmail);
-    await fillFieldWithDelay(newEmailInput, secondUserEmail); 
+    await fillFieldWithDelay(newEmailInput, newEmail); 
 
     // Confirm New Email Field
     const confirmEmailField = page.locator('#confirmNewEmail')
@@ -208,13 +225,41 @@ test('Change Gmail', async ({ page }) => {
 
     await confirmEmailField.waitFor({ state: 'visible', timeout: 5000 });
     await confirmEmailField.clear();
-    await fillFieldWithDelay(confirmEmailField, secondUserEmail);
+    await fillFieldWithDelay(confirmEmailField, newEmail);
 
     // Submit
-    const submit = page.getByRole('button', { name: /Change|Update|Submit/i });
+    const submit = page.getByRole('button', { name: /Change|Update|Submit|Save/i });
     if (await submit.isVisible({ timeout: 2000 }).catch(() => false)) {
       await submit.click();
       await page.waitForTimeout(1000);
+    }
+
+    // OTP Verification
+    // Assuming an OTP field appears after submission
+    const otpField = page.getByRole('textbox', { name: /code|otp|verification/i }).or(page.locator('input[name="code"], input[name="otp"]'));
+    await expect(otpField).toBeVisible({ timeout: 30000 });
+
+    const otp = await getOTPFromEmail({
+        apiKey,
+        namespace,
+        timestamp
+    });
+
+    await fillFieldWithDelay(otpField, otp);
+    
+    // Submit OTP
+    const verifyBtn = page.getByRole('button', { name: /Verify|Confirm|Submit/i });
+    if (await verifyBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await verifyBtn.click();
+        await page.waitForTimeout(1000);
+    }
+    
+    // Update user data on success
+    const users = getUserData('users');
+    const currentEmail = (users && users.length > 0) ? users[0].email : getUserData('signupEmail');
+
+    if (currentEmail) {
+      updateUserEmail(currentEmail, newEmail);
     }
   });
 

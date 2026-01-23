@@ -21,7 +21,7 @@ const TEST_USER = {
 } as const;
 
 test.describe("Sign Up", () => {
-  test.setTimeout(60000); // Increase timeout to 60s for realistic typing delays
+  test.setTimeout(60000);
   test("Sign up successfully", async ({ page }) => {
     await addCursorTracking(page);
 

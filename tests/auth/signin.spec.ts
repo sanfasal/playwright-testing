@@ -74,16 +74,10 @@ test.describe('Sign In', () => {
 
     const SIGNIN_USER = getSigninUser();
     const emailField = page.getByRole('textbox', { name: /email/i });
-    await fillFieldWithDelay(emailField, SIGNIN_USER.email, {
-      typingDelay: 20,
-      afterTypingDelay: 50
-    });
+    await fillFieldWithDelay(emailField, SIGNIN_USER.email);
   
     const passwordField = page.getByRole('textbox', { name: /password/i });
-    await fillFieldWithDelay(passwordField, SIGNIN_USER.invalidPassword, {
-      typingDelay: 20,
-      afterTypingDelay: 50
-    });
+    await fillFieldWithDelay(passwordField, SIGNIN_USER.invalidPassword);
     await page.locator(ICONS.eyeOff).click();
     await page.waitForTimeout(50);
     await page.locator(ICONS.eye).click();
