@@ -20,6 +20,39 @@ export interface TestmailEmail {
 }
 
 /**
+ * Class-based client for interacting with Testmail.app
+ * Allows multiple instances for different users/namespaces/timestamps.
+ */
+export class TestmailClient {
+  private config: TestmailConfig;
+
+  constructor(config: TestmailConfig) {
+    this.config = config;
+  }
+
+  /**
+   * Generates a testmail.app email address for this client configuration
+   */
+  getAddress(): string {
+    return generateTestmailAddress(this.config.namespace, this.config.timestamp);
+  }
+
+  /**
+   * Fetches emails for this client
+   */
+  async fetchEmails(timeout: number = 30000, minTimestamp: number = 0): Promise<TestmailEmail[]> {
+    return fetchEmails(this.config, timeout, minTimestamp);
+  }
+
+  /**
+   * Waits for an OTP email and extracts the code
+   */
+  async getOTP(otpPattern?: RegExp, timeout: number = 30000, minTimestamp: number = 0): Promise<string> {
+    return getOTPFromEmail(this.config, otpPattern, timeout, minTimestamp);
+  }
+}
+
+/**
  * Generates a testmail.app email address
  * @param namespace - Your testmail.app namespace
  * @param timestamp - Optional timestamp for organizing emails (default: random string)

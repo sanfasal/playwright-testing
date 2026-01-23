@@ -48,3 +48,32 @@ export function clearUserData(): void {
     fs.unlinkSync(DATA_FILE);
   }
 }
+
+/**
+ * Appends a new user to the users array in user-data.json
+ */
+export function addUser(user: { email: string; password?: string; [key: string]: any }): void {
+  let data: { users?: any[]; [key: string]: any } = {};
+
+  if (fs.existsSync(DATA_FILE)) {
+    try {
+      data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
+    } catch (e) {
+      console.warn('Could not parse user-data.json, creating new one.');
+    }
+  }
+
+  if (!data.users) {
+    data.users = [];
+  }
+
+  data.users.push(user);
+
+  // Also update the flat properties for backward compatibility
+  data.signupEmail = user.email;
+  if (user.password) data.signupPassword = user.password;
+  if (user.signupTimestamp) data.signupTimestamp = user.signupTimestamp;
+
+  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+  console.log(`Added user ${user.email} to ${DATA_FILE}`);
+}

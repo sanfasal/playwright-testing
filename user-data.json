@@ -1,5 +1,19 @@
 {
-  "signupEmail": "xxxaw.1768619484758@inbox.testmail.app",
-  "signupTimestamp": "1768619484758",
-  "signupPassword": "Password@123"
+  "xxxaw.1769086504525@inbox.testmail.app": ">%Mj8w-ZTw@a",
+  "users": [
+    {
+      "email": "xxxaw.1769086504525@inbox.testmail.app",
+      "password": ">%Mj8w-ZTw@a",
+      "signupTimestamp": "1769086504525"
+    },
+    {
+      "email": "xxxaw.1769086548683@inbox.testmail.app",
+      "password": "]_1{1UkHkQAb",
+      "signupTimestamp": "1769086548683"
+    }
+  ],
+  "signupEmail": "xxxaw.1769086548683@inbox.testmail.app",
+  "signupPassword": "]_1{1UkHkQAb",
+  "signupTimestamp": "1769086548683",
+  "xxxaw.1769086548683@inbox.testmail.app": "]_1{1UkHkQAb"
 }

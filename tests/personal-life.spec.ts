@@ -2,6 +2,20 @@ import { test, expect } from '@playwright/test';
 import { login } from '../utils/auth-helper';
 import { addCursorTracking } from '../utils/cursor-helper';
 import { fillFieldWithDelay } from '../utils/form-helper';
+import * as fs from 'fs';
+import * as path from 'path';
+
+const userDataPath = path.resolve(__dirname, '..', 'user-data.json');
+let secondUserEmail = 'test@example.com'; 
+
+try {
+  const userData = JSON.parse(fs.readFileSync(userDataPath, 'utf-8'));
+  if (userData.users && userData.users.length > 1) {
+    secondUserEmail = userData.users[1].email;
+  }
+} catch (error) {
+  console.error("Error reading user-data.json:", error);
+}
 
 const personalDataEdit = {
   firstName: 'Jane',
@@ -178,15 +192,26 @@ test('Change Gmail', async ({ page }) => {
       }
     }
 
-    // First / Last name
-    const firstNameField = page.getByLabel(/First/i).or(page.locator('#firstName, input[name="firstName"]'));
-    if (await firstNameField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await firstNameField.clear();
-      await fillFieldWithDelay(firstNameField, personalDataEdit.firstName);
-    }
+
+    
+    // Explicitly wait for the element by ID which is the most reliable
+    const newEmailInput = page.locator('#newEmail');
+    await newEmailInput.waitFor({ state: 'visible', timeout: 10000 });
+    // await newEmailInput.fill(secondUserEmail);
+    await fillFieldWithDelay(newEmailInput, secondUserEmail); 
+
+    // Confirm New Email Field
+    const confirmEmailField = page.locator('#confirmNewEmail')
+        .or(page.locator('input[name="confirmNewEmail"]'))
+        .or(page.getByLabel(/Confirm New Email/i))
+        .or(page.getByPlaceholder(/Confirm/i));
+
+    await confirmEmailField.waitFor({ state: 'visible', timeout: 5000 });
+    await confirmEmailField.clear();
+    await fillFieldWithDelay(confirmEmailField, secondUserEmail);
 
     // Submit
-    const submit = page.getByRole('button', { name: /Save|Update|Submit/i });
+    const submit = page.getByRole('button', { name: /Change|Update|Submit/i });
     if (await submit.isVisible({ timeout: 2000 }).catch(() => false)) {
       await submit.click();
       await page.waitForTimeout(1000);
