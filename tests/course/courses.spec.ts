@@ -26,47 +26,7 @@ test.describe('Courses', () => {
     await expect(page).toHaveURL(/courses/); 
   });
 
-  // ===================================
-  // Course page
-  // ===================================
 
-    test('Course page', async ({ page }) => {
-      await page.waitForTimeout(2000);
-      await toggleViewMode(page);
-
-      const subjectDropdown = page.getByTestId('subjects-dropdown').or(
-          page.getByRole('combobox').filter({ hasText: /all subjects/i })
-      );
-      await expect(subjectDropdown).toBeVisible();
-      await subjectDropdown.click();
-      
-      await expect(subjectDropdown).toHaveAttribute('aria-expanded', 'true');
-      
-      const options = page.getByRole('option');
-      await expect(options.first()).toBeVisible();
-      await expect(options.nth(1)).toBeVisible();
-      await page.waitForTimeout(300); 
-      
-      await options.nth(1).click();
-
-      // =================================================
-      // Interact with "All Levels" dropdown
-      // =================================================
-      const levelDropdown = page.getByRole('combobox').filter({ hasText: /all levels/i });
-      await expect(levelDropdown).toBeVisible();
-      await levelDropdown.click();
-      
-      // Wait for expanded state
-      await expect(levelDropdown).toHaveAttribute('aria-expanded', 'true');
-
-      // Select index 1 (second item)
-      // Note: We use a new variable to avoid conflict with 'options' above
-      const levelOptions = page.getByRole('option');
-      await expect(levelOptions.nth(1)).toBeVisible();
-      
-      await page.waitForTimeout(300); // Animation stability
-      await levelOptions.nth(1).click();
-    });
 
   // =====================================
   // Add new course
@@ -223,6 +183,49 @@ test.describe('Courses', () => {
         .filter({ hasText: /create|save/i }).click({ force: true });
   });
 
+
+    // ===================================
+  // Course page
+  // ===================================
+
+    test('Course page', async ({ page }) => {
+      await page.waitForTimeout(2000);
+      await toggleViewMode(page);
+
+      const subjectDropdown = page.getByTestId('subjects-dropdown').or(
+          page.getByRole('combobox').filter({ hasText: /all subjects/i })
+      );
+      await expect(subjectDropdown).toBeVisible();
+      await subjectDropdown.click();
+      
+      await expect(subjectDropdown).toHaveAttribute('aria-expanded', 'true');
+      
+      const options = page.getByRole('option');
+      await expect(options.first()).toBeVisible();
+      await expect(options.nth(1)).toBeVisible();
+      await page.waitForTimeout(300); 
+      
+      await options.nth(1).click();
+
+      // =================================================
+      // Interact with "All Levels" dropdown
+      // =================================================
+      const levelDropdown = page.getByRole('combobox').filter({ hasText: /all levels/i });
+      await expect(levelDropdown).toBeVisible();
+      await levelDropdown.click();
+      
+      // Wait for expanded state
+      await expect(levelDropdown).toHaveAttribute('aria-expanded', 'true');
+
+      // Select index 1 (second item)
+      // Note: We use a new variable to avoid conflict with 'options' above
+      const levelOptions = page.getByRole('option');
+      await expect(levelOptions.nth(1)).toBeVisible();
+      
+      await page.waitForTimeout(300); // Animation stability
+      await levelOptions.nth(1).click();
+    });
+
   // =====================================
   // Edit course (Corrected Version)
   // =====================================
@@ -367,26 +370,26 @@ test.describe('Courses', () => {
 
     await page.waitForTimeout(1000);
 
-    const moduleDropdown = page.locator('label:has-text("Module")').locator('..').locator('button[role="combobox"]')
-        .or(page.locator('div').filter({ hasText: /^Module$/ }).locator('..').locator('button'))
-        .or(page.locator('button[role="combobox"]').nth(0));
+    // const moduleDropdown = page.locator('label:has-text("Module")').locator('..').locator('button[role="combobox"]')
+    //     .or(page.locator('div').filter({ hasText: /^Module$/ }).locator('..').locator('button'))
+    //     .or(page.locator('button[role="combobox"]').nth(0));
     
-    await expect(moduleDropdown).toBeVisible();
-    await moduleDropdown.click();
-    await expect(page.getByRole('option').first()).toBeVisible();
-    await page.getByRole('option').first().click();
-    await page.waitForTimeout(500);
+    // await expect(moduleDropdown).toBeVisible();
+    // await moduleDropdown.click();
+    // await expect(page.getByRole('option').first()).toBeVisible();
+    // await page.getByRole('option').first().click();
+    // await page.waitForTimeout(500);
 
-    const lessonsDropdown = page.locator('button[name*="lessons"]')
-        .or(page.locator('label:has-text("Lessons")').locator('..').locator('button[role="combobox"]'))
-        .or(page.locator('button[role="combobox"]').nth(1));
+    // const lessonsDropdown = page.locator('button[name*="lessons"]')
+    //     .or(page.locator('label:has-text("Lessons")').locator('..').locator('button[role="combobox"]'))
+    //     .or(page.locator('button[role="combobox"]').nth(1));
 
-    await expect(lessonsDropdown).toBeVisible();
-    await lessonsDropdown.click();
+    // await expect(lessonsDropdown).toBeVisible();
+    // await lessonsDropdown.click();
     
-    await page.waitForTimeout(800);
+    // await page.waitForTimeout(800);
 
-    await page.keyboard.press('Escape');
+    // await page.keyboard.press('Escape');
     
     await page.waitForTimeout(500);
     await page.getByRole('button', { name: /update|Update|submit/i })

@@ -3,7 +3,7 @@
  * Documentation: https://testmail.app/docs
  */
 
-import { saveUserData } from "./data-store";
+import { saveUserData, logGeneratedEmail } from "./data-store";
 
 export interface TestmailConfig {
   apiKey: string;
@@ -62,7 +62,10 @@ export function generateTestmailAddress(
   namespace: string,
   timestamp?: string
 ): string {
-  return `${namespace}.${timestamp}@inbox.testmail.app`;
+  const email = `${namespace}.${timestamp}@inbox.testmail.app`;
+  const password = generateRandomPassword(12);
+  logGeneratedEmail(email, 'email-helper2', password);
+  return email;
 }
 
 /**

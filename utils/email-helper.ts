@@ -152,15 +152,27 @@ export function extractOTP(emailText: string, pattern?: RegExp): string | null {
  * Generate a random password using a set of allowed characters.
  * Note: uses Math.random() for simplicity; adequate for test accounts.
  */
-export function generateRandomPassword(length: number = 12): string {
-  const chars =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@@@#$%^&*()_+-=[]{}|;:,.<>?";
+export function generateRandomPassword(length: number = 50): string {
+  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+  const numbers = "0123456789";
+  const special = "!@#$%^&*()_+";
+  const all = letters + numbers + special;
+
+  if (length < 3) throw new Error("Password length must be at least 3");
+
   let result = "";
-  for (let i = 0; i < length; i++) {
-    const idx = Math.floor(Math.random() * chars.length);
-    result += chars.charAt(idx);
+  // Ensure at least one of each required type
+  result += letters.charAt(Math.floor(Math.random() * letters.length));
+  result += numbers.charAt(Math.floor(Math.random() * numbers.length));
+  result += special.charAt(Math.floor(Math.random() * special.length));
+
+  // Fill the rest
+  for (let i = 3; i < length; i++) {
+    result += all.charAt(Math.floor(Math.random() * all.length));
   }
-  return result;
+
+  // Shuffle the result
+  return result.split('').sort(() => 0.5 - Math.random()).join('');
 }
 
 /**

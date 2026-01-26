@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { generateTestmailAddress, getOTPFromEmail } from '../../utils/email-helper';
-import { getUserData } from '../../utils/data-store';
+import { generateTestmailAddress, getOTPFromEmail, generateRandomPassword } from '../../utils/email-helper';
+import { getUserData, updateUserPassword } from '../../utils/data-store';
 import dotenv from 'dotenv';
 import { addCursorTracking } from '../../utils/cursor-helper';
 
@@ -64,11 +64,13 @@ test.describe('Reset Password', () => {
     const passwordField = page.getByLabel(/password/i).or(page.getByPlaceholder(/New Password/i));
     const confirmPasswordField = page.getByLabel(/confirmPassword/i).or(page.getByPlaceholder(/Confirm Password/i));
     
+    const newPassword = generateRandomPassword(12);
+
     await expect(passwordField).toBeVisible({ timeout: 10000 });
-    await passwordField.fill("Password@123");
+    await passwordField.fill(newPassword);
     
     await expect(confirmPasswordField).toBeVisible({ timeout: 5000 });
-    await confirmPasswordField.fill("Password@123");
+    await confirmPasswordField.fill(newPassword);
     
     await page.waitForTimeout(1000);
     
@@ -89,6 +91,9 @@ test.describe('Reset Password', () => {
         await saveButton.click();
       }
     }
+    
+    // Update the password in user-data.json
+    updateUserPassword(testEmail, newPassword);
   });
 
   test('Reset password with invalid OTP and attempt password input', async ({ page }) => {
@@ -136,7 +141,7 @@ test.describe('Reset Password', () => {
     
     await passwordField.fill("Password@123");
     await confirmPasswordField.fill("Password@123");
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(5000);
   });
 
   test('Reset password with weak password', async ({ page }) => {

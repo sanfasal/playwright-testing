@@ -53,12 +53,7 @@ test.describe("Users", () => {
     await expect(page).toHaveURL(/\/users/);
   });
 
-  test("User Page", async ({ page }) => {
-    await expect(page).toHaveTitle(/User/i);
-    await page.waitForTimeout(1000);
-    await toggleViewMode(page);
-    await page.waitForTimeout(1000);
-  });
+
 
   //   =====================================
   // Add new user
@@ -258,6 +253,18 @@ test.describe("Users", () => {
     if (successFound) {
       console.log("✓ User created successfully");
     }
+  });
+
+
+  // ===================================
+// User page
+// ===================================
+
+  test("User Page", async ({ page }) => {
+    await expect(page).toHaveTitle(/User/i);
+    await page.waitForTimeout(1000);
+    await toggleViewMode(page);
+    await page.waitForTimeout(1000);
   });
 
   //=====================================

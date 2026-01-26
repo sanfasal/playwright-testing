@@ -19,10 +19,7 @@ test.describe('Class', () => {
 
 
 
-  test('Class page', async ({ page }) => {
-    await page.waitForTimeout(1000);
-    await toggleViewMode(page);
-  })
+
 
 //   =====================================
 //   Add new class
@@ -226,6 +223,14 @@ test.describe('Class', () => {
       await submitButton.click();
     }
   });
+
+//   =====================================
+//   Class page
+//   =====================================
+    test('Class page', async ({ page }) => {
+    await page.waitForTimeout(1000);
+    await toggleViewMode(page);
+  })
 
 
 //   =====================================

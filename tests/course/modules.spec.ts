@@ -17,26 +17,26 @@ test.describe('Modules', () => {
     await expect(page).toHaveURL(/courses\/modules/);
   });
 
-  test('Modules page', async ({ page }) => {
-    await page.waitForTimeout(1000);
+  // test('Modules page', async ({ page }) => {
+  //   await page.waitForTimeout(1000);
     
-    // Method 1: Try using JavaScript to add IDs
-    await page.evaluate(() => {
-      const buttons = document.querySelectorAll('button');
-      buttons.forEach((btn, index) => {
-        const svg = btn.querySelector('svg');
-        if (svg) {
-          const classes = svg.className.baseVal || svg.getAttribute('class') || '';
-          if (classes.includes('lucide-layout-grid')) {
-            btn.id = 'grid-view-btn';
-          } else if (classes.includes('lucide-list')) {
-            btn.id = 'list-view-btn';
-          }
-        }
-      });
-    });
+  //   // Method 1: Try using JavaScript to add IDs
+  //   await page.evaluate(() => {
+  //     const buttons = document.querySelectorAll('button');
+  //     buttons.forEach((btn, index) => {
+  //       const svg = btn.querySelector('svg');
+  //       if (svg) {
+  //         const classes = svg.className.baseVal || svg.getAttribute('class') || '';
+  //         if (classes.includes('lucide-layout-grid')) {
+  //           btn.id = 'grid-view-btn';
+  //         } else if (classes.includes('lucide-list')) {
+  //           btn.id = 'list-view-btn';
+  //         }
+  //       }
+  //     });
+  //   });
     
-  });
+  // });
 
 //   =====================================
 // Add new module

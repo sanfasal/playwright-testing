@@ -25,12 +25,6 @@ test.describe('Lessons', () => {
     // Ensure we are on the lessons page before each test starts
     await expect(page).toHaveURL(/courses\/lessons/);
   });
-
-  test('Lessons page', async ({ page }) => {
-    // Wait for page to load
-    await page.waitForTimeout(1000);
-  });
-
 //   =====================================
 // Add new lesson
 //   =====================================
@@ -48,10 +42,7 @@ test.describe('Lessons', () => {
     
     // Fill Title field with realistic typing
     const titleField = page.locator('#title').or(page.getByLabel(/title/i)).or(page.getByPlaceholder(/title/i));
-    await fillFieldWithDelay(titleField, 'React js', {
-      typingDelay: 50,
-      afterTypingDelay: 300
-    });
+    await fillFieldWithDelay(titleField, 'React js');
     
         // Fill Duration field (if exists)
     await page.waitForTimeout(500);
@@ -59,10 +50,7 @@ test.describe('Lessons', () => {
       .or(page.getByPlaceholder(/duration/i))
       .or(page.locator('input[type="number"]').nth(1));
     if (await durationField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await fillFieldWithDelay(durationField, '45', {
-        typingDelay: 50,
-        afterTypingDelay: 200
-      });
+      await fillFieldWithDelay(durationField, '45');
     }
 
         // Fill Description/Content field
@@ -70,10 +58,7 @@ test.describe('Lessons', () => {
       .or(page.locator('#content'))
       .or(page.getByLabel(/objective|content/i))
       .or(page.getByPlaceholder(/objective|content/i));
-    await fillFieldWithDelay(objectiveField, 'objective', {
-      typingDelay: 30,
-      afterTypingDelay: 300
-    });
+    await fillFieldWithDelay(objectiveField, 'objective');
     
     
     // Fill Description field first
@@ -82,10 +67,7 @@ test.describe('Lessons', () => {
       .or(page.getByLabel(/description|content/i))
       .or(page.getByPlaceholder(/description|content/i));
     
-    await fillFieldWithDelay(descriptionField, 'In this lesson, you will learn about React js', {
-      typingDelay: 30,
-      afterTypingDelay: 300
-    });
+    await fillFieldWithDelay(descriptionField, 'In this lesson, you will learn about React js');
     
     // THEN click "Attach Material" button after description is filled
     await page.waitForTimeout(500);
@@ -114,68 +96,47 @@ test.describe('Lessons', () => {
       
       await page.waitForTimeout(500);
       
-      // For CREATE: Select only index 0 (1 item)
+      // Select material:
+      // The grid contains [Add Button (Index 0), Material Card (Index 1), Material Card (Index 2)...]
+      // We want to click "Index 1" of the grid, which is the FIRST material card.
+      
+      console.log('Using data-slot="card" selector to find materials...');
+      const materialCards = page.locator('div[data-slot="card"]');
+      const cardCount = await materialCards.count();
+      console.log(`Debug: Found ${cardCount} material cards`);
+
       let selected = false;
       
-      // Strategy 1: Try to find material cards/items and click index 0
-      const allDivs = page.locator('div[class*="cursor"], div[onclick], div[class*="card"], div[class*="item"]');
-      const materialDivs = allDivs.filter({ hasText: /file|\.doc|\.mp4|\.pdf/i });
-      const count = await materialDivs.count();
-      
-      console.log(`Found ${count} potential material items (CREATE mode)`);
-      
-      if (count > 0) {
-        const item0 = materialDivs.nth(0);
-        if (await item0.isVisible({ timeout: 2000 }).catch(() => false)) {
-          await item0.click();
-          console.log('✓ Clicked material item at index 0 (CREATE mode)');
-          await page.waitForTimeout(500);
-          selected = true;
-        }
-      }
-      
-      // Strategy 2: Try clicking by exact text match
-      if (!selected) {
-        const fileByText = page.getByText('file-sample.doc', { exact: false })
-          .or(page.getByText('file_example.mp4', { exact: false }));
-        if (await fileByText.first().isVisible({ timeout: 2000 }).catch(() => false)) {
-          await fileByText.first().click();
-          console.log('✓ Selected material item by text (CREATE mode)');
-          await page.waitForTimeout(500);
-          selected = true;
-        }
-      }
-      
-      // Strategy 3: Use JavaScript to click the first clickable element with file text
-      if (!selected) {
-        const clicked = await page.evaluate(() => {
-          const modal = document.querySelector('[role="dialog"]') || document.body;
-          const allElements = modal.querySelectorAll('div, button, a');
-          
-          for (const el of allElements) {
-            const text = el.textContent || '';
-            if ((text.includes('file-sample') || text.includes('file_example')) && 
-                (el as HTMLElement).offsetParent !== null) { // Check if visible
-              (el as HTMLElement).click();
-              console.log('✓ Clicked via JavaScript:', text.substring(0, 30));
-              return true;
-            }
+      if (cardCount > 0) {
+          // Click the first card (closest to the Add button)
+          const firstCard = materialCards.nth(0); 
+          if (await firstCard.isVisible({ timeout: 5000 }).catch(() => false)) {
+              await firstCard.click();
+              selected = true;
+              console.log('✓ Success: Clicked first material card (Grid Index 1)');
+              await page.waitForTimeout(500); 
           }
-          return false;
-        });
-        
-        if (clicked) {
-          await page.waitForTimeout(500);
-          selected = true;
-        }
+      }
+    
+      if (!selected && cardCount > 1) {
+           await materialCards.nth(1).click();
+           selected = true;
+           console.log('✓ Fallback: Clicked second material card');
+           await page.waitForTimeout(500);
       }
       
-      // Click Save button to close the modal
-      const saveButton = page.getByRole('button', { name: /save/i })
+      // Click Save button with visible cursor movement
+      const saveButton = page.getByRole('button', { name: /Save|save/i })
         .or(page.locator('button:has-text("Save")'));
+      
       if (await saveButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+        // Move mouse to button to show cursor
+        const box = await saveButton.boundingBox();
+        if (box) {
+            await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+            await page.waitForTimeout(500); // Wait for user to see cursor
+        }
         await saveButton.click();
-        console.log('✓ Clicked Save button to close modal');
         await page.waitForTimeout(500);
       }
     }
@@ -192,7 +153,6 @@ test.describe('Lessons', () => {
       const isChecked = await publishToggle.getAttribute('aria-checked').catch(() => 'false');
       if (isChecked !== 'true') {
         await publishToggle.click();
-        console.log('✓ Set Publish toggle to TRUE');
       }
       await page.waitForTimeout(500);
     }
@@ -205,24 +165,6 @@ test.describe('Lessons', () => {
       await page.waitForTimeout(2000);
     }
     
-    // Verify success
-    const successIndicators = [
-      page.getByText(/successfully/i),
-      page.getByText(/created/i),
-      page.getByText('Variables and Data Types')
-    ];
-    
-    let successFound = false;
-    for (const indicator of successIndicators) {
-      if (await indicator.isVisible({ timeout: 3000 }).catch(() => false)) {
-        successFound = true;
-        break;
-      }
-    }
-    
-    if (successFound) {
-      console.log('✓ Lesson created successfully');
-    }
   });
 
   //   =====================================
@@ -260,10 +202,7 @@ test.describe('Lessons', () => {
       const titleField = page.locator('#title').or(page.getByLabel(/title/i));
       if (await titleField.isVisible({ timeout: 3000 }).catch(() => false)) {
         await titleField.clear();
-        await fillFieldWithDelay(titleField, 'Updated React js Advanced', {
-          typingDelay: 50,
-          afterTypingDelay: 300
-        });
+        await fillFieldWithDelay(titleField, 'Updated React js Advanced');
       }
       
       // Edit Duration field
@@ -272,10 +211,7 @@ test.describe('Lessons', () => {
         .or(page.locator('input[type="number"]').first());
       if (await durationField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await durationField.clear();
-        await fillFieldWithDelay(durationField, '60', {
-          typingDelay: 50,
-          afterTypingDelay: 200
-        });
+        await fillFieldWithDelay(durationField, '60');
       }
       
       // Edit Objective field
@@ -285,10 +221,7 @@ test.describe('Lessons', () => {
         .or(page.getByPlaceholder(/objective|content/i));
       if (await objectiveField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await objectiveField.clear();
-        await fillFieldWithDelay(objectiveField, 'Updated objective for advanced React', {
-          typingDelay: 30,
-          afterTypingDelay: 300
-        });
+        await fillFieldWithDelay(objectiveField, 'Updated objective for advanced React');
       }
       
       // Edit Description field
@@ -315,56 +248,28 @@ test.describe('Lessons', () => {
         console.log('✓ Clicked Attach Material button in edit mode');
         await page.waitForTimeout(1500);
         
-        // For UPDATE: Add 1 more item (click index 0 - file-sample.doc)
-        await page.waitForTimeout(500);
+        // For UPDATE: "Check if has more item click add one more"
+        // We assume "more item" means a second material card (index 1) is available.
+        // If only 1 card exists (index 0), it's likely already selected, so we skip clicking it to avoid deselection.
         
-        let itemClicked = false;
-        
-        // Strategy 1: Try clicking by text "file-sample"
-        const fileSample = page.getByText('file-sample.doc', { exact: false });
-        if (await fileSample.isVisible({ timeout: 2000 }).catch(() => false)) {
-          await fileSample.click();
-          console.log('✓ Clicked file-sample.doc to add 1 more item (UPDATE mode)');
-          await page.waitForTimeout(500);
-          itemClicked = true;
-        }
-        
-        // Strategy 2: Click the first card/div that contains file text
-        if (!itemClicked) {
-          const materialCards = page.locator('div[class*="cursor"], div[class*="card"]').filter({ hasText: /file-sample/i });
-          if (await materialCards.first().isVisible({ timeout: 2000 }).catch(() => false)) {
-            await materialCards.first().click();
-            console.log('✓ Clicked first material card (UPDATE mode)');
-            await page.waitForTimeout(500);
-            itemClicked = true;
-          }
-        }
-        
-        // Strategy 3: Use JavaScript to click
-        if (!itemClicked) {
-          const clicked = await page.evaluate(() => {
-            const modal = document.querySelector('[role="dialog"]') || document.body;
-            const allElements = modal.querySelectorAll('div, button');
-            
-            for (const el of allElements) {
-              const text = el.textContent || '';
-              if (text.includes('file-sample.doc') && (el as HTMLElement).offsetParent !== null) {
-                (el as HTMLElement).click();
-                console.log('✓ Clicked file-sample.doc via JavaScript');
-                return true;
-              }
+        console.log('Checking for additional materials to add...');
+        const materialCards = page.locator('div[data-slot="card"]');
+        const cardCount = await materialCards.count();
+        console.log(`Debug: Found ${cardCount} material cards`);
+
+        if (cardCount > 1) {
+            // Click the second card (index 1) to add "one more"
+            const secondCard = materialCards.nth(1); 
+            if (await secondCard.isVisible({ timeout: 5000 }).catch(() => false)) {
+                await secondCard.click();
+                console.log('✓ Success: Clicked second material card (Adding one more)');
+                await page.waitForTimeout(500); 
             }
-            return false;
-          });
-          
-          if (clicked) {
-            console.log('✓ Used JavaScript to click material item');
-            await page.waitForTimeout(500);
-            itemClicked = true;
-          }
+        } else {
+             console.log('ℹ Only 0-1 items found, skipping selection to avoid deselecting existing item or if none exist.');
         }
         
-        // Click Save button to close the modal
+        // Else (and always): Click Save button with visible cursor movement
         await page.waitForTimeout(500);
         const saveButton = page.getByRole('button', { name: /^save$/i })
           .or(page.locator('button:has-text("Save")'))
@@ -374,6 +279,12 @@ test.describe('Lessons', () => {
         let saveClicked = false;
         
         if (await saveButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+           // Move mouse to button to show cursor
+           const box = await saveButton.boundingBox();
+           if (box) {
+                await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+                await page.waitForTimeout(500); // Wait for user to see cursor
+           }
           await saveButton.click();
           console.log('✓ Clicked Save button to close modal');
           await page.waitForTimeout(1000);

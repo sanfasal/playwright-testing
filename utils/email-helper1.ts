@@ -3,7 +3,7 @@
  * Documentation: https://testmail.app/docs
  */
 
-import { saveUserData } from "./data-store";
+import { saveUserData, logGeneratedEmail } from "./data-store";
 
 export interface TestmailConfig {
   apiKey: string;
@@ -62,7 +62,10 @@ export function generateTestmailAddress(
   namespace: string,
   timestamp?: string
 ): string {
-  return `${namespace}.${timestamp}@inbox.testmail.app`;
+  const email = `${namespace}.${timestamp}@inbox.testmail.app`;
+  const password = generateRandomPassword(12);
+  logGeneratedEmail(email, 'email-helper1', password);
+  return email;
 }
 
 /**
@@ -187,7 +190,7 @@ export function extractOTP(emailText: string, pattern?: RegExp): string | null {
  */
 export function generateRandomPassword(length: number = 12): string {
   const chars =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@@@#$%^&*()_+-=[]{}|;:,.<>?";
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@@@#$%^&*()_+-=[]{}|;:,.<>?1234567890";
   let result = "";
   for (let i = 0; i < length; i++) {
     const idx = Math.floor(Math.random() * chars.length);
