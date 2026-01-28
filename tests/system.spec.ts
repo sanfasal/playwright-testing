@@ -9,6 +9,11 @@ const systemDataEdit = {
   contactEmail: "seksaaTech@gmail.com",
   phone: "0973355321",
   website: "https://seksaatech.com",
+  village: "Prek leap",
+  commune: "Prek leap",
+  district: "Chroy Changva",
+  city: "Phnom Penh",
+
 };
 
 test.describe("System", () => {
@@ -78,7 +83,7 @@ test.describe("System", () => {
     }
 
     // Upload Profile Image
-    await uploadThumbnail(page, "upload profile");
+    await uploadThumbnail(page, "file-input-profile || selected-exist-profile");
 
     // Edit Name
     const nameField = page
@@ -126,7 +131,7 @@ test.describe("System", () => {
       await villageField.clear();
       await fillFieldWithDelay(
         villageField,
-        systemDataEdit.name ? "Village Name" : "Village Name"
+        systemDataEdit.village
       );
       await page.waitForTimeout(500);
     }
@@ -140,7 +145,7 @@ test.describe("System", () => {
       const isDisabled = await communeField.isDisabled().catch(() => false);
       if (!isDisabled) {
         await communeField.clear();
-        await fillFieldWithDelay(communeField, "Commune Name");
+        await fillFieldWithDelay(communeField, systemDataEdit.commune);
       }
     }
 
@@ -153,7 +158,7 @@ test.describe("System", () => {
       const isDisabled = await districtField.isDisabled().catch(() => false);
       if (!isDisabled) {
         await districtField.clear();
-        await fillFieldWithDelay(districtField, "District Name");
+        await fillFieldWithDelay(districtField, systemDataEdit.district);
       }
     }
 
@@ -166,7 +171,7 @@ test.describe("System", () => {
       const isDisabled = await cityField.isDisabled().catch(() => false);
       if (!isDisabled) {
         await cityField.clear();
-        await fillFieldWithDelay(cityField, "City Name");
+        await fillFieldWithDelay(cityField, systemDataEdit.city);
       }
     }
 

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import path from 'path';
 import { login } from '../utils/auth-helper';
 import { addCursorTracking } from '../utils/cursor-helper';
 import { fillFieldWithDelay } from '../utils/form-helper';
@@ -8,12 +9,14 @@ import { uploadThumbnail } from '../utils/upload-thumbnail-helper';
 import { generateTestmailAddress } from '../utils/email-helper';
 
 // Test data for adding a new student
+const randomSuffix = Math.floor(Math.random() * 10000);
+
 const studentDataAdd = {
-  firstName: 'John',
-  lastName: 'Doe',
-  email: 'john.doe5@gmail.com',
+  firstName: `John`,
+  lastName: `Doe ${randomSuffix}`,
+  email: `john.doe.${randomSuffix}@gmail.com`,
   phone: '0975566777',
-  telegram: '@sim_lina',
+  telegram: `@sim_lina${randomSuffix}`,
   dob: new Date().toISOString().split('T')[0], 
   address: {
     village: 'Toul Kork',
@@ -25,7 +28,7 @@ const studentDataAdd = {
     name: 'Dara Sok',
     phone: '0987654321',
     relation: 'Father',
-    email: 'darasok@gmail.com',
+    email: `darasok${randomSuffix}@gmail.com `,
     address: {
       village: 'Toul Kork',
       commune: 'Toul Kork',
@@ -37,7 +40,7 @@ const studentDataAdd = {
     name: 'Heng Leakana',
     phone: '0123456789',
     relation: 'Mother',
-    email: 'leakana.heng@gmail.com',
+    email: `leakana.heng${randomSuffix}@gmail.com`,
     address: {
       village: 'Toul Kork',
       commune: 'Toul Kork ',
@@ -51,8 +54,10 @@ const studentDataAdd = {
 const studentDataEdit = {
   firstName: 'Jane',
   lastName: 'Smith',
-  email: 'jane.smith@gmail.com',
+  email: `jane.smith${randomSuffix}@gmail.com`,
   phone: '0987654321',
+  telegram: `@sim_lina${randomSuffix}`,
+  dob: new Date().toISOString().split('T')[0], 
   address: {
     village: 'Boeung Keng Kang',
     commune: 'Boeung Keng Kang',
@@ -63,7 +68,7 @@ const studentDataEdit = {
     name: 'Updated Guardian',
     phone: '0123456789',
     relation: 'Uncle',
-    email: 'updated.guardian@gmail.com',
+    email: `updated.guardian${randomSuffix}@gmail.com `,
     address: {
       village: 'Boeung Keng Kang',
       commune: 'Boeung Keng Kang',
@@ -75,7 +80,7 @@ const studentDataEdit = {
     name: 'Updated Emergency Contact',
     phone: '0999888777',
     relation: 'Aunt',
-    email: 'updated.emergency@gmail.com',
+    email: `updated.emergency${randomSuffix}@gmail.com `,
     address: {
       village: 'Boeung Keng Kang',
       commune: 'Boeung Keng Kang',
@@ -109,43 +114,22 @@ test.describe('Student Dashboard', () => {
 
 
 // Test suite for Student List
-test.describe('Student List', () => {
+test.describe('Students', () => {
   
   test.beforeEach(async ({ page }) => {
     await addCursorTracking(page);
     await login(page);
-    
-    // Verify we are on dashboard
     await expect(page).toHaveURL(/dashboard/);
-
-    // Wait for the loading screen to disappear
     await expect(page.getByText('Please wait while we load your workspace')).toBeHidden({ timeout: 60000 });
-    
-    // Click on Student to open dropdown menu
     await page.getByText('Student', { exact: true }).click();
     await page.waitForTimeout(500);
-    
-    // Click on "List Students" from the dropdown
     await page.getByText('List Students', { exact: true }).click();
     await page.waitForTimeout(500);
-    
-    // Ensure we are on the student list page
     await expect(page).toHaveURL(/\/students/);
-    
-    // Slow down for better visibility
     await page.waitForTimeout(1000);
   });
 
-  // ===================================
-  // View students page
-  // ===================================
-  test('Student List Page', async ({ page }) => {
-    // Verify we're on the students list page
-    await expect(page).toHaveTitle(/Student/i);
-    await page.waitForTimeout(1000);
-    await toggleViewMode(page);
-    await page.waitForTimeout(1000);
-  });
+
 
   // ===================================
   // Add new student
@@ -158,8 +142,10 @@ test.describe('Student List', () => {
 
     test.setTimeout(120000);
 
-    // Upload Profile Image using helper
-    await uploadThumbnail(page, 'upload profile');
+    // Upload Profile Image
+    await uploadThumbnail(page, "file-input-profile || selected-exist-profile", {
+      imagePath: path.join(__dirname, '..', 'public', 'images', 'sample-thumbnail-create.png')
+    });
     
     // Fill First Name
     const firstNameField = page.getByLabel(/First Name/i)
@@ -172,39 +158,30 @@ test.describe('Student List', () => {
     await fillFieldWithDelay(lastNameField, studentDataAdd.lastName);
     
     // Select Gender (before email)
-    // Target the Radix UI combobox button for gender dropdown
     const genderButton = page.locator('button[role="combobox"]').filter({ has: page.locator('svg') })
       .or(page.locator('button[role="combobox"][aria-controls*="radix"]'))
       .first();
     
     if (await genderButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-      // Click to open the dropdown list
       await genderButton.click();
       await page.waitForTimeout(500);
-      
-      // Select the first option from the dropdown menu
       const firstOption = page.locator('[role="option"]').first();
       await firstOption.click();
       await page.waitForTimeout(400);
     }
     
     // Fill Email (use testmail helper to generate a unique inbox)
-    const testEmail = generateTestmailAddress(process.env.TESTMAIL_NAMESPACE || 'studentName', String(Date.now()));
-    console.log('Using test email for new student:', testEmail);
     const emailField = page.getByLabel(/Email/i)
       .or(page.locator('#email, input[name="email"]'));
-    await fillFieldWithDelay(emailField, testEmail);
+    await fillFieldWithDelay(emailField, studentDataAdd.email);
 
     // Fill Date of Birth with today's date
     const dobField = page.getByLabel(/Date of Birth|DOB|Birth Date/i)
-      .or(page.locator('#dob, input[name="dob"], input[type="date"]'));
-    if (await dobField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      // Use .fill() for date inputs instead of fillFieldWithDelay
-      await dobField.click();
-      await page.waitForTimeout(300);
-      await dobField.fill(studentDataAdd.dob);
-      await page.waitForTimeout(400);
-    }
+      .or(page.locator('#dob, input[name="dob"], input[name="dateOfBirth"], input[type="date"]'));
+    await dobField.click();
+    await page.waitForTimeout(300);
+    await dobField.fill(studentDataAdd.dob);
+    await page.waitForTimeout(400);
     
     // Fill Phone (if exists)
     const phoneField = page.getByLabel(/Phone/i)
@@ -226,14 +203,11 @@ test.describe('Student List', () => {
       .or(page.getByLabel(/Village/i));
     if (await villageField.isVisible({ timeout: 2000 }).catch(() => false)) {
       await fillFieldWithDelay(villageField, studentDataAdd.address.village);
-      // Use Tab to ensure natural user behavior and trigger blur events
       await villageField.press('Tab'); 
-      // Wait for address fields to become enabled
       await page.waitForTimeout(1000);
     }
 
-    // Commune / Songkat (if exists)
-    // Handle both text inputs and comboboxes (dropdowns)
+    // Commune / Songkat
     const communeField = page.getByRole('textbox', { name: /Commune/i })
       .or(page.getByRole('combobox', { name: /Commune/i }))
       .or(page.getByPlaceholder(/Commune/i))
@@ -249,7 +223,6 @@ test.describe('Student List', () => {
     console.log(`Debug: Commune field visible? ${isCommuneVisible}`);
 
     if (isCommuneVisible) {
-      // Explicitly wait for the field to be enabled in case it depends on Village
       try {
         await expect(targetCommune).toBeEnabled({ timeout: 5000 });
       } catch (e) {
@@ -263,7 +236,7 @@ test.describe('Student List', () => {
       await page.waitForTimeout(500);
     }
 
-    // District / Khan (if exists)
+    // District / Khan
     const districtField = page.getByPlaceholder('District / Khan')
       .or(page.locator('input[name="address.district"]'))
       .or(page.locator('#district'));
@@ -277,7 +250,7 @@ test.describe('Student List', () => {
       }
     }
 
-    // City / Province (if exists)
+    // City / Province
     const cityField = page.getByPlaceholder('City / Province')
       .or(page.locator('input[name="address.city"]'))
       .or(page.locator('#city'));
@@ -300,9 +273,6 @@ test.describe('Student List', () => {
     await page.waitForTimeout(2000);
 
     // ===== GUARDIAN TAB =====
-    // Wait for Guardian tab to be active
-    // await page.waitForTimeout(500);
-    
     // Guardian Name
     const guardianNameField = page.locator('input[name="guardian.name"]')
       .or(page.getByPlaceholder('Name'))
@@ -351,9 +321,7 @@ test.describe('Student List', () => {
       await guardianVillageField.scrollIntoViewIfNeeded();
       await page.waitForTimeout(200);
       await fillFieldWithDelay(guardianVillageField, studentDataAdd.guardian.address.village);
-      // Use Tab to ensure natural user behavior and trigger blur events
       await guardianVillageField.press('Tab'); 
-      // Wait for address fields to become enabled
       await page.waitForTimeout(1000);
     }
 
@@ -364,7 +332,6 @@ test.describe('Student List', () => {
       .or(page.getByLabel(/Commune/i));
 
     if (await finalGuardianCommune.isVisible({ timeout: 2000 }).catch(() => false)) {
-      // Explicitly wait for the field to be enabled
       try {
         await expect(finalGuardianCommune).toBeEnabled({ timeout: 5000 });
       } catch (e) {
@@ -424,7 +391,6 @@ test.describe('Student List', () => {
     await page.waitForTimeout(2000);
 
     // ===== EMERGENCY TAB =====
-    
     // Emergency Name
     const emergencyNameField = page.locator('input[name="emergency.name"]')
       .or(page.getByPlaceholder('Name'))
@@ -478,9 +444,7 @@ test.describe('Student List', () => {
       await emergencyVillageField.click();
       await page.waitForTimeout(200);
       await fillFieldWithDelay(emergencyVillageField, studentDataAdd.emergency.address.village);
-      // Use Tab to ensure natural user behavior and trigger blur events
       await emergencyVillageField.press('Tab'); 
-      // Wait for address fields to become enabled
       await page.waitForTimeout(1000);
     }
 
@@ -490,7 +454,6 @@ test.describe('Student List', () => {
       .or(page.getByPlaceholder(/Khum\/Sangkat|Commune/i))
       .or(page.getByLabel(/Commune/i));
     if (await emergencyCommune.isVisible({ timeout: 2000 }).catch(() => false)) {
-      // Explicitly wait for the field to be enabled
       try {
         await expect(emergencyCommune).toBeEnabled({ timeout: 5000 });
       } catch (e) {
@@ -549,6 +512,17 @@ test.describe('Student List', () => {
     await createButton.click();
     await page.waitForTimeout(2000);
   });
+
+    // ===================================
+  // View students page
+  // ===================================
+  test('Students List', async ({ page }) => {
+    // Verify we're on the students list page
+    await expect(page).toHaveTitle(/Student/i);
+    await page.waitForTimeout(1000);
+    await toggleViewMode(page);
+    await page.waitForTimeout(1000);
+  });
   
   // ===================================
   // Edit student
@@ -586,6 +560,12 @@ test.describe('Student List', () => {
       await page.waitForTimeout(1000);
       
       // ===== STUDENT TAB =====
+
+      
+    // Upload Profile Image
+    await uploadThumbnail(page, "file-input-profile || selected-exist-profile", {
+      imagePath: path.join(__dirname, '..', 'public', 'images', 'sample-thumbnail-update.png')
+    });
       
       // Edit First Name
       const firstNameField = page.getByLabel(/First Name/i)
@@ -602,6 +582,24 @@ test.describe('Student List', () => {
         await lastNameField.clear();
         await fillFieldWithDelay(lastNameField, studentDataEdit.lastName);
       }
+
+    // Edit Gender (Dropdown)
+    const genderButton = page.locator('button[role="combobox"]').filter({ has: page.locator('svg') })
+      .or(page.locator('button[role="combobox"][aria-controls*="radix"]')).first();
+    
+    if (await genderButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await genderButton.click();
+      await page.waitForTimeout(500);
+      const firstOption = page.locator('[role="option"]').nth(1); // Select 2nd option for change
+      if (await firstOption.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await firstOption.click();
+        await page.waitForTimeout(400);
+      } else {
+         // Fallback to first option if only one exists
+         await page.locator('[role="option"]').first().click();
+         await page.waitForTimeout(400);
+      }
+    }
       
       // Edit Email
       const emailField = page.getByLabel(/Email/i)
@@ -609,6 +607,19 @@ test.describe('Student List', () => {
       if (await emailField.isVisible({ timeout: 3000 }).catch(() => false)) {
         await emailField.clear();
         await fillFieldWithDelay(emailField, studentDataEdit.email);
+      }
+
+            // Edit Date of Birth
+      const dobField = page.locator('input[name="dateOfBirth"]')
+        .or(page.getByLabel(/Date of Birth/i))
+        .or(page.getByPlaceholder(/Date of Birth/i));
+      if (await dobField.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await dobField.scrollIntoViewIfNeeded();
+        await dobField.clear();
+        await dobField.click();
+        await page.waitForTimeout(300);
+        await dobField.fill('1995-05-20');
+        await page.waitForTimeout(400);
       }
       
       // Edit Phone
@@ -618,6 +629,13 @@ test.describe('Student List', () => {
         await phoneField.clear();
         await fillFieldWithDelay(phoneField, studentDataEdit.phone);
       }
+
+      // Telegram usernames (if exists)
+    const telegramField = page.getByPlaceholder(/Telegram/i)
+      .or(page.locator('input[name="telegram"]'));
+    if (await telegramField.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await fillFieldWithDelay(telegramField, studentDataEdit.telegram);
+    }
 
       // Edit Village
       const villageField = page.getByPlaceholder('Village')
@@ -949,24 +967,14 @@ test.describe('Student List', () => {
   // Delete student
   // ===================================
   test('Delete student', async ({ page }) => {
-    // Get all student rows for count verification
     const studentRows = page.locator('table tbody tr, [role="row"], .student-row, div[class*="student"]');
-    
-    // Get initial count
-    const initialCount = await studentRows.count();
-    
-    // Select and open the first student (index 0)
+    await studentRows.count();
     const indexToDelete = 0;
     const studentToDelete = studentRows.nth(indexToDelete);
     await studentToDelete.waitFor({ state: 'visible', timeout: 5000 });
     await studentToDelete.click();
     await page.waitForTimeout(1500);
-    
-    // Use delete helper to handle deletion via action menu
-    // Pass null since we already clicked the row to open details
     await deleteEntityViaActionMenu(page, null, 'Confirm Delete');
-    
-    // Wait for deletion to complete
     await page.waitForTimeout(2000);
   });
 });

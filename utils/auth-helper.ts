@@ -79,7 +79,7 @@ export async function performSignup(
 ) {
   const { getOTPFromEmail } = await import('./email-helper');
   const { getGeneratedEmail } = await import('./data-store');
-  const { generateRandomPassword } = await import('./email-helper2');
+  const { generateRandomPassword } = await import('./email-helper');
   
   // Get the pre-generated email from generated-emails.json at index 0
   const email = getGeneratedEmail(0);

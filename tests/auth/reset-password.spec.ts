@@ -3,6 +3,7 @@ import { generateTestmailAddress, getOTPFromEmail, generateRandomPassword } from
 import { getUserData, updateUserPassword } from '../../utils/data-store';
 import dotenv from 'dotenv';
 import { addCursorTracking } from '../../utils/cursor-helper';
+import { fillFieldWithDelay } from '../../utils/form-helper';
 
 
 dotenv.config();
@@ -15,7 +16,7 @@ test.describe('Reset Password', () => {
     throw new Error('TESTMAIL_API_KEY and TESTMAIL_NAMESPACE must be defined in .env');
   }
 
-  test('Reset password with OTP', async ({ page }) => {
+  test('Reset password with valid OTP', async ({ page }) => {
     await addCursorTracking(page);
 
     const storedTimestamp = getUserData('signupTimestamp');
@@ -40,7 +41,7 @@ test.describe('Reset Password', () => {
     // Request OTP
     const emailInput = page.getByRole('textbox', { name: /email/i });
     await expect(emailInput).toBeVisible({ timeout: 5000 });
-    await emailInput.fill(testEmail);
+    await fillFieldWithDelay(emailInput, testEmail);
     
     const sendCodeButton = page.getByRole('button', { name: /send code|send|get code/i });
     await expect(sendCodeButton).toBeEnabled({ timeout: 5000 });
@@ -55,7 +56,7 @@ test.describe('Reset Password', () => {
         apiKey: apiKey, 
         namespace: namespace 
     }, undefined, 30000, startTime);
-    await page.getByRole('textbox', { name: /code/i }).fill(otp);
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /code/i }), otp);
     
     // Wait for password fields to appear (they might be on the same page or appear after OTP validation)
     await page.waitForTimeout(2000);
@@ -67,10 +68,10 @@ test.describe('Reset Password', () => {
     const newPassword = generateRandomPassword(12);
 
     await expect(passwordField).toBeVisible({ timeout: 10000 });
-    await passwordField.fill(newPassword);
+    await fillFieldWithDelay(passwordField, newPassword);
     
     await expect(confirmPasswordField).toBeVisible({ timeout: 5000 });
-    await confirmPasswordField.fill(newPassword);
+    await fillFieldWithDelay(confirmPasswordField, newPassword);
     
     await page.waitForTimeout(1000);
     
@@ -96,7 +97,7 @@ test.describe('Reset Password', () => {
     updateUserPassword(testEmail, newPassword);
   });
 
-  test('Reset password with invalid OTP and attempt password input', async ({ page }) => {
+  test('Reset password with invalid OTP', async ({ page }) => {
     await addCursorTracking(page);
 
     const storedTimestamp = getUserData('signupTimestamp');
@@ -121,7 +122,7 @@ test.describe('Reset Password', () => {
     // Request OTP
     const emailInput = page.getByRole('textbox', { name: /email/i });
     await expect(emailInput).toBeVisible({ timeout: 5000 });
-    await emailInput.fill(testEmail);
+    await fillFieldWithDelay(emailInput, testEmail);
     
     const sendCodeButton = page.getByRole('button', { name: /send code|send|get code/i });
     await expect(sendCodeButton).toBeEnabled({ timeout: 5000 });
@@ -132,16 +133,26 @@ test.describe('Reset Password', () => {
     
     // Enter invalid static OTP
     const invalidOTP = "999999";
-    await page.getByRole('textbox', { name: /code/i }).fill(invalidOTP);
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /code/i }), invalidOTP);
     
     
     // Try to fill password fields with invalid OTP
     const passwordField = page.getByLabel(/password/i).or(page.getByPlaceholder(/New Password/i));
     const confirmPasswordField = page.getByLabel(/confirmPassword/i).or(page.getByPlaceholder(/Confirm Password/i));
     
-    await passwordField.fill("Password@123");
-    await confirmPasswordField.fill("Password@123");
+    await fillFieldWithDelay(passwordField, "Password@123");
+    await fillFieldWithDelay(confirmPasswordField, "Password@123");
     await page.waitForTimeout(5000);
+
+        // Handle save-reset-password page if it appears
+    const currentUrl = page.url();
+    if (currentUrl.includes('save-reset-password') || currentUrl.includes('save') || currentUrl.includes('confirm')) {
+      const saveButton = page.getByRole('button', { name: /save|confirm|finish|complete|done/i }).first();
+      
+      if (await saveButton.isVisible().catch(() => false)) {
+        await saveButton.click();
+      }
+    }
   });
 
   test('Reset password with weak password', async ({ page }) => {
@@ -169,7 +180,7 @@ test.describe('Reset Password', () => {
     // Request OTP
     const emailInput = page.getByRole('textbox', { name: /email/i });
     await expect(emailInput).toBeVisible({ timeout: 5000 });
-    await emailInput.fill(testEmail);
+    await fillFieldWithDelay(emailInput, testEmail);
     
     const sendCodeButton = page.getByRole('button', { name: /send code|send|get code/i });
     await expect(sendCodeButton).toBeEnabled({ timeout: 5000 });
@@ -183,7 +194,7 @@ test.describe('Reset Password', () => {
         apiKey: apiKey, 
         namespace: namespace 
     }, undefined, 30000, startTime);
-    await page.getByRole('textbox', { name: /code/i }).fill(otp);
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /code/i }), otp);
     
     await page.waitForTimeout(2000);
     
@@ -192,10 +203,10 @@ test.describe('Reset Password', () => {
     const confirmPasswordField = page.getByLabel(/confirmPassword/i).or(page.getByPlaceholder(/Confirm Password/i));
     
     await expect(passwordField).toBeVisible({ timeout: 10000 });
-    await passwordField.fill("123");
+    await fillFieldWithDelay(passwordField, "123");
     
     await expect(confirmPasswordField).toBeVisible({ timeout: 5000 });
-    await confirmPasswordField.fill("123");
+    await fillFieldWithDelay(confirmPasswordField, "123");
     
     await page.waitForTimeout(2000);
   });
@@ -226,7 +237,7 @@ test.describe('Reset Password', () => {
     // Request OTP
     const emailInput = page.getByRole('textbox', { name: /email/i });
     await expect(emailInput).toBeVisible({ timeout: 5000 });
-    await emailInput.fill(testEmail);
+    await fillFieldWithDelay(emailInput, testEmail);
     
     const sendCodeButton = page.getByRole('button', { name: /send code|send|get code/i });
     await expect(sendCodeButton).toBeEnabled({ timeout: 5000 });
@@ -240,7 +251,7 @@ test.describe('Reset Password', () => {
         apiKey: apiKey, 
         namespace: namespace 
     }, undefined, 30000, startTime);
-    await page.getByRole('textbox', { name: /code/i }).fill(otp);
+    await fillFieldWithDelay(page.getByRole('textbox', { name: /code/i }), otp);
     
     await page.waitForTimeout(2000);
     
@@ -249,10 +260,10 @@ test.describe('Reset Password', () => {
     const confirmPasswordField = page.getByLabel(/confirmPassword/i).or(page.getByPlaceholder(/Confirm Password/i));
     
     await expect(passwordField).toBeVisible({ timeout: 10000 });
-    await passwordField.fill("Password123");
+    await fillFieldWithDelay(passwordField, "Password123");
     
     await expect(confirmPasswordField).toBeVisible({ timeout: 5000 });
-    await confirmPasswordField.fill("Password123");
+    await fillFieldWithDelay(confirmPasswordField, "Password123");
     
     await page.waitForTimeout(2000);
   });

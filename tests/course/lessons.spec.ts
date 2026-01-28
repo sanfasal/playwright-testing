@@ -183,13 +183,11 @@ test.describe('Lessons', () => {
     // Get the lesson at index 0 (first lesson)
     const lessonAtIndex0 = lessonRows.nth(0);
     await lessonAtIndex0.waitFor({ state: 'visible', timeout: 5000 });
-    await lessonAtIndex0.click();
-    await page.waitForTimeout(1500);
-
-    // Click the edit icon (pencil icon) directly
-    const editIcon = page.locator('button').filter({ has: page.locator('svg.lucide-square-pen, svg.lucide-edit, svg.lucide-pencil') }).first()
-      .or(page.getByRole('button', { name: /edit/i }).first())
-      .or(page.locator('button[aria-label*="edit" i]').first());
+    // Click the edit icon (pencil icon) directly within the lesson row
+    const editIcon = lessonAtIndex0.locator('button').filter({ has: page.locator('svg.lucide-square-pen, svg.lucide-edit, svg.lucide-pencil') }).first()
+      .or(lessonAtIndex0.getByRole('button', { name: /edit/i }).first())
+      .or(lessonAtIndex0.getByText(/Edit/i).first())
+      .or(lessonAtIndex0.locator('button[aria-label*="edit" i]').first());
     
     if (await editIcon.isVisible({ timeout: 3000 }).catch(() => false)) {
       await editIcon.click();
@@ -231,10 +229,7 @@ test.describe('Lessons', () => {
         .or(page.getByPlaceholder(/description|content/i));
       if (await descriptionField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await descriptionField.clear();
-        await fillFieldWithDelay(descriptionField, 'Updated lesson covering advanced React concepts including hooks and state management.', {
-          typingDelay: 30,
-          afterTypingDelay: 300
-        });
+        await fillFieldWithDelay(descriptionField, 'Updated lesson covering advanced React concepts including hooks and state management.');
       }
       
       // THEN click "Attach Material" button after description is filled
@@ -247,10 +242,6 @@ test.describe('Lessons', () => {
         await attachMaterialButton.click();
         console.log('✓ Clicked Attach Material button in edit mode');
         await page.waitForTimeout(1500);
-        
-        // For UPDATE: "Check if has more item click add one more"
-        // We assume "more item" means a second material card (index 1) is available.
-        // If only 1 card exists (index 0), it's likely already selected, so we skip clicking it to avoid deselection.
         
         console.log('Checking for additional materials to add...');
         const materialCards = page.locator('div[data-slot="card"]');

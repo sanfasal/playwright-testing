@@ -6,15 +6,15 @@ import { deleteEntityViaActionMenu } from '../utils/delete-helper';
 
 import { uploadThumbnail } from '../utils/upload-thumbnail-helper';
 import { toggleViewMode } from '../utils/view-helper';
-import { generateTestmailAddress } from '../utils/email-helper';
-
-
+import path from 'path';
+// Test data for adding a new student
+const randomSuffix = Math.floor(Math.random() * 10000);
 
 // Test data for adding a new coach
 const coachDataAdd = {
   firstName: 'Michael',
   lastName: 'Johnson',
-  email: 'michael2.johnson@gmail.com',
+  email: `michael6.johnson${randomSuffix}@gmail.com`,
   phone: '0975566888',
   telegram: '@coach_michael',
   idNumber: '1234567890',
@@ -22,13 +22,20 @@ const coachDataAdd = {
   abaAccountNumber: '001234567890',
   major: 'Computer Science',
   costPerHour: '10',
+  dob: new Date().toISOString().split("T")[0],
+  address: {
+    village: 'Toul Kork',
+    commune: 'Prek leab',
+    district: 'Phnom Penh',
+    city: 'Phnom Penh',
+  },
 }
 
 // Test data for editing a coach (different values to verify edit works)
 const coachDataEdit = {
   firstName: 'Sarah',
   lastName: 'Williams',
-  email: 'sarah.williams@gmail.com',
+  email: `sarah.williams${randomSuffix}@gmail.com`,
   phone: '0987654321',
   telegram: '@coach_sarah',
   idNumber: '0987654321',
@@ -36,10 +43,17 @@ const coachDataEdit = {
   abaAccountNumber: '009876543210',
   major: 'Mathematics',
   costPerHour: '15',
+  dob: new Date().toISOString().split("T")[0],
+  address: {
+    village: 'Boeung Keng Kang',
+    commune: 'Boeung Keng Kang',
+    district: 'Chamkar Mon',
+    city: 'Phnom Penh',
+  },
 }
 
 // Test suite for Coach List
-test.describe('Coach List', () => {
+test.describe('Coaches', () => {
   
   test.beforeEach(async ({ page }) => {
     await addCursorTracking(page);
@@ -57,15 +71,7 @@ test.describe('Coach List', () => {
     await page.waitForTimeout(1000);
   });
 
-  // ===================================
-  // View coaches page
-  // ===================================
-  test('Coach Page', async ({ page }) => {
-    await expect(page).toHaveTitle(/Coach/i);
-    await page.waitForTimeout(1000);
-    await toggleViewMode(page);
-    await page.waitForTimeout(1000);
-  });
+
 
   // ===================================
   // Add new coach
@@ -75,12 +81,12 @@ test.describe('Coach List', () => {
     
     // Click Add button
     await page.getByRole('button').filter({ has: page.locator('svg.lucide-plus') }).click();
-    await page.waitForTimeout(1000);
-
-    // ===== BASIC INFORMATION TAB =====
+    // await page.waitForTimeout(12000);
     
     // Upload Profile Image
-    await uploadThumbnail(page, 'upload profile');
+    await uploadThumbnail(page, "file-input-profile || selected-exist-profile", {
+      imagePath: path.join(__dirname, '..', 'public', 'images', 'sample-thumbnail-create.png')
+    });
     
     // Personal Details
     const firstNameField = page.getByLabel(/First Name/i).or(page.locator('#firstName, input[name="firstName"]'));
@@ -101,26 +107,21 @@ test.describe('Coach List', () => {
       await page.waitForTimeout(400);
     }
     
-    // Contact Information
-    const emailField = page.getByLabel(/Email/i).or(page.locator('#email, input[name="email"]'));
-    // Generate a unique email for this test run. Use gmail-style alias if requested via env.
-    const useGmail = (process.env.TESTMAIL_USE_GMAIL || '').toLowerCase() === 'true';
-    const testEmail = useGmail
-      ? `${coachDataAdd.firstName.toLowerCase()}.${coachDataAdd.lastName.toLowerCase()}+${Date.now()}@gmail.com`
-      : generateTestmailAddress(process.env.TESTMAIL_NAMESPACE || 'coachName', String(Date.now()));
-    console.log('Using test email for new coach:', testEmail);
-    await fillFieldWithDelay(emailField, testEmail);
+    // Fill Date of Birth
+    const dobField = page.locator('input[name="dateOfBirth"]')
+        .or(page.getByLabel(/Date of Birth/i))
+        .or(page.getByPlaceholder(/Date of Birth/i));
+      if (await dobField.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await dobField.scrollIntoViewIfNeeded();
+    await dobField.click();
+    await page.waitForTimeout(300);
+        await dobField.fill('1998-05-20');
+    await page.waitForTimeout(400);
+      }
 
-    const dobField = page.getByLabel(/Date of Birth/i).or(page.locator('input[name="dateOfBirth"]'));
-    if (await dobField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      const today = new Date();
-      const todayFormatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-      await dobField.scrollIntoViewIfNeeded();
-      await dobField.click();
-      await page.waitForTimeout(300);
-      await dobField.fill(todayFormatted);
-      await page.waitForTimeout(400);
-    }
+          // Contact Information
+    const emailField = page.getByLabel(/Email/i).or(page.locator('#email, input[name="email"]'));
+    await fillFieldWithDelay(emailField, coachDataAdd.email);
     
     const phoneField = page.getByLabel(/Phone/i).or(page.locator('input[name="phone"]'));
     if (await phoneField.isVisible({ timeout: 2000 }).catch(() => false)) {
@@ -193,15 +194,12 @@ test.describe('Coach List', () => {
       .or(page.locator('input[name="address.village"]'))
       .or(page.getByLabel(/Village/i));
     if (await villageField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await fillFieldWithDelay(villageField, 'Toul Kork');
-      // Use Tab to ensure natural user behavior and trigger blur events
+      await fillFieldWithDelay(villageField, coachDataAdd.address.village);
       await villageField.press('Tab'); 
-      // Wait for address fields to become enabled
       await page.waitForTimeout(1000);
     }
 
-    // Commune / Songkat (if exists)
-    // Handle both text inputs and comboboxes (dropdowns)
+    // Commune / Songkat 
     const communeField = page.getByRole('textbox', { name: /Commune/i })
       .or(page.getByRole('combobox', { name: /Commune/i }))
       .or(page.getByPlaceholder(/Commune/i))
@@ -226,7 +224,7 @@ test.describe('Coach List', () => {
 
       await targetCommune.click();
       await page.waitForTimeout(300);
-      await fillFieldWithDelay(targetCommune, 'Prek leab');
+      await fillFieldWithDelay(targetCommune, coachDataAdd.address.commune);
       await targetCommune.blur();
       await page.waitForTimeout(500);
     }
@@ -241,7 +239,7 @@ test.describe('Coach List', () => {
       const isDisabled = await districtField.isDisabled().catch(() => false);
       if (!isDisabled) {
         await page.waitForTimeout(300);
-        await fillFieldWithDelay(districtField, 'Phnom Penh');
+        await fillFieldWithDelay(districtField, coachDataAdd.address.district);
       }
     }
 
@@ -255,7 +253,7 @@ test.describe('Coach List', () => {
       const isDisabled = await cityField.isDisabled().catch(() => false);
       if (!isDisabled) {
         await page.waitForTimeout(300);
-        await fillFieldWithDelay(cityField, 'Phnom Penh');
+        await fillFieldWithDelay(cityField, coachDataAdd.address.city);
       }
     }
 
@@ -308,7 +306,6 @@ test.describe('Coach List', () => {
       }
     }
 
-
      // Click Education Background
     const addEducationBackgroundButton = page.getByRole('button', { name: /Add Education Background/i })
       .or(page.locator('button:has-text("Add Education Background")'))
@@ -319,41 +316,31 @@ test.describe('Coach List', () => {
       await addEducationBackgroundButton.click();
       await page.waitForTimeout(800);
       
-      // Fill Title
-      const positionField = page.getByPlaceholder('Title')
-        .or(page.locator('input[name="educationBackground.0.title"]'))
-        .or(page.getByLabel(/Title/i));
-      if (await positionField.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await fillFieldWithDelay(positionField, 'Senior Developer');
-      }
+      // Fill School Name
+      const schoolNameField = page.getByPlaceholder('School Name')
+        .or(page.locator('input[name="educationBackground.0.schoolName"]'))
+        .or(page.getByLabel(/School Name/i));
+      await schoolNameField.fill('Royal University of Phnom Penh');
       
-      // Fill Organization
-      const organizationField = page.getByPlaceholder('Organization')
-        .or(page.locator('input[name="educationBackground.0.organization"]'))
-        .or(page.getByLabel(/Organization/i));
-      if (await organizationField.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await fillFieldWithDelay(organizationField, 'Tech Company Ltd');
-      }
+      // Fill Major
+      const majorField = page.locator('input[name="educationBackground.0.major"]');
+      await fillFieldWithDelay(majorField, 'Computer Science');
       
-      // Fill Start Date
-      const startDateField = page.getByPlaceholder('Start Date')
-        .or(page.locator('input[name="educationBackground.0.startDate"]'))
-        .or(page.getByLabel(/Start Date/i));
+   // Fill Start Date
+      const startDateField = page.locator('input[name="educationBackground.0.startDate"]');
       if (await startDateField.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await startDateField.click();
-        await page.waitForTimeout(300);
-        await startDateField.fill('2020-01-15');
+      await startDateField.click();
+      await page.waitForTimeout(300);
+      await startDateField.fill('2020-01-15');
         await page.waitForTimeout(400);
       }
       
       // Fill End Date
-      const endDateField = page.getByPlaceholder('End Date')
-        .or(page.locator('input[name="educationBackground.0.endDate"]'))
-        .or(page.getByLabel(/End Date/i));
+      const endDateField = page.locator('input[name="educationBackground.0.endDate"]');
       if (await endDateField.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await endDateField.click();
-        await page.waitForTimeout(300);
-        await endDateField.fill('2023-12-31');
+      await endDateField.click();
+      await page.waitForTimeout(300);
+      await endDateField.fill('2023-12-31');
         await page.waitForTimeout(400);
       }
     }
@@ -612,6 +599,16 @@ test.describe('Coach List', () => {
     await page.getByRole('button', { name: /Create/i }).click();
     await page.waitForTimeout(1000);
   });
+
+    // ===================================
+  // View coaches page
+  // ===================================
+  test('Coach List', async ({ page }) => {
+    await expect(page).toHaveTitle(/Coach/i);
+    await page.waitForTimeout(1000);
+    await toggleViewMode(page);
+    await page.waitForTimeout(1000);
+  });
   
   // ===================================
   // Edit coach
@@ -648,6 +645,11 @@ test.describe('Coach List', () => {
       
       // Wait for edit form to appear
       await page.waitForTimeout(1000);
+
+    // Upload Profile Image
+    await uploadThumbnail(page, "file-input-profile || selected-exist-profile", {
+      imagePath: path.join(__dirname, '..', 'public', 'images', 'sample-thumbnail-update.png')
+    });
       
       // Edit First Name
       const firstNameField = page.getByLabel(/First Name/i)
@@ -665,7 +667,37 @@ test.describe('Coach List', () => {
         await fillFieldWithDelay(lastNameField, coachDataEdit.lastName);
       }
       
-      // Edit Email
+    // Edit Gender (Dropdown)
+    const genderButton = page.locator('button[role="combobox"]').filter({ has: page.locator('svg') })
+      .or(page.locator('button[role="combobox"][aria-controls*="radix"]')).first();
+    
+    if (await genderButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await genderButton.click();
+      await page.waitForTimeout(500);
+      const firstOption = page.locator('[role="option"]').nth(1); // Select 2nd option for change
+      if (await firstOption.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await firstOption.click();
+        await page.waitForTimeout(400);
+      } else {
+         // Fallback to first option if only one exists
+         await page.locator('[role="option"]').first().click();
+         await page.waitForTimeout(400);
+      }
+    }
+      // Edit Date of Birth
+      const dobField = page.locator('input[name="dateOfBirth"]')
+        .or(page.getByLabel(/Date of Birth/i))
+        .or(page.getByPlaceholder(/Date of Birth/i));
+      if (await dobField.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await dobField.scrollIntoViewIfNeeded();
+        await dobField.clear();
+        await dobField.click();
+        await page.waitForTimeout(300);
+        await dobField.fill('1995-05-20');
+        await page.waitForTimeout(400);
+      }
+
+            // Edit Email
       const emailField = page.getByLabel(/Email/i)
         .or(page.locator('#email, input[name="email"]'));
       if (await emailField.isVisible({ timeout: 3000 }).catch(() => false)) {
@@ -673,17 +705,6 @@ test.describe('Coach List', () => {
         await fillFieldWithDelay(emailField, coachDataEdit.email);
       }
       
-      // Edit Date of Birth
-      const dobField = page.locator('input[name="dateOfBirth"]')
-        .or(page.getByLabel(/Date of Birth/i))
-        .or(page.getByPlaceholder(/Date of Birth/i));
-      if (await dobField.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await dobField.scrollIntoViewIfNeeded();
-        await dobField.click();
-        await page.waitForTimeout(300);
-        await dobField.fill('1995-05-20');
-        await page.waitForTimeout(400);
-      }
       
       // Edit Phone
       const phoneField = page.getByLabel(/Phone/i)
@@ -730,17 +751,21 @@ test.describe('Coach List', () => {
         .or(page.locator('input[name="joinDate"]'));
       if (await joinDateField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await joinDateField.scrollIntoViewIfNeeded();
+        await joinDateField.clear();
         await joinDateField.click();
         await page.waitForTimeout(300);
         await joinDateField.fill('2021-03-15');
         await page.waitForTimeout(400);
       }
       
-      // Edit Major
-      const majorField = page.getByLabel(/Major/i)
-        .or(page.locator('input[name="major"]'));
+      // Edit Major (Professional Major, not Education Background Major)
+      const majorField = page.locator('input[name="major"]')
+        .or(page.getByLabel(/^Major$/i))
+        .first();
       if (await majorField.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await majorField.scrollIntoViewIfNeeded();
         await majorField.clear();
+        await page.waitForTimeout(200);
         await fillFieldWithDelay(majorField, coachDataEdit.major);
       }
       
@@ -752,13 +777,32 @@ test.describe('Coach List', () => {
         await fillFieldWithDelay(costPerHourField, coachDataEdit.costPerHour);
       }
 
+          // Select Education Level (dropdown)
+    const educationLevelButton = page.getByRole('combobox', { name: /Education Level/i })
+      .or(page.locator('button:has-text("Education Level")'))
+      .or(page.locator('[aria-label*="Education Level"]'))
+      .first();
+    
+    if (await educationLevelButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+      // Click to open the dropdown
+      await educationLevelButton.click();
+      await page.waitForTimeout(500);
+      
+      // Select the first option (index 0)
+      const firstOption = page.locator('[role="option"]').first();
+      if (await firstOption.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await firstOption.click();
+        await page.waitForTimeout(400);
+      }
+    }
+
       // Edit Village
       const villageField = page.getByPlaceholder('Village')
         .or(page.locator('input[name="address.village"]'))
         .or(page.getByLabel(/Village/i));
       if (await villageField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await villageField.clear();
-        await fillFieldWithDelay(villageField, 'Boeung Keng Kang');
+        await fillFieldWithDelay(villageField, coachDataEdit.address.village);
         await villageField.press('Tab');
         await page.waitForTimeout(1000);
       }
@@ -779,7 +823,7 @@ test.describe('Coach List', () => {
         await targetCommune.clear();
         await targetCommune.click();
         await page.waitForTimeout(300);
-        await fillFieldWithDelay(targetCommune, 'Boeung Keng Kang');
+        await fillFieldWithDelay(targetCommune, coachDataEdit.address.commune);
         await targetCommune.blur();
         await page.waitForTimeout(500);
       }
@@ -793,7 +837,7 @@ test.describe('Coach List', () => {
         if (!isDisabled) {
           await districtField.clear();
           await page.waitForTimeout(300);
-          await fillFieldWithDelay(districtField, 'Chamkar Mon');
+          await fillFieldWithDelay(districtField, coachDataEdit.address.district);
         }
       }
 
@@ -806,10 +850,10 @@ test.describe('Coach List', () => {
         if (!isDisabled) {
           await cityField.clear();
           await page.waitForTimeout(300);
-          await fillFieldWithDelay(cityField, 'Phnom Penh');
+          await fillFieldWithDelay(cityField, coachDataEdit.address.city);
         }
       }
-      
+
       // Edit Work History - Click "Add Work History" button if needed
       const addWorkHistoryButton = page.getByRole('button', { name: /Add Work History/i })
         .or(page.locator('button:has-text("Add Work History")'))
@@ -817,37 +861,55 @@ test.describe('Coach List', () => {
       
       if (await addWorkHistoryButton.isVisible({ timeout: 2000 }).catch(() => false)) {
         await addWorkHistoryButton.scrollIntoViewIfNeeded();
-        await addWorkHistoryButton.click();
-        await page.waitForTimeout(800);
+        // Check if there is already a work history item, if so we don't click add, we edit existing.
+        // But if the form is empty for some reason, click add.
+        // For simplicity, we can assume if the fields aren't visible, we click add.
+        const existingField = page.locator('input[name="workHistory.0.position"]');
+        if (!(await existingField.isVisible({ timeout: 1000 }).catch(() => false))) {
+           await addWorkHistoryButton.click();
+           await page.waitForTimeout(800);
+        }
       }
       
       // Edit Work History fields (if they exist)
       const workPositionField = page.getByPlaceholder('Position')
-        .or(page.locator('input[name="workHistory.0.position"]'));
+        .or(page.locator('input[name="workHistory.0.position"]'))
+        .or(page.getByLabel(/Position/i));
       if (await workPositionField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await workPositionField.clear();
         await fillFieldWithDelay(workPositionField, 'Lead Developer');
       }
       
       const workOrgField = page.getByPlaceholder('Organization')
-        .or(page.locator('input[name="workHistory.0.organization"]'));
+        .or(page.locator('input[name="workHistory.0.organization"]'))
+        .or(page.getByLabel(/Organization/i));
       if (await workOrgField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await workOrgField.clear();
         await fillFieldWithDelay(workOrgField, 'Software Solutions Inc');
       }
       
-      const workStartDateField = page.getByPlaceholder('Start Date')
-        .or(page.locator('input[name="workHistory.0.startDate"]'));
+      // Edit Work History Start Date (specific to workHistory.0, not education dates)
+      const workStartDateField = page.locator('input[name="workHistory.0.startDate"]')
+        .or(page.getByPlaceholder('Start Date'))
+        .or(page.getByLabel(/Start Date/i))
+        .first();
       if (await workStartDateField.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await workStartDateField.scrollIntoViewIfNeeded();
+        await workStartDateField.clear();
         await workStartDateField.click();
         await page.waitForTimeout(300);
         await workStartDateField.fill('2019-06-01');
         await page.waitForTimeout(400);
       }
       
-      const workEndDateField = page.getByPlaceholder('End Date')
-        .or(page.locator('input[name="workHistory.0.endDate"]'));
+      // Edit Work History End Date (specific to workHistory.0, not education dates)
+      const workEndDateField = page.locator('input[name="workHistory.0.endDate"]')
+        .or(page.getByPlaceholder('End Date'))
+        .or(page.getByLabel(/End Date/i))
+        .first();
       if (await workEndDateField.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await workEndDateField.scrollIntoViewIfNeeded();
+        await workEndDateField.clear();
         await workEndDateField.click();
         await page.waitForTimeout(300);
         await workEndDateField.fill('2024-01-31');
@@ -861,27 +923,33 @@ test.describe('Coach List', () => {
       
       if (await addEducationButton.isVisible({ timeout: 2000 }).catch(() => false)) {
         await addEducationButton.scrollIntoViewIfNeeded();
-        await addEducationButton.click();
-        await page.waitForTimeout(800);
+         const existingEduField = page.locator('input[name="educationBackground.0.schoolName"]');
+         if (!(await existingEduField.isVisible({ timeout: 1000 }).catch(() => false))) {
+            await addEducationButton.click();
+            await page.waitForTimeout(800);
+         }
       }
       
-      // Edit Education Background fields (if they exist)
-      const eduTitleField = page.getByPlaceholder('Title')
-        .or(page.locator('input[name="educationBackground.0.title"]'));
-      if (await eduTitleField.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await eduTitleField.clear();
-        await fillFieldWithDelay(eduTitleField, 'Master of Science');
+      // Edit Education Background fields
+      const schoolNameField = page.getByPlaceholder('School Name')
+        .or(page.locator('input[name="educationBackground.0.schoolName"]'))
+        .or(page.getByLabel(/School Name/i));
+      if (await schoolNameField.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await schoolNameField.clear();
+        await fillFieldWithDelay(schoolNameField, 'Royal University of Phnom Penh (Updated)');
       }
       
-      const eduOrgField = page.locator('input[name="educationBackground.0.organization"]')
-        .or(page.getByPlaceholder('Organization').nth(1));
-      if (await eduOrgField.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await eduOrgField.clear();
-        await fillFieldWithDelay(eduOrgField, 'State University');
+      // Fill Major
+      const majorEduField = page.locator('input[name="educationBackground.0.major"]');
+      if (await majorEduField.isVisible({ timeout: 2000 }).catch(() => false)) {
+         await majorEduField.clear();
+         await fillFieldWithDelay(majorEduField, 'Information Technology');
       }
       
       const eduStartDateField = page.locator('input[name="educationBackground.0.startDate"]');
       if (await eduStartDateField.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await eduStartDateField.scrollIntoViewIfNeeded();
+        await eduStartDateField.clear();
         await eduStartDateField.click();
         await page.waitForTimeout(300);
         await eduStartDateField.fill('2015-09-01');
@@ -890,6 +958,8 @@ test.describe('Coach List', () => {
       
       const eduEndDateField = page.locator('input[name="educationBackground.0.endDate"]');
       if (await eduEndDateField.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await eduEndDateField.scrollIntoViewIfNeeded();
+        await eduEndDateField.clear();
         await eduEndDateField.click();
         await page.waitForTimeout(300);
         await eduEndDateField.fill('2017-06-30');
@@ -914,20 +984,22 @@ test.describe('Coach List', () => {
         await guardianNameField.scrollIntoViewIfNeeded();
         await guardianNameField.clear();
         await page.waitForTimeout(200);
-        await fillFieldWithDelay(guardianNameField, 'Updated Guardian');
+        await fillFieldWithDelay(guardianNameField, 'Updated Guardian Name');
       }
       
-      // Guardian Phone
+      // Guardian Phone (use specific name, #phone is not unique)
       const guardianPhoneField = page.locator('input[name="guardian.phone"]')
+      .or(page.locator('#phone'))
         .or(page.getByPlaceholder('Phone Number'));
       if (await guardianPhoneField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await guardianPhoneField.clear();
         await fillFieldWithDelay(guardianPhoneField, '0999888777');
       }
       
-      // Guardian Relation
-      const guardianRelationField = page.locator('input[name="guardian.relation"]')
-        .or(page.getByPlaceholder('Relation'));
+// Guardian Relation
+const guardianRelationField = page.locator('#relation')  // ← Add ID here
+  .or(page.locator('input[name="guardian.relation"]'))
+  .or(page.getByPlaceholder('Relation'));
       if (await guardianRelationField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await guardianRelationField.clear();
         await fillFieldWithDelay(guardianRelationField, 'Mother');
@@ -956,13 +1028,24 @@ test.describe('Coach List', () => {
       
       // Guardian Commune
       const guardianCommuneField = page.locator('input[name="guardian.address.commune"]')
-        .or(page.getByPlaceholder('Commune'))
+        .or(page.locator('#commune'))
+        .or(page.getByPlaceholder(/Khum\/Sangkat|Commune/i))
         .or(page.getByLabel(/Commune/i));
       if (await guardianCommuneField.isVisible({ timeout: 3000 }).catch(() => false)) {
+        // Explicitly wait for the field to be enabled
+        try {
+          await expect(guardianCommuneField).toBeEnabled({ timeout: 5000 });
+        } catch (e) {
+          console.log('Warning: Guardian Commune field did not become enabled:', e);
+        }
+        
         await guardianCommuneField.scrollIntoViewIfNeeded();
         await guardianCommuneField.clear();
+        await guardianCommuneField.click();
         await page.waitForTimeout(200);
         await fillFieldWithDelay(guardianCommuneField, 'Toul Kork');
+        await guardianCommuneField.blur();
+        await page.waitForTimeout(500);
       }
       
       // Guardian District
@@ -1005,16 +1088,18 @@ test.describe('Coach List', () => {
       // ===== EMERGENCY CONTACT TAB =====
       // Emergency Name
       const emergencyNameField = page.locator('input[name="emergency.name"]')
+      .or(page.locator('#name'))
         .or(page.getByPlaceholder('Name'));
       if (await emergencyNameField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await emergencyNameField.scrollIntoViewIfNeeded();
         await emergencyNameField.clear();
         await page.waitForTimeout(200);
-        await fillFieldWithDelay(emergencyNameField, 'Emergency Contact');
+        await fillFieldWithDelay(emergencyNameField, 'Emergency Contact Name');
       }
       
       // Emergency Phone
       const emergencyPhoneField = page.locator('input[name="emergency.phone"]')
+      .or(page.locator('#phone'))
         .or(page.getByPlaceholder('Phone Number'));
       if (await emergencyPhoneField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await emergencyPhoneField.clear();
@@ -1023,6 +1108,7 @@ test.describe('Coach List', () => {
       
       // Emergency Relation
       const emergencyRelationField = page.locator('input[name="emergency.relation"]')
+      .or(page.locator('#relation'))
         .or(page.getByPlaceholder('Relation'));
       if (await emergencyRelationField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await emergencyRelationField.clear();
@@ -1052,13 +1138,24 @@ test.describe('Coach List', () => {
       
       // Emergency Commune
       const emergencyCommuneField = page.locator('input[name="emergency.address.commune"]')
-        .or(page.getByPlaceholder('Commune'))
+        .or(page.locator('#commune'))
+        .or(page.getByPlaceholder(/Khum\/Sangkat|Commune/i))
         .or(page.getByLabel(/Commune/i));
       if (await emergencyCommuneField.isVisible({ timeout: 3000 }).catch(() => false)) {
+        // Explicitly wait for the field to be enabled
+        try {
+          await expect(emergencyCommuneField).toBeEnabled({ timeout: 5000 });
+        } catch (e) {
+          console.log('Warning: Emergency Commune field did not become enabled:', e);
+        }
+        
         await emergencyCommuneField.scrollIntoViewIfNeeded();
         await emergencyCommuneField.clear();
+        await emergencyCommuneField.click();
         await page.waitForTimeout(200);
         await fillFieldWithDelay(emergencyCommuneField, 'Daun Penh');
+        await emergencyCommuneField.blur();
+        await page.waitForTimeout(500);
       }
       
       // Emergency District

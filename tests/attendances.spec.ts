@@ -24,25 +24,6 @@ test.describe('Attendances', () => {
     await page.waitForTimeout(1000);            
   });
 
-//   ======================================
-// View Attendances page
-//   ======================================
-  test('View Attendances page', async ({ page }) => {
-    await expect(page).toHaveTitle(/Attendance/i);
-    const selectClassDropdown = page.locator('button[role="combobox"]').filter({ hasText: 'Select Class' });
-    await expect(selectClassDropdown).toBeVisible();
-    await selectClassDropdown.click();
-    const options = page.getByRole('option');
-    await expect(options.first()).toBeVisible({ timeout: 5000 });
-    
-    if (await options.count() > 1) {
-      await options.nth(1).click();
-    } else {
-      await options.first().click();
-    }
-    
-    await page.waitForTimeout(1000);
-  });
 
 //   ====================================== 
 // Add new attendance
@@ -112,6 +93,26 @@ test.describe('Attendances', () => {
     await page.locator('button[type="submit"]').filter({ hasText: /Create|Add/i })
         .or(page.locator('button[color="primary"]'))
         .or(page.getByRole('button', { name: /Create|Add/i })).click();
+  });
+
+  //   ======================================
+// Attendances List
+//   ======================================
+  test('Attendances List', async ({ page }) => {
+    await expect(page).toHaveTitle(/Attendance/i);
+    const selectClassDropdown = page.locator('button[role="combobox"]').filter({ hasText: 'Select Class' });
+    await expect(selectClassDropdown).toBeVisible();
+    await selectClassDropdown.click();
+    const options = page.getByRole('option');
+    await expect(options.first()).toBeVisible({ timeout: 5000 });
+    
+    if (await options.count() > 1) {
+      await options.nth(1).click();
+    } else {
+      await options.first().click();
+    }
+    
+    await page.waitForTimeout(1000);
   });
 
 //   ====================================== 

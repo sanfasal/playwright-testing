@@ -1,11 +1,12 @@
 import { test, expect } from '@playwright/test';
-import { login, performSignup } from '../utils/auth-helper';
+import { login } from '../utils/auth-helper';
 import { addCursorTracking } from '../utils/cursor-helper';
 import { fillFieldWithDelay } from '../utils/form-helper';
 import * as fs from 'fs';
 import * as path from 'path';
-import { getOTPFromEmail, generateTestmailAddress } from '../utils/email-helper2';
-import { updateUserEmail, getUserData, getGeneratedEmail, getUserPasswordByEmail } from '../utils/data-store';
+import { getOTPFromEmail } from '../utils/email-helper2';
+import { generateRandomPassword } from '../utils/email-helper';
+import { updateUserEmail, getUserPasswordByEmail, updateUserPassword } from '../utils/data-store';
 import dotenv from 'dotenv';
 import { uploadThumbnail } from '../utils/upload-thumbnail-helper';
 
@@ -38,6 +39,10 @@ const personalDataEdit = {
     city: 'Phnom Penh',
   },
 };
+const ICONS = {
+  eyeOff: '.lucide-eye-off',
+  eye: '.lucide-eye',
+} as const;
 
 test.describe('Personal Life', () => {
   test.beforeEach(async ({ page }) => {
@@ -54,8 +59,6 @@ test.describe('Personal Life', () => {
   //Edit Profile
   test('Edit Profile', async ({ page }) => {
     test.setTimeout(120000);
-
-    // Prefer page-level update button (Update Settings / Update Profile), fallback to edit controls
     const pageUpdateBtn = page.getByRole('button', { name: /^(Update Settings|Update Profile)$/i }).first();
     if (await pageUpdateBtn.isVisible().catch(() => false)) {
       await pageUpdateBtn.click();
@@ -68,10 +71,8 @@ test.describe('Personal Life', () => {
         await editBtn.click();
       }
     }
-
-
-        await uploadThumbnail(page, "file-input-profile");
-    
+    // Upload profile picture
+    await uploadThumbnail(page, "file-input-profile || selected-exist-profile");  
     // First / Last name
     const firstNameField = page.getByLabel(/First Name/i).or(page.locator('#firstName, input[name="firstName"]'));
     if (await firstNameField.isVisible({ timeout: 2000 }).catch(() => false)) {
@@ -177,45 +178,12 @@ test.describe('Personal Life', () => {
       await page.waitForTimeout(1000);
     }
   });
-  // Update Password
-  test('Update Password', async ({ page }) => {
-    test.setTimeout(120000);
 
-    // Prefer page-level update button (Update Settings / Update Profile), fallback to edit controls
-    const pageUpdateBtn = page.getByRole('button', { name: /^(Update Password|Change Password)$/i }).first();
-    if (await pageUpdateBtn.isVisible({ timeout: 200 }).catch(() => false)) {
-      await pageUpdateBtn.click();
-      await page.waitForTimeout(600);
-    } else {
-      const rows = page.locator('table tbody tr, [role="row"], .personal-life-item, div[class*="personal-life"]');
-      const row = rows.nth(0);
-      if (!(await row.isVisible({ timeout: 3000 }).catch(() => false))) return;
-      const editBtn = row.getByRole('button', { name: /Edit|Update/i }).first().or(row.locator('button').filter({ has: page.locator('svg') }).first());
-      if (await editBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await editBtn.click();
-        await page.waitForTimeout(600);
-      }
-    }
-
-    // First / Last name
-    const firstNameField = page.getByLabel(/First/i).or(page.locator('#firstName, input[name="firstName"]'));
-    if (await firstNameField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await firstNameField.clear();
-      await fillFieldWithDelay(firstNameField, personalDataEdit.firstName);
-    }
-
-    // Submit
-    const submit = page.getByRole('button', { name: /Save|Update|Submit/i });
-    if (await submit.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await submit.click();
-      await page.waitForTimeout(1000);
-    }
-  });
 });
 
 
 test.describe('Change Email', () => {
-    test('Change Gmail (Dynamic Cycle)', async ({ page }) => {
+    test('Change Gmail', async ({ page }) => {
     test.setTimeout(180000);
 
     // Read generated emails to verify available accounts
@@ -257,10 +225,6 @@ test.describe('Change Email', () => {
     const targetIndex = currentIndex === 0 ? 1 : 0;
     const targetEmailData = generatedEmails[targetIndex];
     const targetEmail = targetEmailData.email;
-    
-    console.log(`Step 1: Cycle Logic Determined`);
-    console.log(`   - Current Email: ${currentEmail} (Index: ${currentIndex})`);
-    console.log(`   - Target Email:  ${targetEmail} (Index: ${targetIndex})`);
 
     // Determine credential source for the TARGET email (to get OTP)
     // Map source string to env vars
@@ -400,4 +364,111 @@ test.describe('Change Email', () => {
     console.log(`Step 6: Update Successful. Updating local records...`);
     updateUserEmail(currentEmail, targetEmail);
   });
+})
+
+test.describe('Update Password', () => {
+
+    test.beforeEach(async ({ page }) => {
+    await addCursorTracking(page);
+    await login(page);
+    await expect(page).toHaveURL(/dashboard/);
+
+    await expect(page.getByText('Please wait while we load your workspace')).toBeHidden({ timeout: 10000 });
+    await page.getByText('Personal Life', { exact: true }).click().catch(() => null);
+    await expect(page).toHaveURL(/\/personal-life/).catch(() => null);
+  });
+    
+    test('Update Password', async ({ page }) => {
+        test.setTimeout(120000);
+
+        // Prefer page-level update button (Update Settings / Update Profile), fallback to edit controls
+        const updatePwdBtn = page.getByRole('button', { name: /^(Update Password|Change Password)$/i });
+        await updatePwdBtn.scrollIntoViewIfNeeded().catch(() => null);
+        await updatePwdBtn.click().catch(() => null);
+
+        // Current Password
+        let currentPassword = 'Test@123'; // Fallback
+        let currentEmail = '';
+        const userDataPath = path.resolve(__dirname, '..', 'user-data.json');
+        try {
+            if (fs.existsSync(userDataPath)) {
+                const userData = JSON.parse(fs.readFileSync(userDataPath, 'utf-8'));
+                if (userData.users && userData.users.length > 0) {
+                     currentPassword = userData.users[userData.users.length - 1].password;
+                     currentEmail = userData.users[userData.users.length - 1].email;
+                } else if (userData.signupEmail) {
+                     currentPassword = userData.signupPassword;
+                     currentEmail = userData.signupEmail;
+                }
+            }
+        } catch (e) {
+            console.error("Error reading user-data.json for password:", e);
+        }
+
+        const currentPasswordField = page.locator('#currentPassword');
+        if (await currentPasswordField.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await currentPasswordField.clear();
+          await fillFieldWithDelay(currentPasswordField, currentPassword);
+          // Scope icon to the field's container
+          const fieldContainer = page.locator('div')
+            .filter({ has: currentPasswordField })
+            .filter({ has: page.locator(ICONS.eyeOff).or(page.locator(ICONS.eye)) })
+            .last();
+          
+          if (await fieldContainer.locator(ICONS.eyeOff).isVisible().catch(() => false)) {
+              await fieldContainer.locator(ICONS.eyeOff).click();
+              await page.waitForTimeout(50);
+              await fieldContainer.locator(ICONS.eye).click();
+              await page.waitForTimeout(50);
+          }
+        }
+
+        // New Password
+        const newPassword = generateRandomPassword(12);
+        const newPasswordField = page.locator('#newPassword');
+        if (await newPasswordField.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await newPasswordField.clear();
+          await fillFieldWithDelay(newPasswordField, newPassword);
+          const fieldContainer = page.locator('div')
+            .filter({ has: newPasswordField })
+            .filter({ has: page.locator(ICONS.eyeOff).or(page.locator(ICONS.eye)) })
+            .last();
+          
+          if (await fieldContainer.locator(ICONS.eyeOff).isVisible().catch(() => false)) {
+              await fieldContainer.locator(ICONS.eyeOff).click();
+              await page.waitForTimeout(50);
+              await fieldContainer.locator(ICONS.eye).click();
+              await page.waitForTimeout(50);
+          }
+        }
+
+        // Confirm Password
+        const confirmPasswordField = page.locator('#confirmPassword');
+        if (await confirmPasswordField.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await confirmPasswordField.clear();
+          await fillFieldWithDelay(confirmPasswordField, newPassword);
+          const fieldContainer = page.locator('div')
+            .filter({ has: confirmPasswordField })
+            .filter({ has: page.locator(ICONS.eyeOff).or(page.locator(ICONS.eye)) })
+            .last();
+
+          if (await fieldContainer.locator(ICONS.eyeOff).isVisible().catch(() => false)) {
+              await fieldContainer.locator(ICONS.eyeOff).click();
+              await page.waitForTimeout(50);
+              await fieldContainer.locator(ICONS.eye).click();
+              await page.waitForTimeout(200);
+          }
+        }
+
+        // Submit
+        const submit = page.getByRole('button', { name: /Save|Update|Submit/i });
+        if (await submit.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await submit.click();
+          await page.waitForTimeout(1000);
+          
+          if (currentEmail && newPassword) {
+              updateUserPassword(currentEmail, newPassword);
+          }
+        }
+      });
 })

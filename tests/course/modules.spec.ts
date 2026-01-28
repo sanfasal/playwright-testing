@@ -17,27 +17,6 @@ test.describe('Modules', () => {
     await expect(page).toHaveURL(/courses\/modules/);
   });
 
-  // test('Modules page', async ({ page }) => {
-  //   await page.waitForTimeout(1000);
-    
-  //   // Method 1: Try using JavaScript to add IDs
-  //   await page.evaluate(() => {
-  //     const buttons = document.querySelectorAll('button');
-  //     buttons.forEach((btn, index) => {
-  //       const svg = btn.querySelector('svg');
-  //       if (svg) {
-  //         const classes = svg.className.baseVal || svg.getAttribute('class') || '';
-  //         if (classes.includes('lucide-layout-grid')) {
-  //           btn.id = 'grid-view-btn';
-  //         } else if (classes.includes('lucide-list')) {
-  //           btn.id = 'list-view-btn';
-  //         }
-  //       }
-  //     });
-  //   });
-    
-  // });
-
 //   =====================================
 // Add new module
 //   =====================================
@@ -54,19 +33,13 @@ test.describe('Modules', () => {
     
     // Fill Title field with realistic typing
     const titleField = page.locator('#title').or(page.getByLabel(/title/i)).or(page.getByPlaceholder(/title/i));
-    await fillFieldWithDelay(titleField, 'Introduction to JavaScript', {
-      typingDelay: 50,
-      afterTypingDelay: 300
-    });
+    await fillFieldWithDelay(titleField, 'Introduction to JavaScript');
    
     // Fill Description field
     const descriptionField = page.locator('#description')
       .or(page.getByLabel(/description/i))
       .or(page.getByPlaceholder(/description/i));
-    await fillFieldWithDelay(descriptionField, 'Learn the fundamentals of JavaScript programming including variables, functions, and control structures.', {
-      typingDelay: 30,
-      afterTypingDelay: 300
-    });
+    await fillFieldWithDelay(descriptionField, 'Learn the fundamentals of JavaScript programming including variables, functions, and control structures.');
     // Submit the form
     await page.waitForTimeout(500);
     const submitButton = page.getByRole('button', { name: /Add|Create|Submit/i });
@@ -81,28 +54,21 @@ test.describe('Modules', () => {
 // Edit module
 //   =====================================
   test('Edit module', async ({ page }) => {
-    // Increase timeout for this test
     test.setTimeout(120000);
-    
-    // Wait for the module list to load
     await page.waitForTimeout(1000);
-    
-    // Get all module rows/items
-    const moduleRows = page.locator('table tbody tr, [role="row"], .module-item, div[class*="module"]');
-    
-    // Get the module at index 0 (first module)
-    const moduleAtIndex0 = moduleRows.nth(0);
-    await moduleAtIndex0.waitFor({ state: 'visible', timeout: 5000 });
-    await moduleAtIndex0.click();
-    await page.waitForTimeout(1500);
-
-    // Click the edit icon (pencil icon) directly
-    const editIcon = page.locator('button').filter({ has: page.locator('svg.lucide-square-pen, svg.lucide-edit, svg.lucide-pencil') }).first()
-      .or(page.getByRole('button', { name: /edit/i }).first())
-      .or(page.locator('button[aria-label*="edit" i]').first());
+    // Get all lesson rows/items
+    const lessonRows = page.locator('table tbody tr, [role="row"], .lesson-item, div[class*="lesson"]');
+    const lessonAtIndex0 = lessonRows.nth(0);
+    await lessonAtIndex0.waitFor({ state: 'visible', timeout: 5000 });
+    // Click the edit icon (pencil icon) directly within the lesson row
+    const editIcon = lessonAtIndex0.locator('button').filter({ has: page.locator('svg.lucide-square-pen, svg.lucide-edit, svg.lucide-pencil') }).first()
+      .or(lessonAtIndex0.getByRole('button', { name: /edit/i }).first())
+      .or(lessonAtIndex0.getByText(/Edit/i).first())
+      .or(lessonAtIndex0.locator('button[aria-label*="edit" i]').first());
     
     if (await editIcon.isVisible({ timeout: 3000 }).catch(() => false)) {
       await editIcon.click();
+      console.log('✓ Clicked edit icon');
       
       // Wait for the edit drawer/form to appear
       await page.waitForTimeout(1500);
@@ -111,20 +77,14 @@ test.describe('Modules', () => {
       const titleField = page.locator('#title').or(page.getByLabel(/title/i));
       if (await titleField.isVisible({ timeout: 3000 }).catch(() => false)) {
         await titleField.clear();
-        await fillFieldWithDelay(titleField, 'Advanced JavaScript Concepts', {
-          typingDelay: 50,
-          afterTypingDelay: 300
-        });
+        await fillFieldWithDelay(titleField, 'Advanced JavaScript Concepts');
       }
       
       // Edit Description field
       const descriptionField = page.locator('#description').or(page.getByLabel(/description/i));
       if (await descriptionField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await descriptionField.clear();
-        await fillFieldWithDelay(descriptionField, 'Deep dive into advanced JavaScript topics including closures, promises, and async/await.', {
-          typingDelay: 30,
-          afterTypingDelay: 200
-        });
+        await fillFieldWithDelay(descriptionField, 'Deep dive into advanced JavaScript topics including closures, promises, and async/await.');
       }
       
       // Submit the updated form

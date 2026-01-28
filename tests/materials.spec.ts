@@ -2,7 +2,7 @@ import { test, expect, Page } from '@playwright/test';
 import { login } from '../utils/auth-helper';
 import { addCursorTracking } from '../utils/cursor-helper';
 import { toggleViewMode } from '../utils/view-helper';
-import { deleteItem } from '../utils/delete-helper';
+import { deleteItem, deleteEntityViaActionMenu } from '../utils/delete-helper';
 import { uploadThumbnail } from '../utils/upload-thumbnail-helper';
 
 test.describe('Materials Page', () => {
@@ -165,27 +165,12 @@ test.describe('Materials Page', () => {
     const initialCount = await materialRows.count();
     
     // Select and open the last material
-    const lastIndex = initialCount - 1;
+    const lastIndex = initialCount -1;
     await selectMaterial(page, lastIndex);
     
-    // Open the actions menu (three-dot icon)
-    const actionsMenuButton = page.getByRole('button', { name: /more options|actions|menu/i }).or(page.locator('button[aria-haspopup="menu"]')).first();
-    await actionsMenuButton.click();
-    await page.waitForTimeout(500);
-    
-    // Look for Delete button in the dropdown menu
-    const deleteButton = page.getByRole('menuitem', { name: /Delete|Remove/i }).or(page.getByRole('button', { name: /Delete|Remove/i }));
-    
-    if (await deleteButton.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await deleteButton.click();
-      await page.waitForTimeout(1000);
-      
-      // Use delete helper to handle confirmation
-      await deleteItem(page, 'Confirm Delete');
-      
-    } else {
-      console.log('Delete functionality not found');
-    }
+    // Use delete helper to handle deletion via action menu
+    // Pass null since we already clicked the row to open details
+    await deleteEntityViaActionMenu(page, null, 'Confirm Delete');
   });
 });
 

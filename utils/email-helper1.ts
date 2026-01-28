@@ -4,6 +4,7 @@
  */
 
 import { saveUserData, logGeneratedEmail } from "./data-store";
+import { generateRandomPassword } from "./email-helper";
 
 export interface TestmailConfig {
   apiKey: string;
@@ -63,8 +64,7 @@ export function generateTestmailAddress(
   timestamp?: string
 ): string {
   const email = `${namespace}.${timestamp}@inbox.testmail.app`;
-  const password = generateRandomPassword(12);
-  logGeneratedEmail(email, 'email-helper1', password);
+  logGeneratedEmail(email, 'email-helper1');
   return email;
 }
 
@@ -184,20 +184,6 @@ export function extractOTP(emailText: string, pattern?: RegExp): string | null {
   return null;
 }
 
-/**
- * Generate a random password using a set of allowed characters.
- * Note: uses Math.random() for simplicity; adequate for test accounts.
- */
-export function generateRandomPassword(length: number = 12): string {
-  const chars =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@@@#$%^&*()_+-=[]{}|;:,.<>?1234567890";
-  let result = "";
-  for (let i = 0; i < length; i++) {
-    const idx = Math.floor(Math.random() * chars.length);
-    result += chars.charAt(idx);
-  }
-  return result;
-}
 
 /**
  * Create signup credentials (testmail address + generated password),

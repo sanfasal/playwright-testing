@@ -153,21 +153,23 @@ export function extractOTP(emailText: string, pattern?: RegExp): string | null {
  * Note: uses Math.random() for simplicity; adequate for test accounts.
  */
 export function generateRandomPassword(length: number = 50): string {
-  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+  const letterslow = "abcdefghijklmnopqrstuvwxyz";
+  const lettersup = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const numbers = "0123456789";
-  const special = "!@#$%^&*()_+";
-  const all = letters + numbers + special;
+  const special = "!@#$%";
+  const all = letterslow + lettersup + numbers + special;
 
-  if (length < 3) throw new Error("Password length must be at least 3");
+  if (length < 8) throw new Error("Password length must be at least 8");
 
   let result = "";
   // Ensure at least one of each required type
-  result += letters.charAt(Math.floor(Math.random() * letters.length));
+  result += letterslow.charAt(Math.floor(Math.random() * letterslow.length));
+  result += lettersup.charAt(Math.floor(Math.random() * lettersup.length));
   result += numbers.charAt(Math.floor(Math.random() * numbers.length));
   result += special.charAt(Math.floor(Math.random() * special.length));
 
   // Fill the rest
-  for (let i = 3; i < length; i++) {
+  for (let i = 4; i < length; i++) {
     result += all.charAt(Math.floor(Math.random() * all.length));
   }
 

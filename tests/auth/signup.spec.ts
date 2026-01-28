@@ -29,6 +29,11 @@ test.describe("Sign Up", () => {
     const apiKey = process.env.TESTMAIL_API_KEY;
     const namespace = process.env.TESTMAIL_NAMESPACE;
 
+    // Generate fresh emails before starting
+    const { generateVerifiedEmails } = await import("../../utils/email-generator");
+    generateVerifiedEmails();
+
+
     if (!apiKey || !namespace) {
       throw new Error(
         "TESTMAIL_API_KEY and TESTMAIL_NAMESPACE must be defined in .env"

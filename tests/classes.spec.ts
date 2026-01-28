@@ -17,10 +17,6 @@ test.describe('Class', () => {
     await expect(page).toHaveURL(/classes/);
   });
 
-
-
-
-
 //   =====================================
 //   Add new class
 //   =====================================
@@ -60,20 +56,6 @@ test.describe('Class', () => {
       window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     });
     
-    // Debug: Log all input fields to see what's available
-    await page.waitForTimeout(500);
-    const inputInfo = await page.evaluate(() => {
-      const inputs = Array.from(document.querySelectorAll('input'));
-      return inputs.map((input, index) => ({
-        index,
-        type: input.type,
-        id: input.id,
-        name: input.name,
-        placeholder: input.placeholder,
-        label: input.labels?.[0]?.textContent?.trim() || 'no label'
-      }));
-    });
-    console.log('Available input fields:', JSON.stringify(inputInfo, null, 2));
     
 
     // Fill Price field - try multiple selector strategies
@@ -227,7 +209,7 @@ test.describe('Class', () => {
 //   =====================================
 //   Class page
 //   =====================================
-    test('Class page', async ({ page }) => {
+    test('Class List', async ({ page }) => {
     await page.waitForTimeout(1000);
     await toggleViewMode(page);
   })
@@ -242,11 +224,8 @@ test.describe('Class', () => {
     
     // Wait for the class list to load
     await page.waitForTimeout(1000);
-    
-    // Get all class rows/items
     const classRows = page.locator('table tbody tr, [role="row"], .class-item, div[class*="class"]');
     
-    // Get the class at index 0 (first class)
     const classAtIndex0 = classRows.nth(0);
     await classAtIndex0.waitFor({ state: 'visible', timeout: 5000 });
     await classAtIndex0.click();
@@ -273,6 +252,25 @@ test.describe('Class', () => {
         await titleField.clear();
         await fillFieldWithDelay(titleField, 'Updated Class Title');
       }
+
+       
+    // Select Course dropdown
+    await page.waitForTimeout(1000);
+    
+    // Click the first combobox (course dropdown)
+    const courseDropdown = page.locator('button[role="combobox"]').first();
+    await courseDropdown.waitFor({ state: 'visible', timeout: 5000 });
+    await courseDropdown.click();
+    
+    // Select the first course option
+    await page.waitForTimeout(500);
+    const courseOptions = page.getByRole('option');
+    await courseOptions.first().waitFor({ state: 'visible', timeout: 5000 });
+    await courseOptions.first().click();
+    await page.waitForTimeout(800);
+    await page.evaluate(() => {
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    });
       
       // Edit Price field
       const priceField = page.getByLabel(/price/i)
@@ -293,6 +291,21 @@ test.describe('Class', () => {
         await progressField.clear();
         await fillFieldWithDelay(progressField, '75');
       }
+
+          // Fill Start Date field (static date)
+    const startDate = '01-12-2026'; // Static start date
+    const startDateField = page.getByLabel(/start date/i)
+      .or(page.getByPlaceholder(/start date/i))
+      .or(page.locator('input[type="date"]').first());
+    await fillFieldWithDelay(startDateField, startDate);
+    
+    // Fill End Date field (static date)
+    const endDateFormatted = '04-16-2026'; // Static end date    
+    const endDateField = page.getByLabel(/end date/i)
+      .or(page.getByPlaceholder(/end date/i))
+      .or(page.locator('input[type="date"]').nth(1));
+    await fillFieldWithDelay(endDateField, endDateFormatted);
+    
       
       // Edit Start Time
       const startTimeField = page.getByLabel(/start time/i)
@@ -300,10 +313,7 @@ test.describe('Class', () => {
         .or(page.getByPlaceholder(/start time/i));
       if (await startTimeField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await startTimeField.clear();
-        await fillFieldWithDelay(startTimeField, '10:00AM', {
-          typingDelay: 50,
-          afterTypingDelay: 200
-        });
+        await fillFieldWithDelay(startTimeField, '10:00AM', );
       }
       
       // Edit End Time
@@ -312,68 +322,10 @@ test.describe('Class', () => {
         .or(page.getByPlaceholder(/end time/i));
       if (await endTimeField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await endTimeField.clear();
-        await fillFieldWithDelay(endTimeField, '01:00PM', {
-          typingDelay: 50,
-          afterTypingDelay: 300
-        });
+        await fillFieldWithDelay(endTimeField, '01:00PM');
       }
-      
-      // Toggle Publish and Online buttons to FALSE (disabled)
-      await page.waitForTimeout(500);
-      
-      // Use JavaScript to add IDs to toggle switches for reliable selection
-      await page.evaluate(() => {
-        // Find all switches and labels
-        const switches = document.querySelectorAll('[role="switch"], button, label');
-        switches.forEach((element, index) => {
-          const text = element.textContent?.trim() || '';
-          if (text.includes('Publish')) {
-            element.id = 'publish-toggle-edit';
-          } else if (text.includes('Online')) {
-            element.id = 'online-toggle-edit';
-          }
-        });
-      });
       
       await page.waitForTimeout(500);
-      
-      // Set Publish toggle to FALSE
-      const publishToggle = page.locator('#publish-toggle-edit')
-        .or(page.getByText('Publish', { exact: true }))
-        .or(page.locator('[role="switch"]').filter({ hasText: /publish/i }));
-      
-      if (await publishToggle.isVisible({ timeout: 2000 }).catch(() => false)) {
-        // Check if toggle is currently enabled
-        const isChecked = await publishToggle.getAttribute('aria-checked').catch(() => 'false');
-        
-        if (isChecked === 'true') {
-          await publishToggle.click();
-        } else {
-          console.log('ℹ Publish toggle already FALSE, no click needed');
-        }
-        await page.waitForTimeout(500);
-      } else {
-        console.log('⚠ Publish toggle not found');
-      }
-      
-      // Set Online toggle to FALSE
-      const onlineToggle = page.locator('#online-toggle-edit')
-        .or(page.getByText('Online', { exact: true }))
-        .or(page.locator('[role="switch"]').filter({ hasText: /online/i }));
-      
-      if (await onlineToggle.isVisible({ timeout: 2000 }).catch(() => false)) {
-        // Check if toggle is currently enabled
-        const isChecked = await onlineToggle.getAttribute('aria-checked').catch(() => 'false');
-        
-        if (isChecked === 'true') {
-          await onlineToggle.click();
-        } else {
-          console.log('ℹ Online toggle already FALSE, no click needed');
-        }
-        await page.waitForTimeout(500);
-      } else {
-        console.log('⚠ Online toggle not found');
-      }
       
       // Step 2: Click Next button to go to Coaches tab
       await page.waitForTimeout(1000);

@@ -68,8 +68,11 @@ test.describe("Users", () => {
       .filter({ has: page.locator("svg.lucide-plus") })
       .click();
     await page.waitForTimeout(200);
+
+
+
     // Upload Profile Image
-    await uploadThumbnail(page, "upload profile");
+    await uploadThumbnail(page, "file-input-profile || selected-exist-profile");
 
     // Personal Details
     const firstNameField = page
@@ -296,6 +299,11 @@ test.describe("Users", () => {
 
       // Wait for the edit drawer/form to appear
       await page.waitForTimeout(1500);
+
+
+      
+    // Upload Profile Image
+    await uploadThumbnail(page, "file-input-profile || selected-exist-profile");
 
       // Edit First Name field
       const firstNameField = page

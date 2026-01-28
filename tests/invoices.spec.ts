@@ -1,16 +1,15 @@
 import { test, expect } from '@playwright/test';
 import { login } from '../utils/auth-helper';
 import { addCursorTracking } from '../utils/cursor-helper';
+import { fillFieldWithDelay } from '../utils/form-helper';
+import { toggleViewMode } from '../utils/view-helper';
+import { deleteItem } from '../utils/delete-helper';
 
 test.describe('Invoices Page', () => {
   
   test.beforeEach(async ({ page }) => {
-    // Add visual cursor tracking for better test visibility
     await addCursorTracking(page);
-    
     await login(page);
-    
-    // Verify we are on dashboard
     await expect(page).toHaveURL(/dashboard/);
     await page.waitForTimeout(2000);
 
@@ -24,117 +23,13 @@ test.describe('Invoices Page', () => {
     await expect(page).toHaveURL(/invoice/);
   });
 
-  test('Invoice page', async ({ page }) => {
-    // Verify we're on the invoices page
-    await expect(page).toHaveTitle(/Invoice/i);
-    
-    // Handle view toggle buttons (grid/list view) before accessing invoice rows
-    await page.waitForTimeout(1000);
-    
-    // Method 1: Try using JavaScript to add IDs to the view toggle buttons
-    await page.evaluate(() => {
-      const buttons = document.querySelectorAll('button');
-      buttons.forEach((btn, index) => {
-        const svg = btn.querySelector('svg');
-        if (svg) {
-          const classes = svg.className.baseVal || svg.getAttribute('class') || '';
-          if (classes.includes('lucide-layout-grid')) {
-            btn.id = 'grid-view-btn';
-          } else if (classes.includes('lucide-list')) {
-            btn.id = 'list-view-btn';
-          }
-        }
-      });
-    });
-    
-    // Try clicking with ID first
-    let clicked = false;
-    
-    // Try to click grid view
-    const gridBtn = page.locator('#grid-view-btn');
-    if (await gridBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
-      await gridBtn.click();
-      await page.waitForTimeout(800);
-      clicked = true;
-    }
-    
-    // Try to click list view
-    const listBtn = page.locator('#list-view-btn');
-    if (await listBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
-      await listBtn.click();
-      await page.waitForTimeout(800);
-      clicked = true;
-    }
-    
-    // Method 2: If IDs didn't work, try direct SVG selectors
-    if (!clicked) {
-      const gridSvg = page.locator('svg.lucide-layout-grid').first();
-      if (await gridSvg.isVisible({ timeout: 1000 }).catch(() => false)) {
-        await gridSvg.click();
-        await page.waitForTimeout(800);
-      }
-      
-      const listSvg = page.locator('svg.lucide-list').first();
-      if (await listSvg.isVisible({ timeout: 1000 }).catch(() => false)) {
-        await listSvg.click();
-        await page.waitForTimeout(800);
-      }
-    }
-    
-    // Get all invoice rows (adjust selector based on your actual HTML structure)
-    // Common patterns: table rows, list items, or divs with specific classes
-    const invoiceRows = page.locator('table tbody tr, [role="row"], .invoice-row');
-    
-    // Get the invoice at index 1 (second invoice)
-    const invoiceAtIndex1 = invoiceRows.nth(1);
-    
-    // Click on the invoice at index 1 to view details
-    await invoiceAtIndex1.click();
-    
-    // Wait for invoice details to load
-    await page.waitForTimeout(1500);
-    
-    // Verify the Download PDF button is visible and click it
-    const downloadButton = page.getByRole('button', { name: /Download PDF/i });
-    await expect(downloadButton).toBeVisible({ timeout: 5000 });
-    await downloadButton.click();
-    
-    // Wait for download to initiate
-    await page.waitForTimeout(2000);
-    
-    // Listen for the beforeprint event which fires when print is triggered
-    await page.evaluate(() => {
-      window.addEventListener('beforeprint', () => {
-        console.log('Print dialog triggered');
-      });
-    });
-    
-    // Verify the Print Invoice button is visible and click it
-    const printButton = page.getByRole('button', { name: /Print Invoice/i });
-    await expect(printButton).toBeVisible({ timeout: 5000 });
-    
-    // Click the print button - this will trigger window.print()
-    await printButton.click();
-    
-    // Wait for the print dialog to appear (the browser's native print UI)
-    // Note: The native print dialog cannot be automated, but we can verify it was triggered
-    await page.waitForTimeout(2000);
-    
-    // Take a screenshot - this will capture the page with the print dialog open
-    await page.screenshot({ 
-      path: 'test-results/screenshots/invoice-print-preview.png',
-      fullPage: true 
-    });
-    
-    // Close the print dialog by pressing Escape
-    await page.keyboard.press('Escape');
-    await page.waitForTimeout(500);
 
-  });
-
+// =======================================
+// Add new invoice
+// =======================================
   test('Add new invoice', async ({ page }) => {
     // Click the add button using the specific CSS selector
-    await page.locator('body > div > div.flex-1.flex.gap-10 > div.flex-1.min-w-\\[600px\\].overflow-auto > main > button').click();
+    await page.locator('#add-invoice-button').click();
     
     // Wait for the drawer form to appear
     await expect(page.getByRole('textbox').first()).toBeVisible({ timeout: 9000 });
@@ -161,19 +56,174 @@ test.describe('Invoices Page', () => {
     await statusOptions.first().click();
     
     // Fill Due Date
-    await page.getByLabel(/Due Date/i).fill('2026-01-14');
+    await fillFieldWithDelay(page.getByLabel(/Due Date/i), '2026-01-14');
     
     // Fill Amount
-    await page.getByLabel(/Amount \(\$\)/i).fill('500');
+    await fillFieldWithDelay(page.getByLabel(/Amount \(\$\)/i), '500');
     
     // Fill Discount (optional field)
-    await page.getByLabel(/Discount \(\$\)/i).fill('50');
+    await fillFieldWithDelay(page.getByLabel(/Discount \(\$\)/i), '50');
+
+    // Select reference
+    await page.getByText('Select referent', { exact: true }).click();
+    await page.waitForTimeout(300); // Small delay for dropdown to open
+    const referenceOptions = page.getByRole('option');
+    await referenceOptions.first().waitFor({ state: 'visible', timeout: 5000 });
+    await referenceOptions.first().click();
+    
     
     // Fill Note (optional textarea)
-    await page.getByLabel(/Note/i).fill('Test invoice note');
+    await fillFieldWithDelay(page.getByLabel(/Note/i), 'Test invoice note');
     
     // Submit the form by clicking the Create button
     await page.getByRole('button', { name: /Create/i }).click();
     
   });
+
+  // =======================================
+// Invoice List
+// =======================================
+  test('Invoice List', async ({ page }) => {
+    await expect(page).toHaveTitle(/Invoice/i);
+    await page.waitForTimeout(1000);
+    await toggleViewMode(page);
+    await page.waitForTimeout(1000);
+  });
+
+// =======================================
+//  Edit invoice
+// =======================================
+
+test('Edit invoice', async ({ page }) => {
+    await expect(page).toHaveTitle(/Invoice/i);
+    await page.waitForTimeout(1000);
+
+    const invoiceRows = page.locator('table tbody tr, [role="row"], .invoice-row');
+
+    // Get the invoice at index 1 (second invoice)
+    const invoiceAtIndex1 = invoiceRows.nth(0);
+    await invoiceAtIndex1.click();
+    await page.waitForTimeout(1500);
+
+    const actionMenuBtn = page.locator('button').filter({ 
+        has: page.locator('svg.lucide-ellipsis, svg.lucide-ellipsis-vertical, svg.lucide-more-vertical, svg.lucide-more-horizontal') 
+    }).last();
+
+    await expect(actionMenuBtn).toBeVisible({ timeout: 5000 });
+    await actionMenuBtn.click();
+    
+    // Wait for the dropdown/menu to appear
+    const editOption = page.getByRole('menuitem', { name: /Edit|Update/i }).or(page.getByText(/Edit|Update/i));
+    await expect(editOption.first()).toBeVisible();
+    await editOption.first().click();
+    await page.waitForTimeout(1000);
+
+    await page.getByText(/^Select Status/).last().click({ force: true });
+    await page.waitForTimeout(1000); 
+    const statusOptions = page.getByRole('option');
+    await statusOptions.first().waitFor({ state: 'visible', timeout: 5000 });
+    
+    await statusOptions.nth(1).click().catch(() => statusOptions.first().click());
+
+    await page.getByRole('button', { name: /Update/i }).click();
+    await page.waitForTimeout(1000);
+})
+
+// =======================================
+// Download Invoice
+// =======================================
+  test('Download Invoice', async ({ page }) => {
+    await expect(page).toHaveTitle(/Invoice/i);
+    
+    await page.waitForTimeout(1000);
+    
+    const invoiceRows = page.locator('table tbody tr, [role="row"], .invoice-row');
+    
+    // Get the invoice at index 1 (second invoice)
+    const invoiceAtIndex1 = invoiceRows.nth(0);
+    await invoiceAtIndex1.click();
+    await page.waitForTimeout(1500);
+    
+    // Verify the Download PDF button is visible and click it
+    const downloadButton = page.getByRole('button', { name: /Download PDF/i });
+    await expect(downloadButton).toBeVisible({ timeout: 5000 });
+    await downloadButton.click();
+    
+    // Wait for download to initiate
+    await page.waitForTimeout(2000);
+    
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(500);
+
+  });
+
+// =======================================
+// Print Invoice
+// =======================================
+  test('Print Invoice', async ({ page }) => {
+    // Verify we're on the invoices page
+    await expect(page).toHaveTitle(/Invoice/i);
+    
+    // Handle view toggle buttons (grid/list view) before accessing invoice rows
+    await page.waitForTimeout(1000);
+
+    const invoiceRows = page.locator('table tbody tr, [role="row"], .invoice-row');
+    const invoiceAtIndex1 = invoiceRows.nth(0);
+    await invoiceAtIndex1.click();
+    await page.waitForTimeout(1500);
+    
+    const printButton = page.getByRole('button', { name: /Print Invoice/i });
+    await expect(printButton).toBeVisible({ timeout: 5000 });
+    
+    // Prepare for the print action verification
+    // Mocking window.print to set a flag we can verify
+    await page.evaluate(() => {
+        // @ts-ignore
+        window.printCalled = false;
+        // @ts-ignore
+        window.print = () => { window.printCalled = true; };
+    });
+
+    await printButton.click();
+    
+    // Wait for prompt/action to handle (matching Download Invoice flow)
+    await page.waitForTimeout(2000);
+
+    // Close the print dialog/preview by pressing Escape
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(500);
+  });
+
+// =======================================
+// Delete Invoice
+// =======================================
+test('Delete Invoice', async ({ page }) => {
+    await expect(page).toHaveTitle(/Invoice/i);
+    await page.waitForTimeout(1000);
+
+    const invoiceRows = page.locator('table tbody tr, [role="row"], .invoice-row');
+    
+    // Get the invoice at index 1 (second invoice)
+    const invoiceAtIndex1 = invoiceRows.nth(0);
+    await invoiceAtIndex1.click();
+    await page.waitForTimeout(1500);
+
+    const actionMenuBtn = page.locator('button').filter({ 
+        has: page.locator('svg.lucide-ellipsis, svg.lucide-ellipsis-vertical, svg.lucide-more-vertical, svg.lucide-more-horizontal') 
+    }).last();
+
+    await expect(actionMenuBtn).toBeVisible({ timeout: 5000 });
+    await actionMenuBtn.click();
+
+
+    // Wait for the dropdown/menu to appear
+    const editOption = page.getByRole('menuitem', { name: /Delete|Remove/i }).or(page.getByText(/Delete|Remove/i));
+    await expect(editOption.first()).toBeVisible();
+    await editOption.first().click();
+    await page.waitForTimeout(1000);
+    
+    // confirm delete
+    await deleteItem(page);
+});
+  
 });

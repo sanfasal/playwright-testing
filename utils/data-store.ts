@@ -277,9 +277,6 @@ export function getGeneratedEmailPassword(index: number): string | null {
     return null;
   }
 }
-
-
-
 /**
  * Retrieves the password for a user from user-data.json by email
  */
