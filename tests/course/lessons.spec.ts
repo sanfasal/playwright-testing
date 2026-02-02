@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { login } from '../../utils/auth-helper';
 import { addCursorTracking } from '../../utils/cursor-helper';
-import { fillFieldWithDelay } from '../../utils/form-helper';
+import { FileInput } from '../../utils/form-helper';
 import { deleteItem } from '../../utils/delete-helper';
 
 
@@ -42,7 +42,7 @@ test.describe('Lessons', () => {
     
     // Fill Title field with realistic typing
     const titleField = page.locator('#title').or(page.getByLabel(/title/i)).or(page.getByPlaceholder(/title/i));
-    await fillFieldWithDelay(titleField, 'React js');
+    await FileInput(titleField, 'React js');
     
         // Fill Duration field (if exists)
     await page.waitForTimeout(500);
@@ -50,7 +50,7 @@ test.describe('Lessons', () => {
       .or(page.getByPlaceholder(/duration/i))
       .or(page.locator('input[type="number"]').nth(1));
     if (await durationField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await fillFieldWithDelay(durationField, '45');
+      await FileInput(durationField, '45');
     }
 
         // Fill Description/Content field
@@ -58,7 +58,7 @@ test.describe('Lessons', () => {
       .or(page.locator('#content'))
       .or(page.getByLabel(/objective|content/i))
       .or(page.getByPlaceholder(/objective|content/i));
-    await fillFieldWithDelay(objectiveField, 'objective');
+    await FileInput(objectiveField, 'objective');
     
     
     // Fill Description field first
@@ -67,7 +67,7 @@ test.describe('Lessons', () => {
       .or(page.getByLabel(/description|content/i))
       .or(page.getByPlaceholder(/description|content/i));
     
-    await fillFieldWithDelay(descriptionField, 'In this lesson, you will learn about React js');
+    await FileInput(descriptionField, 'In this lesson, you will learn about React js');
     
     // THEN click "Attach Material" button after description is filled
     await page.waitForTimeout(500);
@@ -200,7 +200,7 @@ test.describe('Lessons', () => {
       const titleField = page.locator('#title').or(page.getByLabel(/title/i));
       if (await titleField.isVisible({ timeout: 3000 }).catch(() => false)) {
         await titleField.clear();
-        await fillFieldWithDelay(titleField, 'Updated React js Advanced');
+        await FileInput(titleField, 'Updated React js Advanced');
       }
       
       // Edit Duration field
@@ -209,7 +209,7 @@ test.describe('Lessons', () => {
         .or(page.locator('input[type="number"]').first());
       if (await durationField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await durationField.clear();
-        await fillFieldWithDelay(durationField, '60');
+        await FileInput(durationField, '60');
       }
       
       // Edit Objective field
@@ -219,7 +219,7 @@ test.describe('Lessons', () => {
         .or(page.getByPlaceholder(/objective|content/i));
       if (await objectiveField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await objectiveField.clear();
-        await fillFieldWithDelay(objectiveField, 'Updated objective for advanced React');
+        await FileInput(objectiveField, 'Updated objective for advanced React');
       }
       
       // Edit Description field
@@ -229,7 +229,7 @@ test.describe('Lessons', () => {
         .or(page.getByPlaceholder(/description|content/i));
       if (await descriptionField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await descriptionField.clear();
-        await fillFieldWithDelay(descriptionField, 'Updated lesson covering advanced React concepts including hooks and state management.');
+        await FileInput(descriptionField, 'Updated lesson covering advanced React concepts including hooks and state management.');
       }
       
       // THEN click "Attach Material" button after description is filled

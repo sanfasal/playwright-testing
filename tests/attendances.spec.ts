@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { login } from '../utils/auth-helper';
 import { addCursorTracking } from '../utils/cursor-helper';
-import { fillFieldWithDelay } from '../utils/form-helper';
+import { FileInput } from '../utils/form-helper';
 import { deleteEntityViaActionMenu } from '../utils/delete-helper';
 
 test.describe('Attendances', () => {
@@ -83,7 +83,7 @@ test.describe('Attendances', () => {
     // Wait for notes field to be visible
     if (await notesInput.isVisible({ timeout: 3000 }).catch(() => false)) {
         await notesInput.scrollIntoViewIfNeeded();
-        await fillFieldWithDelay(notesInput, 'Automated attendance test note');
+        await FileInput(notesInput, 'Automated attendance test note');
     } else {
         console.log('⚠ Notes field not found or not visible');
     }
@@ -169,12 +169,12 @@ test.describe('Attendances', () => {
         .or(page.locator('textarea'));
         
     await expect(notesInput).toBeVisible();
-    await fillFieldWithDelay(notesInput, 'Updated Note during Automation');
+    await FileInput(notesInput, 'Updated Note during Automation');
 
     // Handle "Reason"
     const reasonInput = page.getByLabel(/Reason/i).or(page.getByPlaceholder(/Reason/i));
     if (await reasonInput.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await fillFieldWithDelay(reasonInput, 'Updating for test');
+        await FileInput(reasonInput, 'Updating for test');
     }
 
     // Submit

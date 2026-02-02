@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { login } from '../../utils/auth-helper';
 import { addCursorTracking } from '../../utils/cursor-helper';
-import { fillFieldWithDelay } from '../../utils/form-helper';
+import { FileInput } from '../../utils/form-helper';
 import { deleteItem } from '../../utils/delete-helper';
 
 test.describe('Modules', () => {
@@ -33,13 +33,13 @@ test.describe('Modules', () => {
     
     // Fill Title field with realistic typing
     const titleField = page.locator('#title').or(page.getByLabel(/title/i)).or(page.getByPlaceholder(/title/i));
-    await fillFieldWithDelay(titleField, 'Introduction to JavaScript');
+    await FileInput(titleField, 'Introduction to JavaScript');
    
     // Fill Description field
     const descriptionField = page.locator('#description')
       .or(page.getByLabel(/description/i))
       .or(page.getByPlaceholder(/description/i));
-    await fillFieldWithDelay(descriptionField, 'Learn the fundamentals of JavaScript programming including variables, functions, and control structures.');
+    await FileInput(descriptionField, 'Learn the fundamentals of JavaScript programming including variables, functions, and control structures.');
     // Submit the form
     await page.waitForTimeout(500);
     const submitButton = page.getByRole('button', { name: /Add|Create|Submit/i });
@@ -77,14 +77,14 @@ test.describe('Modules', () => {
       const titleField = page.locator('#title').or(page.getByLabel(/title/i));
       if (await titleField.isVisible({ timeout: 3000 }).catch(() => false)) {
         await titleField.clear();
-        await fillFieldWithDelay(titleField, 'Advanced JavaScript Concepts');
+        await FileInput(titleField, 'Advanced JavaScript Concepts');
       }
       
       // Edit Description field
       const descriptionField = page.locator('#description').or(page.getByLabel(/description/i));
       if (await descriptionField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await descriptionField.clear();
-        await fillFieldWithDelay(descriptionField, 'Deep dive into advanced JavaScript topics including closures, promises, and async/await.');
+        await FileInput(descriptionField, 'Deep dive into advanced JavaScript topics including closures, promises, and async/await.');
       }
       
       // Submit the updated form

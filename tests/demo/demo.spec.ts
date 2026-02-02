@@ -4,7 +4,7 @@
 // import { login } from '../../utils/auth-helper';
 // import dotenv from 'dotenv';
 // import { addCursorTracking } from '../../utils/cursor-helper';
-// import { fillFieldWithDelay, verifyPasswordToggle } from '../../utils/form-helper';
+// import { FileInput, verifyPasswordToggle } from '../../utils/form-helper';
 
 // // Static test data
 // const TEST_USER = {
@@ -54,16 +54,16 @@
 //     await page.goto('/signup');
 //     await page.waitForTimeout(800);
 
-//     await fillFieldWithDelay(page.getByRole('textbox', { name: /first name/i }), TEST_USER.firstName, FAST_TYPING);
-//     await fillFieldWithDelay(page.getByRole('textbox', { name: /last name/i }), TEST_USER.lastName, FAST_TYPING);
-//     await fillFieldWithDelay(page.getByRole('textbox', { name: /company/i }), TEST_USER.company, FAST_TYPING);
-//     await fillFieldWithDelay(page.getByRole('textbox', { name: /email/i }), TEST_USER.existingEmail, FAST_TYPING);
+//     await FileInput(page.getByRole('textbox', { name: /first name/i }), TEST_USER.firstName, FAST_TYPING);
+//     await FileInput(page.getByRole('textbox', { name: /last name/i }), TEST_USER.lastName, FAST_TYPING);
+//     await FileInput(page.getByRole('textbox', { name: /company/i }), TEST_USER.company, FAST_TYPING);
+//     await FileInput(page.getByRole('textbox', { name: /email/i }), TEST_USER.existingEmail, FAST_TYPING);
     
 //     const passwordField = page.getByRole('textbox', { name: /^password$/i });
 //     const confirmPasswordField = page.getByRole('textbox', { name: /confirm password/i });
 
-//     await fillFieldWithDelay(passwordField, TEST_USER.validPassword, FAST_PASSWORD);
-//     await fillFieldWithDelay(confirmPasswordField, TEST_USER.validPassword, { ...FAST_PASSWORD, afterTypingDelay: 600 });
+//     await FileInput(passwordField, TEST_USER.validPassword, FAST_PASSWORD);
+//     await FileInput(confirmPasswordField, TEST_USER.validPassword, { ...FAST_PASSWORD, afterTypingDelay: 600 });
 
 //     // Verify password toggle works for both fields
 //     await verifyPasswordToggle(passwordField);
@@ -84,16 +84,16 @@
 //     await page.waitForTimeout(800);
 
 //     // Fill in all required fields
-//     await fillFieldWithDelay(page.getByRole('textbox', { name: /first name/i }), TEST_USER.firstName, FAST_TYPING);
-//     await fillFieldWithDelay(page.getByRole('textbox', { name: /last name/i }), TEST_USER.lastName, FAST_TYPING);
-//     await fillFieldWithDelay(page.getByRole('textbox', { name: /company/i }), TEST_USER.company, FAST_TYPING);
-//     await fillFieldWithDelay(page.getByRole('textbox', { name: /email/i }), TEST_USER.existingEmail, FAST_TYPING);
+//     await FileInput(page.getByRole('textbox', { name: /first name/i }), TEST_USER.firstName, FAST_TYPING);
+//     await FileInput(page.getByRole('textbox', { name: /last name/i }), TEST_USER.lastName, FAST_TYPING);
+//     await FileInput(page.getByRole('textbox', { name: /company/i }), TEST_USER.company, FAST_TYPING);
+//     await FileInput(page.getByRole('textbox', { name: /email/i }), TEST_USER.existingEmail, FAST_TYPING);
     
 //     const passwordField = page.getByRole('textbox', { name: /^password$/i });
 //     const confirmPasswordField = page.getByRole('textbox', { name: /confirm password/i });
 
-//     await fillFieldWithDelay(passwordField, TEST_USER.validPassword, FAST_PASSWORD);
-//     await fillFieldWithDelay(confirmPasswordField, TEST_USER.invalidPassword, { ...FAST_PASSWORD, afterTypingDelay: 600 });
+//     await FileInput(passwordField, TEST_USER.validPassword, FAST_PASSWORD);
+//     await FileInput(confirmPasswordField, TEST_USER.invalidPassword, { ...FAST_PASSWORD, afterTypingDelay: 600 });
     
 //     // Verify password toggle works for both fields
 //     await verifyPasswordToggle(passwordField);
@@ -107,18 +107,18 @@
 //     await page.waitForTimeout(800);
 
 //     // Fill in all required fields
-//     await fillFieldWithDelay(page.getByRole('textbox', { name: /first name/i }), TEST_USER.firstName, FAST_TYPING);
-//     await fillFieldWithDelay(page.getByRole('textbox', { name: /last name/i }), TEST_USER.lastName, FAST_TYPING);
-//     await fillFieldWithDelay(page.getByRole('textbox', { name: /company/i }), TEST_USER.company, FAST_TYPING);
-//     await fillFieldWithDelay(page.getByRole('textbox', { name: /email/i }), 'seksaatech@gmail.com', FAST_TYPING);
+//     await FileInput(page.getByRole('textbox', { name: /first name/i }), TEST_USER.firstName, FAST_TYPING);
+//     await FileInput(page.getByRole('textbox', { name: /last name/i }), TEST_USER.lastName, FAST_TYPING);
+//     await FileInput(page.getByRole('textbox', { name: /company/i }), TEST_USER.company, FAST_TYPING);
+//     await FileInput(page.getByRole('textbox', { name: /email/i }), 'seksaatech@gmail.com', FAST_TYPING);
     
 //     // Fill with weak password (too short)
 //     const weakPassword = '123';
 //     const passwordField = page.getByRole('textbox', { name: /^password$/i });
 //     const confirmPasswordField = page.getByRole('textbox', { name: /confirm password/i });
 
-//     await fillFieldWithDelay(passwordField, weakPassword, { typingDelay: 50 });
-//     await fillFieldWithDelay(confirmPasswordField, weakPassword, { typingDelay: 50, afterTypingDelay: 300 });
+//     await FileInput(passwordField, weakPassword, { typingDelay: 50 });
+//     await FileInput(confirmPasswordField, weakPassword, { typingDelay: 50, afterTypingDelay: 300 });
     
 //     // Verify password toggle works for both fields
 //     await verifyPasswordToggle(passwordField);
@@ -147,16 +147,16 @@
 //     await page.waitForTimeout(800);
 
 //     // Use accessible selectors with realistic typing
-//     await fillFieldWithDelay(page.getByRole('textbox', { name: /first name/i }), TEST_USER.firstName, FAST_TYPING);
-//     await fillFieldWithDelay(page.getByRole('textbox', { name: /last name/i }), TEST_USER.lastName, FAST_TYPING);
-//     await fillFieldWithDelay(page.getByRole('textbox', { name: /company/i }), TEST_USER.company, FAST_TYPING);
-//     await fillFieldWithDelay(page.getByRole('textbox', { name: /email/i }), email, FAST_TYPING);
+//     await FileInput(page.getByRole('textbox', { name: /first name/i }), TEST_USER.firstName, FAST_TYPING);
+//     await FileInput(page.getByRole('textbox', { name: /last name/i }), TEST_USER.lastName, FAST_TYPING);
+//     await FileInput(page.getByRole('textbox', { name: /company/i }), TEST_USER.company, FAST_TYPING);
+//     await FileInput(page.getByRole('textbox', { name: /email/i }), email, FAST_TYPING);
     
 //     const passwordField = page.getByRole('textbox', { name: /^password$/i });
 //     const confirmPasswordField = page.getByRole('textbox', { name: /confirm password/i });
 
-//     await fillFieldWithDelay(passwordField, TEST_USER.validPassword, FAST_PASSWORD);
-//     await fillFieldWithDelay(confirmPasswordField, TEST_USER.validPassword, { ...FAST_PASSWORD, afterTypingDelay: 600 });
+//     await FileInput(passwordField, TEST_USER.validPassword, FAST_PASSWORD);
+//     await FileInput(confirmPasswordField, TEST_USER.validPassword, { ...FAST_PASSWORD, afterTypingDelay: 600 });
     
 //     // Verify password toggle works
 //     await verifyPasswordToggle(passwordField);
@@ -167,7 +167,7 @@
 
 //     if (apiKey && namespace) {
 //         const otp = await getOTPFromEmail({ apiKey, namespace, timestamp: timestamp });
-//         await fillFieldWithDelay(page.getByRole('textbox', { name: /code/i }), otp, { typingDelay: 50 });
+//         await FileInput(page.getByRole('textbox', { name: /code/i }), otp, { typingDelay: 50 });
 //         await page.getByRole('button', { name: /verify|submit|confirm/i }).click();
 
 //         // Save data for other tests
@@ -188,12 +188,12 @@
 //     await expect(page).toHaveTitle(/signin|login/i);
 //     await page.waitForTimeout(50);
 //     const emailField = page.getByRole('textbox', { name: /email/i });
-//     await fillFieldWithDelay(emailField, SIGNIN_USER.email, {
+//     await FileInput(emailField, SIGNIN_USER.email, {
 //       typingDelay: 20,
 //       afterTypingDelay: 50
 //     });
 //     const passwordField = page.getByRole('textbox', { name: /password/i });
-//     await fillFieldWithDelay(passwordField, SIGNIN_USER.validPassword, {
+//     await FileInput(passwordField, SIGNIN_USER.validPassword, {
 //       typingDelay: 20,
 //       afterTypingDelay: 50
 //     });
@@ -213,9 +213,9 @@
 //       await expect(page).toHaveTitle(/signin|login/i);
 //       await page.waitForTimeout(800);
   
-//       await fillFieldWithDelay(page.getByRole('textbox', { name: /email/i }), SIGNIN_USER.email, FAST_TYPING);
+//       await FileInput(page.getByRole('textbox', { name: /email/i }), SIGNIN_USER.email, FAST_TYPING);
 //       const passwordField = page.getByRole('textbox', { name: /password/i });
-//       await fillFieldWithDelay(passwordField, SIGNIN_USER.invalidPassword, { ...FAST_PASSWORD, afterTypingDelay: 600 });
+//       await FileInput(passwordField, SIGNIN_USER.invalidPassword, { ...FAST_PASSWORD, afterTypingDelay: 600 });
       
 //       // Verify password toggle
 //       await verifyPasswordToggle(passwordField);
@@ -232,9 +232,9 @@
 //     await expect(page).toHaveTitle(/signin|login/i);
 
 //     // Fill with invalid email format (missing @)
-//     await fillFieldWithDelay(page.getByRole('textbox', { name: /email/i }), 'sanfasalgmail.com', FAST_TYPING);
+//     await FileInput(page.getByRole('textbox', { name: /email/i }), 'sanfasalgmail.com', FAST_TYPING);
 //     const passwordField = page.getByRole('textbox', { name: /password/i });
-//     await fillFieldWithDelay(passwordField, SIGNIN_USER.validPassword, { ...FAST_PASSWORD, afterTypingDelay: 600 });
+//     await FileInput(passwordField, SIGNIN_USER.validPassword, { ...FAST_PASSWORD, afterTypingDelay: 600 });
     
 //     // Verify password toggle
 //     await verifyPasswordToggle(passwordField);
@@ -277,7 +277,7 @@
 //     // Request OTP
 //     const emailInput = page.getByRole('textbox', { name: /email/i });
 //     await expect(emailInput).toBeVisible({ timeout: 5000 });
-//     await fillFieldWithDelay(emailInput, testEmail, FAST_TYPING);
+//     await FileInput(emailInput, testEmail, FAST_TYPING);
     
 //     const sendCodeButton = page.getByRole('button', { name: /send code|send|get code/i });
 //     await expect(sendCodeButton).toBeEnabled({ timeout: 5000 });
@@ -292,7 +292,7 @@
 //         apiKey: apiKey, 
 //         namespace: namespace 
 //     }, undefined, 30000, startTime);
-//     await fillFieldWithDelay(page.getByRole('textbox', { name: /code/i }), otp, { typingDelay: 50 });
+//     await FileInput(page.getByRole('textbox', { name: /code/i }), otp, { typingDelay: 50 });
     
 //     // Wait for password fields to appear (they might be on the same page or appear after OTP validation)
 //     await page.waitForTimeout(1000);
@@ -301,8 +301,8 @@
 //     const passwordField = page.getByLabel(/password/i).or(page.getByPlaceholder(/New Password/i));
 //     const confirmPasswordField = page.getByLabel(/confirmPassword/i).or(page.getByPlaceholder(/Confirm Password/i));
     
-//     await fillFieldWithDelay(passwordField, "Password@123", FAST_PASSWORD);
-//     await fillFieldWithDelay(confirmPasswordField, "Password@123", { ...FAST_PASSWORD, afterTypingDelay: 200 });
+//     await FileInput(passwordField, "Password@123", FAST_PASSWORD);
+//     await FileInput(confirmPasswordField, "Password@123", { ...FAST_PASSWORD, afterTypingDelay: 200 });
     
 //     // Verify password toggle
 //     await verifyPasswordToggle(passwordField);
@@ -354,10 +354,10 @@
 //       await statusOptions.first().waitFor({ state: 'visible', timeout: 5000 });
 //       await statusOptions.first().click();
       
-//       await fillFieldWithDelay(page.getByLabel(/Due Date/i), '2026-01-14', FAST_TYPING);
-//       await fillFieldWithDelay(page.getByLabel(/Amount \(\$\)/i), '1000', FAST_TYPING);
-//       await fillFieldWithDelay(page.getByLabel(/Discount \(\$\)/i), '50', FAST_TYPING);
-//       await fillFieldWithDelay(page.getByLabel(/Note/i), 'Test invoice note', FAST_TYPING);
+//       await FileInput(page.getByLabel(/Due Date/i), '2026-01-14', FAST_TYPING);
+//       await FileInput(page.getByLabel(/Amount \(\$\)/i), '1000', FAST_TYPING);
+//       await FileInput(page.getByLabel(/Discount \(\$\)/i), '50', FAST_TYPING);
+//       await FileInput(page.getByLabel(/Note/i), 'Test invoice note', FAST_TYPING);
 //       await page.getByRole('button', { name: /Create/i }).click();
 //     });
 //   });

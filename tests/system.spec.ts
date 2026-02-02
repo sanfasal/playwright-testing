@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { login } from "../utils/auth-helper";
 import { addCursorTracking } from "../utils/cursor-helper";
-import { fillFieldWithDelay } from "../utils/form-helper";
+import { FileInput } from "../utils/form-helper";
 import { uploadThumbnail } from "../utils/upload-thumbnail-helper";
 
 const systemDataEdit = {
@@ -91,7 +91,7 @@ test.describe("System", () => {
       .or(page.locator('#name, input[name="name"]'));
     if (await nameField.isVisible({ timeout: 2000 }).catch(() => false)) {
       await nameField.clear();
-      await fillFieldWithDelay(nameField, systemDataEdit.name);
+      await FileInput(nameField, systemDataEdit.name);
     }
 
     // Edit Contact Email
@@ -101,7 +101,7 @@ test.describe("System", () => {
       .or(page.locator('input[type="email"]'));
     if (await emailField.isVisible({ timeout: 2000 }).catch(() => false)) {
       await emailField.clear();
-      await fillFieldWithDelay(emailField, systemDataEdit.contactEmail);
+      await FileInput(emailField, systemDataEdit.contactEmail);
     }
 
     // Edit Phone
@@ -110,7 +110,7 @@ test.describe("System", () => {
       .or(page.locator("#phone"));
     if (await phoneField.isVisible({ timeout: 2000 }).catch(() => false)) {
       await phoneField.clear();
-      await fillFieldWithDelay(phoneField, systemDataEdit.phone);
+      await FileInput(phoneField, systemDataEdit.phone);
     }
 
     // Website
@@ -119,7 +119,7 @@ test.describe("System", () => {
       .or(page.locator('#website, input[name="website"]'));
     if (await websiteField.isVisible({ timeout: 2000 }).catch(() => false)) {
       await websiteField.clear();
-      await fillFieldWithDelay(websiteField, systemDataEdit.website);
+      await FileInput(websiteField, systemDataEdit.website);
     }
 
     // Edit Address fields (Village, Commune, District, City)
@@ -129,7 +129,7 @@ test.describe("System", () => {
       .or(page.getByLabel(/Village/i));
     if (await villageField.isVisible({ timeout: 2000 }).catch(() => false)) {
       await villageField.clear();
-      await fillFieldWithDelay(
+      await FileInput(
         villageField,
         systemDataEdit.village
       );
@@ -145,7 +145,7 @@ test.describe("System", () => {
       const isDisabled = await communeField.isDisabled().catch(() => false);
       if (!isDisabled) {
         await communeField.clear();
-        await fillFieldWithDelay(communeField, systemDataEdit.commune);
+        await FileInput(communeField, systemDataEdit.commune);
       }
     }
 
@@ -158,7 +158,7 @@ test.describe("System", () => {
       const isDisabled = await districtField.isDisabled().catch(() => false);
       if (!isDisabled) {
         await districtField.clear();
-        await fillFieldWithDelay(districtField, systemDataEdit.district);
+        await FileInput(districtField, systemDataEdit.district);
       }
     }
 
@@ -171,7 +171,7 @@ test.describe("System", () => {
       const isDisabled = await cityField.isDisabled().catch(() => false);
       if (!isDisabled) {
         await cityField.clear();
-        await fillFieldWithDelay(cityField, systemDataEdit.city);
+        await FileInput(cityField, systemDataEdit.city);
       }
     }
 

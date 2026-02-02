@@ -1,6 +1,6 @@
 import { Page } from '@playwright/test';
 import { addCursorTracking } from './cursor-helper';
-import { fillFieldWithDelay } from './form-helper';
+import { FileInput } from './form-helper';
 
 import * as fs from 'fs';
 import * as path from 'path';
@@ -36,13 +36,13 @@ export async function login(page: Page, email?: string, password?: string) {
   await page.waitForTimeout(50); 
   
   const emailField = page.getByRole('textbox', { name: /email/i });
-  await fillFieldWithDelay(emailField, email || '');
-    // await fillFieldWithDelay(emailField, 'sanfasal.its@gmail.com');
+  await FileInput(emailField, email || '');
+    // await FileInput(emailField, 'sanfasal.its@gmail.com');
 
   
   const passwordField = page.getByRole('textbox', { name: /password/i });
-  await fillFieldWithDelay(passwordField, password || '');
-    // await fillFieldWithDelay(passwordField, 'Sal@2026');
+  await FileInput(passwordField, password || '');
+    // await FileInput(passwordField, 'Sal@2026');
 
   
   // Toggle password visibility - show password
@@ -102,27 +102,27 @@ export async function performSignup(
   await page.waitForTimeout(50);
 
   // Fill form with provided or default data
-  await fillFieldWithDelay(
+  await FileInput(
     page.getByRole('textbox', { name: /first name/i }),
     userData?.firstName || 'Test'
   );
-  await fillFieldWithDelay(
+  await FileInput(
     page.getByRole('textbox', { name: /last name/i }),
     userData?.lastName || 'User'
   );
-  await fillFieldWithDelay(
+  await FileInput(
     page.getByRole('textbox', { name: /company/i }),
     userData?.company || 'TestCompany'
   );
-  await fillFieldWithDelay(
+  await FileInput(
     page.getByRole('textbox', { name: /email/i }),
     email
   );
-  await fillFieldWithDelay(
+  await FileInput(
     page.getByRole('textbox', { name: /^password$/i }),
     password
   );
-  await fillFieldWithDelay(
+  await FileInput(
     page.getByRole('textbox', { name: /confirm password/i }),
     password
   );
@@ -137,7 +137,7 @@ export async function performSignup(
     timestamp: timestamp,
   });
   
-  await fillFieldWithDelay(
+  await FileInput(
     page.getByRole('textbox', { name: /code/i }),
     otp,
     { typingDelay: 50, afterTypingDelay: 50 }

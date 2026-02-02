@@ -1,5 +1,5 @@
 import { Page } from '@playwright/test';
-import { fillFieldWithDelay } from './form-helper';
+import { FileInput } from './form-helper';
 
 /**
  * Helper function to handle delete confirmation modal
@@ -18,7 +18,7 @@ export async function deleteItem(
     .or(page.locator('input[type="text"]').last());
   
   if (await confirmInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-    await fillFieldWithDelay(confirmInput, confirmationText, {
+    await FileInput(confirmInput, confirmationText, {
       typingDelay: 10,
       afterTypingDelay: 100
     });

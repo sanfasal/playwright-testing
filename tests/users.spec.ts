@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { login } from "../utils/auth-helper";
 import { addCursorTracking } from "../utils/cursor-helper";
-import { fillFieldWithDelay } from "../utils/form-helper";
+import { FileInput } from "../utils/form-helper";
 import { deleteItem } from "../utils/delete-helper";
 import { toggleViewMode } from "../utils/view-helper";
 import { uploadThumbnail } from "../utils/upload-thumbnail-helper";
@@ -78,12 +78,12 @@ test.describe("Users", () => {
     const firstNameField = page
       .getByLabel(/First Name/i)
       .or(page.locator('#firstName, input[name="firstName"]'));
-    await fillFieldWithDelay(firstNameField, userDataAdd.firstName);
+    await FileInput(firstNameField, userDataAdd.firstName);
 
     const lastNameField = page
       .getByLabel(/Last Name/i)
       .or(page.locator('#lastName, input[name="lastName"]'));
-    await fillFieldWithDelay(lastNameField, userDataAdd.lastName);
+    await FileInput(lastNameField, userDataAdd.lastName);
 
     // // Fill Email field
     await page.waitForTimeout(500);
@@ -97,7 +97,7 @@ test.describe("Users", () => {
         ? `${userDataAdd.firstName.toLowerCase()}.${userDataAdd.lastName.toLowerCase()}+${Date.now()}@gmail.com`
         : generateTestmailAddress(process.env.TESTMAIL_NAMESPACE || 'username', String(Date.now()));
       console.log('Using test email for new user:', testEmail);
-      await fillFieldWithDelay(emailField, testEmail);
+      await FileInput(emailField, testEmail);
     }
 
     // Gender Selection (Dropdown)
@@ -120,7 +120,7 @@ test.describe("Users", () => {
       .getByLabel(/Date of Birth|DOB|Birth Date/i)
       .or(page.locator('#dob, input[name="dob"], input[type="date"]'));
     if (await dobField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      // Use .fill() for date inputs instead of fillFieldWithDelay
+      // Use .fill() for date inputs instead of FileInput
       await dobField.click();
       await page.waitForTimeout(300);
       await dobField.fill(userDataAdd.dob);
@@ -133,7 +133,7 @@ test.describe("Users", () => {
       .or(page.getByLabel(/Phone Number/i))
       .or(page.getByPlaceholder(/012345678/i));
     if (await phoneField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await fillFieldWithDelay(phoneField, userDataAdd.phone);
+      await FileInput(phoneField, userDataAdd.phone);
     }
 
     // Select Role from dropdown
@@ -162,7 +162,7 @@ test.describe("Users", () => {
       .or(page.locator('input[name="address.village"]'))
       .or(page.getByLabel(/Village/i));
     if (await villageField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await fillFieldWithDelay(villageField, userDataAdd.address.village);
+      await FileInput(villageField, userDataAdd.address.village);
       await page.waitForTimeout(1000);
     }
 
@@ -177,7 +177,7 @@ test.describe("Users", () => {
       const isDisabled = await communeField.isDisabled().catch(() => false);
       if (!isDisabled) {
         await page.waitForTimeout(300);
-        await fillFieldWithDelay(communeField, userDataAdd.address.commune);
+        await FileInput(communeField, userDataAdd.address.commune);
       }
     }
 
@@ -192,7 +192,7 @@ test.describe("Users", () => {
       const isDisabled = await districtField.isDisabled().catch(() => false);
       if (!isDisabled) {
         await page.waitForTimeout(300);
-        await fillFieldWithDelay(districtField, userDataAdd.address.district);
+        await FileInput(districtField, userDataAdd.address.district);
       }
     }
 
@@ -207,7 +207,7 @@ test.describe("Users", () => {
       const isDisabled = await cityField.isDisabled().catch(() => false);
       if (!isDisabled) {
         await page.waitForTimeout(300);
-        await fillFieldWithDelay(cityField, userDataAdd.address.city);
+        await FileInput(cityField, userDataAdd.address.city);
       }
     }
 
@@ -313,7 +313,7 @@ test.describe("Users", () => {
         await firstNameField.isVisible({ timeout: 3000 }).catch(() => false)
       ) {
         await firstNameField.clear();
-        await fillFieldWithDelay(firstNameField, userDataEdit.firstName);
+        await FileInput(firstNameField, userDataEdit.firstName);
       }
 
       // Edit Last Name field
@@ -322,7 +322,7 @@ test.describe("Users", () => {
         .or(page.locator('#lastName, input[name="lastName"]'));
       if (await lastNameField.isVisible({ timeout: 3000 }).catch(() => false)) {
         await lastNameField.clear();
-        await fillFieldWithDelay(lastNameField, userDataEdit.lastName);
+        await FileInput(lastNameField, userDataEdit.lastName);
       }
       // Gender Selection (Dropdown)
       const genderButton = page
@@ -358,7 +358,7 @@ test.describe("Users", () => {
         .or(page.getByPlaceholder(/012345678/i));
       if (await phoneField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await phoneField.clear();
-        await fillFieldWithDelay(phoneField, userDataEdit.phone);
+        await FileInput(phoneField, userDataEdit.phone);
       }
 
       // Select Role from dropdown
@@ -389,7 +389,7 @@ test.describe("Users", () => {
         .or(page.getByLabel(/Village/i));
       if (await villageField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await villageField.clear();
-        await fillFieldWithDelay(villageField, userDataEdit.address.village);
+        await FileInput(villageField, userDataEdit.address.village);
         await page.waitForTimeout(1000);
       }
 
@@ -402,7 +402,7 @@ test.describe("Users", () => {
         await communeField.scrollIntoViewIfNeeded();
         if (!(await communeField.isDisabled())) {
           await communeField.clear();
-          await fillFieldWithDelay(communeField, userDataEdit.address.commune);
+          await FileInput(communeField, userDataEdit.address.commune);
         }
       }
 
@@ -415,7 +415,7 @@ test.describe("Users", () => {
         await districtField.scrollIntoViewIfNeeded();
         if (!(await districtField.isDisabled())) {
           await districtField.clear();
-          await fillFieldWithDelay(
+          await FileInput(
             districtField,
             userDataEdit.address.district
           );
@@ -431,7 +431,7 @@ test.describe("Users", () => {
         await cityField.scrollIntoViewIfNeeded();
         if (!(await cityField.isDisabled())) {
           await cityField.clear();
-          await fillFieldWithDelay(cityField, userDataEdit.address.city);
+          await FileInput(cityField, userDataEdit.address.city);
         }
       }
 

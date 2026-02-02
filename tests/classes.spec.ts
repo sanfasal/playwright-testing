@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { login } from '../utils/auth-helper';
 import { addCursorTracking } from '../utils/cursor-helper';
-import { fillFieldWithDelay } from '../utils/form-helper';
+import { FileInput } from '../utils/form-helper';
 import { deleteEntityViaActionMenu } from '../utils/delete-helper';
 import { toggleViewMode } from '../utils/view-helper';
 import { uploadThumbnail } from '../utils/upload-thumbnail-helper';
@@ -32,7 +32,7 @@ test.describe('Class', () => {
     
     // Fill Title field with realistic typing
     const titleField = page.locator('#title');
-    await fillFieldWithDelay(titleField, 'Class Webdevelopment');
+    await FileInput(titleField, 'Class Webdevelopment');
     
     // Select Course dropdown
     await page.waitForTimeout(1000);
@@ -64,28 +64,28 @@ test.describe('Class', () => {
       .or(page.getByPlaceholder(/price/i))
       .or(page.locator('input[type="text"]').nth(1))
       .or(page.locator('input[type="number"]').first());
-    await fillFieldWithDelay(priceField, '500');
+    await FileInput(priceField, '500');
     
     // Fill Progress field
     const progressField = page.getByLabel(/progress/i)
       .or(page.getByPlaceholder(/progress/i))
       .or(page.locator('input[type="text"]').nth(2))
       .or(page.locator('input[type="number"]').nth(1));
-    await fillFieldWithDelay(progressField, '50');
+    await FileInput(progressField, '50');
     
     // Fill Start Date field (static date)
     const startDate = '01-12-2026'; // Static start date
     const startDateField = page.getByLabel(/start date/i)
       .or(page.getByPlaceholder(/start date/i))
       .or(page.locator('input[type="date"]').first());
-    await fillFieldWithDelay(startDateField, startDate);
+    await FileInput(startDateField, startDate);
     
     // Fill End Date field (static date)
     const endDateFormatted = '04-16-2026'; // Static end date    
     const endDateField = page.getByLabel(/end date/i)
       .or(page.getByPlaceholder(/end date/i))
       .or(page.locator('input[type="date"]').nth(1));
-    await fillFieldWithDelay(endDateField, endDateFormatted);
+    await FileInput(endDateField, endDateFormatted);
     
     // Fill Start Time field
     await page.waitForTimeout(500);
@@ -93,7 +93,7 @@ test.describe('Class', () => {
       .or(page.locator('#startTime'))
       .or(page.getByPlaceholder(/start time/i));
     
-    await fillFieldWithDelay(startTimeInput, '08:30AM');
+    await FileInput(startTimeInput, '08:30AM');
     
     // Fill End Time field
     await page.waitForTimeout(500);
@@ -101,7 +101,7 @@ test.describe('Class', () => {
       .or(page.locator('#endTime'))
       .or(page.getByPlaceholder(/end time/i));
     
-    await fillFieldWithDelay(endTimeInput, '11:30AM');
+    await FileInput(endTimeInput, '11:30AM');
     
     // Toggle Publish and Online buttons to TRUE (enabled)
     await page.waitForTimeout(500);
@@ -250,7 +250,7 @@ test.describe('Class', () => {
       const titleField = page.locator('#title');
       if (await titleField.isVisible({ timeout: 3000 }).catch(() => false)) {
         await titleField.clear();
-        await fillFieldWithDelay(titleField, 'Updated Class Title');
+        await FileInput(titleField, 'Updated Class Title');
       }
 
        
@@ -279,7 +279,7 @@ test.describe('Class', () => {
         .or(page.locator('input[type="number"]').first());
       if (await priceField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await priceField.clear();
-        await fillFieldWithDelay(priceField, '1500');
+        await FileInput(priceField, '1500');
       }
       
       // Edit Progress field
@@ -289,7 +289,7 @@ test.describe('Class', () => {
         .or(page.locator('input[type="number"]').nth(1));
       if (await progressField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await progressField.clear();
-        await fillFieldWithDelay(progressField, '75');
+        await FileInput(progressField, '75');
       }
 
           // Fill Start Date field (static date)
@@ -297,14 +297,14 @@ test.describe('Class', () => {
     const startDateField = page.getByLabel(/start date/i)
       .or(page.getByPlaceholder(/start date/i))
       .or(page.locator('input[type="date"]').first());
-    await fillFieldWithDelay(startDateField, startDate);
+    await FileInput(startDateField, startDate);
     
     // Fill End Date field (static date)
     const endDateFormatted = '04-16-2026'; // Static end date    
     const endDateField = page.getByLabel(/end date/i)
       .or(page.getByPlaceholder(/end date/i))
       .or(page.locator('input[type="date"]').nth(1));
-    await fillFieldWithDelay(endDateField, endDateFormatted);
+    await FileInput(endDateField, endDateFormatted);
     
       
       // Edit Start Time
@@ -313,7 +313,7 @@ test.describe('Class', () => {
         .or(page.getByPlaceholder(/start time/i));
       if (await startTimeField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await startTimeField.clear();
-        await fillFieldWithDelay(startTimeField, '10:00AM', );
+        await FileInput(startTimeField, '10:00AM', );
       }
       
       // Edit End Time
@@ -322,7 +322,7 @@ test.describe('Class', () => {
         .or(page.getByPlaceholder(/end time/i));
       if (await endTimeField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await endTimeField.clear();
-        await fillFieldWithDelay(endTimeField, '01:00PM');
+        await FileInput(endTimeField, '01:00PM');
       }
       
       await page.waitForTimeout(500);

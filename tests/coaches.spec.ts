@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { login } from '../utils/auth-helper';
 import { addCursorTracking } from '../utils/cursor-helper';
-import { fillFieldWithDelay } from '../utils/form-helper';
+import { FileInput } from '../utils/form-helper';
 import { deleteEntityViaActionMenu } from '../utils/delete-helper';
 
 import { uploadThumbnail } from '../utils/upload-thumbnail-helper';
@@ -90,10 +90,10 @@ test.describe('Coaches', () => {
     
     // Personal Details
     const firstNameField = page.getByLabel(/First Name/i).or(page.locator('#firstName, input[name="firstName"]'));
-    await fillFieldWithDelay(firstNameField, coachDataAdd.firstName);
+    await FileInput(firstNameField, coachDataAdd.firstName);
     
     const lastNameField = page.getByLabel(/Last Name/i).or(page.locator('#lastName, input[name="lastName"]'));
-    await fillFieldWithDelay(lastNameField, coachDataAdd.lastName);
+    await FileInput(lastNameField, coachDataAdd.lastName);
     
     // Gender Selection (Dropdown)
     const genderButton = page.locator('button[role="combobox"]').filter({ has: page.locator('svg') })
@@ -121,32 +121,32 @@ test.describe('Coaches', () => {
 
           // Contact Information
     const emailField = page.getByLabel(/Email/i).or(page.locator('#email, input[name="email"]'));
-    await fillFieldWithDelay(emailField, coachDataAdd.email);
+    await FileInput(emailField, coachDataAdd.email);
     
     const phoneField = page.getByLabel(/Phone/i).or(page.locator('input[name="phone"]'));
     if (await phoneField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await fillFieldWithDelay(phoneField, coachDataAdd.phone);
+      await FileInput(phoneField, coachDataAdd.phone);
     }
     
     const telegramField = page.getByPlaceholder(/Telegram/i).or(page.locator('input[name="telegram"]'));
     if (await telegramField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await fillFieldWithDelay(telegramField, coachDataAdd.telegram);
+      await FileInput(telegramField, coachDataAdd.telegram);
     }
 
     // Professional & Banking Information
     const idNumberField = page.getByLabel(/ID Number/i).or(page.locator('input[name="idNumber"]'));
     if (await idNumberField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await fillFieldWithDelay(idNumberField, coachDataAdd.idNumber);
+      await FileInput(idNumberField, coachDataAdd.idNumber);
     }
 
     const abaAccountNameField = page.getByLabel(/ABA Account Name/i).or(page.locator('input[name="ABAAccountName"]'));
     if (await abaAccountNameField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await fillFieldWithDelay(abaAccountNameField, coachDataAdd.abaAccountName);
+      await FileInput(abaAccountNameField, coachDataAdd.abaAccountName);
     }
 
     const abaAccountNumberField = page.getByLabel(/ABA Account Number/i).or(page.locator('input[name="ABAAccountNumber"]'));
     if (await abaAccountNumberField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await fillFieldWithDelay(abaAccountNumberField, coachDataAdd.abaAccountNumber);
+      await FileInput(abaAccountNumberField, coachDataAdd.abaAccountNumber);
     }
 
     const joinDateField = page.getByLabel(/Join Date/i).or(page.locator('input[name="joinDate"]'));
@@ -162,12 +162,12 @@ test.describe('Coaches', () => {
 
     const majorField = page.getByLabel(/Major/i).or(page.locator('input[name="major"]'));
     if (await majorField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await fillFieldWithDelay(majorField, coachDataAdd.major);
+      await FileInput(majorField, coachDataAdd.major);
     }
 
     const coursePerHourField = page.getByLabel(/Course Per Hour/i).or(page.locator('input[name="costPerHour"]'));
     if (await coursePerHourField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await fillFieldWithDelay(coursePerHourField, coachDataAdd.costPerHour);
+      await FileInput(coursePerHourField, coachDataAdd.costPerHour);
     }
 
     // Select Education Level (dropdown)
@@ -194,7 +194,7 @@ test.describe('Coaches', () => {
       .or(page.locator('input[name="address.village"]'))
       .or(page.getByLabel(/Village/i));
     if (await villageField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await fillFieldWithDelay(villageField, coachDataAdd.address.village);
+      await FileInput(villageField, coachDataAdd.address.village);
       await villageField.press('Tab'); 
       await page.waitForTimeout(1000);
     }
@@ -224,7 +224,7 @@ test.describe('Coaches', () => {
 
       await targetCommune.click();
       await page.waitForTimeout(300);
-      await fillFieldWithDelay(targetCommune, coachDataAdd.address.commune);
+      await FileInput(targetCommune, coachDataAdd.address.commune);
       await targetCommune.blur();
       await page.waitForTimeout(500);
     }
@@ -239,7 +239,7 @@ test.describe('Coaches', () => {
       const isDisabled = await districtField.isDisabled().catch(() => false);
       if (!isDisabled) {
         await page.waitForTimeout(300);
-        await fillFieldWithDelay(districtField, coachDataAdd.address.district);
+        await FileInput(districtField, coachDataAdd.address.district);
       }
     }
 
@@ -253,7 +253,7 @@ test.describe('Coaches', () => {
       const isDisabled = await cityField.isDisabled().catch(() => false);
       if (!isDisabled) {
         await page.waitForTimeout(300);
-        await fillFieldWithDelay(cityField, coachDataAdd.address.city);
+        await FileInput(cityField, coachDataAdd.address.city);
       }
     }
 
@@ -272,7 +272,7 @@ test.describe('Coaches', () => {
         .or(page.locator('input[name="workHistory.0.position"]'))
         .or(page.getByLabel(/Position/i));
       if (await positionField.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await fillFieldWithDelay(positionField, 'Senior Developer');
+        await FileInput(positionField, 'Senior Developer');
       }
       
       // Fill Organization
@@ -280,7 +280,7 @@ test.describe('Coaches', () => {
         .or(page.locator('input[name="workHistory.0.organization"]'))
         .or(page.getByLabel(/Organization/i));
       if (await organizationField.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await fillFieldWithDelay(organizationField, 'Tech Company Ltd');
+        await FileInput(organizationField, 'Tech Company Ltd');
       }
       
       // Fill Start Date
@@ -324,7 +324,7 @@ test.describe('Coaches', () => {
       
       // Fill Major
       const majorField = page.locator('input[name="educationBackground.0.major"]');
-      await fillFieldWithDelay(majorField, 'Computer Science');
+      await FileInput(majorField, 'Computer Science');
       
    // Fill Start Date
       const startDateField = page.locator('input[name="educationBackground.0.startDate"]');
@@ -361,7 +361,7 @@ test.describe('Coaches', () => {
     if (await guardianNameField.isVisible({ timeout: 2000 }).catch(() => false)) {
       await guardianNameField.scrollIntoViewIfNeeded();
       await page.waitForTimeout(200);
-      await fillFieldWithDelay(guardianNameField, 'Dara Sok');
+      await FileInput(guardianNameField, 'Dara Sok');
     }
 
     // Guardian Phone Number
@@ -371,7 +371,7 @@ test.describe('Coaches', () => {
     if (await guardianPhoneField.isVisible({ timeout: 2000 }).catch(() => false)) {
       await guardianPhoneField.scrollIntoViewIfNeeded();
       await page.waitForTimeout(200);
-      await fillFieldWithDelay(guardianPhoneField, '0987654321');
+      await FileInput(guardianPhoneField, '0987654321');
     }
 
     // Guardian Relation
@@ -381,7 +381,7 @@ test.describe('Coaches', () => {
     if (await guardianRelationField.isVisible({ timeout: 2000 }).catch(() => false)) {
       await guardianRelationField.scrollIntoViewIfNeeded();
       await page.waitForTimeout(200);
-      await fillFieldWithDelay(guardianRelationField, 'Father');
+      await FileInput(guardianRelationField, 'Father');
     }
 
     // Guardian Email
@@ -391,7 +391,7 @@ test.describe('Coaches', () => {
     if (await guardianEmailField.isVisible({ timeout: 2000 }).catch(() => false)) {
       await guardianEmailField.scrollIntoViewIfNeeded();
       await page.waitForTimeout(200);
-      await fillFieldWithDelay(guardianEmailField, 'darasok@gmail.com');
+      await FileInput(guardianEmailField, 'darasok@gmail.com');
     }
 
     // Guardian Village
@@ -401,7 +401,7 @@ test.describe('Coaches', () => {
     if (await guardianVillageField.isVisible({ timeout: 2000 }).catch(() => false)) {
       await guardianVillageField.scrollIntoViewIfNeeded();
       await page.waitForTimeout(200);
-      await fillFieldWithDelay(guardianVillageField, 'Toul Kork');
+      await FileInput(guardianVillageField, 'Toul Kork');
       // Use Tab to ensure natural user behavior and trigger blur events
       await guardianVillageField.press('Tab'); 
       // Wait for address fields to become enabled
@@ -424,7 +424,7 @@ test.describe('Coaches', () => {
       
       await finalGuardianCommune.click();
       await page.waitForTimeout(200);
-      await fillFieldWithDelay(finalGuardianCommune, 'Toul Kork');
+      await FileInput(finalGuardianCommune, 'Toul Kork');
       await finalGuardianCommune.blur();
       await page.waitForTimeout(500);
     }
@@ -445,7 +445,7 @@ test.describe('Coaches', () => {
       if (!isDisabled) {
         // await guardianDistrictField.click(); // Removed to prevent scrolling jump
         await page.waitForTimeout(200);
-        await fillFieldWithDelay(guardianDistrictField, 'Phnom Penh');
+        await FileInput(guardianDistrictField, 'Phnom Penh');
       }
     }
 
@@ -464,7 +464,7 @@ test.describe('Coaches', () => {
       const isDisabled = await guardianCityField.isDisabled().catch(() => false);
       if (!isDisabled) {
         await page.waitForTimeout(200);
-        await fillFieldWithDelay(guardianCityField, 'Phnom Penh');
+        await FileInput(guardianCityField, 'Phnom Penh');
       }
     }
 
@@ -485,7 +485,7 @@ test.describe('Coaches', () => {
       await emergencyNameField.scrollIntoViewIfNeeded();
       await emergencyNameField.click();
       await page.waitForTimeout(200);
-      await fillFieldWithDelay(emergencyNameField, 'Heng Leakana');
+      await FileInput(emergencyNameField, 'Heng Leakana');
     }
 
     // Emergency Phone Number
@@ -496,7 +496,7 @@ test.describe('Coaches', () => {
       await emergencyPhoneField.scrollIntoViewIfNeeded();
       await emergencyPhoneField.click();
       await page.waitForTimeout(200);
-      await fillFieldWithDelay(emergencyPhoneField, '0123456789');
+      await FileInput(emergencyPhoneField, '0123456789');
     }
 
     // Emergency Relation
@@ -507,7 +507,7 @@ test.describe('Coaches', () => {
       await emergencyRelationField.scrollIntoViewIfNeeded();
       await emergencyRelationField.click();
       await page.waitForTimeout(200);
-      await fillFieldWithDelay(emergencyRelationField, 'Mother');
+      await FileInput(emergencyRelationField, 'Mother');
     }
 
     // Emergency Email
@@ -518,7 +518,7 @@ test.describe('Coaches', () => {
       await emergencyEmailField.scrollIntoViewIfNeeded();
       await emergencyEmailField.click();
       await page.waitForTimeout(200);
-      await fillFieldWithDelay(emergencyEmailField, 'leakana.heng@gmail.com');
+      await FileInput(emergencyEmailField, 'leakana.heng@gmail.com');
     }
 
     // Emergency Village
@@ -529,7 +529,7 @@ test.describe('Coaches', () => {
       await emergencyVillageField.scrollIntoViewIfNeeded();
       await emergencyVillageField.click();
       await page.waitForTimeout(200);
-      await fillFieldWithDelay(emergencyVillageField, 'Toul Kork');
+      await FileInput(emergencyVillageField, 'Toul Kork');
       // Use Tab to ensure natural user behavior and trigger blur events
       await emergencyVillageField.press('Tab'); 
       // Wait for address fields to become enabled
@@ -551,7 +551,7 @@ test.describe('Coaches', () => {
       
       await emergencyCommune.click();
       await page.waitForTimeout(200);
-      await fillFieldWithDelay(emergencyCommune, 'Toul Kork ');
+      await FileInput(emergencyCommune, 'Toul Kork ');
       await emergencyCommune.blur();
       await page.waitForTimeout(500);
     }
@@ -571,7 +571,7 @@ test.describe('Coaches', () => {
       const isDisabled = await emergencyDistrictField.isDisabled().catch(() => false);
       if (!isDisabled) {
         await page.waitForTimeout(200);
-        await fillFieldWithDelay(emergencyDistrictField, 'Phnom Penh');
+        await FileInput(emergencyDistrictField, 'Phnom Penh');
       }
     }
 
@@ -590,7 +590,7 @@ test.describe('Coaches', () => {
       const isDisabled = await emergencyCityField.isDisabled().catch(() => false);
       if (!isDisabled) {
         await page.waitForTimeout(200);
-        await fillFieldWithDelay(emergencyCityField, 'Phnom Penh');
+        await FileInput(emergencyCityField, 'Phnom Penh');
       }
     }
 
@@ -656,7 +656,7 @@ test.describe('Coaches', () => {
         .or(page.locator('#firstName, input[name="firstName"]'));
       if (await firstNameField.isVisible({ timeout: 3000 }).catch(() => false)) {
         await firstNameField.clear();
-        await fillFieldWithDelay(firstNameField, coachDataEdit.firstName);
+        await FileInput(firstNameField, coachDataEdit.firstName);
       }
       
       // Edit Last Name
@@ -664,7 +664,7 @@ test.describe('Coaches', () => {
         .or(page.locator('#lastName, input[name="lastName"]'));
       if (await lastNameField.isVisible({ timeout: 3000 }).catch(() => false)) {
         await lastNameField.clear();
-        await fillFieldWithDelay(lastNameField, coachDataEdit.lastName);
+        await FileInput(lastNameField, coachDataEdit.lastName);
       }
       
     // Edit Gender (Dropdown)
@@ -702,7 +702,7 @@ test.describe('Coaches', () => {
         .or(page.locator('#email, input[name="email"]'));
       if (await emailField.isVisible({ timeout: 3000 }).catch(() => false)) {
         await emailField.clear();
-        await fillFieldWithDelay(emailField, coachDataEdit.email);
+        await FileInput(emailField, coachDataEdit.email);
       }
       
       
@@ -711,7 +711,7 @@ test.describe('Coaches', () => {
         .or(page.locator('input[name="phone"]'));
       if (await phoneField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await phoneField.clear();
-        await fillFieldWithDelay(phoneField, coachDataEdit.phone);
+        await FileInput(phoneField, coachDataEdit.phone);
       }
       
       // Edit Telegram
@@ -719,7 +719,7 @@ test.describe('Coaches', () => {
         .or(page.locator('input[name="telegram"]'));
       if (await telegramField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await telegramField.clear();
-        await fillFieldWithDelay(telegramField, coachDataEdit.telegram);
+        await FileInput(telegramField, coachDataEdit.telegram);
       }
       
       // Edit ID Number
@@ -727,7 +727,7 @@ test.describe('Coaches', () => {
         .or(page.locator('input[name="idNumber"]'));
       if (await idNumberField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await idNumberField.clear();
-        await fillFieldWithDelay(idNumberField, coachDataEdit.idNumber);
+        await FileInput(idNumberField, coachDataEdit.idNumber);
       }
       
       // Edit ABA Account Name
@@ -735,7 +735,7 @@ test.describe('Coaches', () => {
         .or(page.locator('input[name="ABAAccountName"]'));
       if (await abaAccountNameField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await abaAccountNameField.clear();
-        await fillFieldWithDelay(abaAccountNameField, coachDataEdit.abaAccountName);
+        await FileInput(abaAccountNameField, coachDataEdit.abaAccountName);
       }
       
       // Edit ABA Account Number
@@ -743,7 +743,7 @@ test.describe('Coaches', () => {
         .or(page.locator('input[name="ABAAccountNumber"]'));
       if (await abaAccountNumberField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await abaAccountNumberField.clear();
-        await fillFieldWithDelay(abaAccountNumberField, coachDataEdit.abaAccountNumber);
+        await FileInput(abaAccountNumberField, coachDataEdit.abaAccountNumber);
       }
       
       // Edit Join Date
@@ -766,7 +766,7 @@ test.describe('Coaches', () => {
         await majorField.scrollIntoViewIfNeeded();
         await majorField.clear();
         await page.waitForTimeout(200);
-        await fillFieldWithDelay(majorField, coachDataEdit.major);
+        await FileInput(majorField, coachDataEdit.major);
       }
       
       // Edit Cost Per Hour
@@ -774,7 +774,7 @@ test.describe('Coaches', () => {
         .or(page.locator('input[name="costPerHour"]'));
       if (await costPerHourField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await costPerHourField.clear();
-        await fillFieldWithDelay(costPerHourField, coachDataEdit.costPerHour);
+        await FileInput(costPerHourField, coachDataEdit.costPerHour);
       }
 
           // Select Education Level (dropdown)
@@ -802,7 +802,7 @@ test.describe('Coaches', () => {
         .or(page.getByLabel(/Village/i));
       if (await villageField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await villageField.clear();
-        await fillFieldWithDelay(villageField, coachDataEdit.address.village);
+        await FileInput(villageField, coachDataEdit.address.village);
         await villageField.press('Tab');
         await page.waitForTimeout(1000);
       }
@@ -823,7 +823,7 @@ test.describe('Coaches', () => {
         await targetCommune.clear();
         await targetCommune.click();
         await page.waitForTimeout(300);
-        await fillFieldWithDelay(targetCommune, coachDataEdit.address.commune);
+        await FileInput(targetCommune, coachDataEdit.address.commune);
         await targetCommune.blur();
         await page.waitForTimeout(500);
       }
@@ -837,7 +837,7 @@ test.describe('Coaches', () => {
         if (!isDisabled) {
           await districtField.clear();
           await page.waitForTimeout(300);
-          await fillFieldWithDelay(districtField, coachDataEdit.address.district);
+          await FileInput(districtField, coachDataEdit.address.district);
         }
       }
 
@@ -850,7 +850,7 @@ test.describe('Coaches', () => {
         if (!isDisabled) {
           await cityField.clear();
           await page.waitForTimeout(300);
-          await fillFieldWithDelay(cityField, coachDataEdit.address.city);
+          await FileInput(cityField, coachDataEdit.address.city);
         }
       }
 
@@ -877,7 +877,7 @@ test.describe('Coaches', () => {
         .or(page.getByLabel(/Position/i));
       if (await workPositionField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await workPositionField.clear();
-        await fillFieldWithDelay(workPositionField, 'Lead Developer');
+        await FileInput(workPositionField, 'Lead Developer');
       }
       
       const workOrgField = page.getByPlaceholder('Organization')
@@ -885,7 +885,7 @@ test.describe('Coaches', () => {
         .or(page.getByLabel(/Organization/i));
       if (await workOrgField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await workOrgField.clear();
-        await fillFieldWithDelay(workOrgField, 'Software Solutions Inc');
+        await FileInput(workOrgField, 'Software Solutions Inc');
       }
       
       // Edit Work History Start Date (specific to workHistory.0, not education dates)
@@ -936,14 +936,14 @@ test.describe('Coaches', () => {
         .or(page.getByLabel(/School Name/i));
       if (await schoolNameField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await schoolNameField.clear();
-        await fillFieldWithDelay(schoolNameField, 'Royal University of Phnom Penh (Updated)');
+        await FileInput(schoolNameField, 'Royal University of Phnom Penh (Updated)');
       }
       
       // Fill Major
       const majorEduField = page.locator('input[name="educationBackground.0.major"]');
       if (await majorEduField.isVisible({ timeout: 2000 }).catch(() => false)) {
          await majorEduField.clear();
-         await fillFieldWithDelay(majorEduField, 'Information Technology');
+         await FileInput(majorEduField, 'Information Technology');
       }
       
       const eduStartDateField = page.locator('input[name="educationBackground.0.startDate"]');
@@ -984,7 +984,7 @@ test.describe('Coaches', () => {
         await guardianNameField.scrollIntoViewIfNeeded();
         await guardianNameField.clear();
         await page.waitForTimeout(200);
-        await fillFieldWithDelay(guardianNameField, 'Updated Guardian Name');
+        await FileInput(guardianNameField, 'Updated Guardian Name');
       }
       
       // Guardian Phone (use specific name, #phone is not unique)
@@ -993,7 +993,7 @@ test.describe('Coaches', () => {
         .or(page.getByPlaceholder('Phone Number'));
       if (await guardianPhoneField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await guardianPhoneField.clear();
-        await fillFieldWithDelay(guardianPhoneField, '0999888777');
+        await FileInput(guardianPhoneField, '0999888777');
       }
       
 // Guardian Relation
@@ -1002,7 +1002,7 @@ const guardianRelationField = page.locator('#relation')  // ← Add ID here
   .or(page.getByPlaceholder('Relation'));
       if (await guardianRelationField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await guardianRelationField.clear();
-        await fillFieldWithDelay(guardianRelationField, 'Mother');
+        await FileInput(guardianRelationField, 'Mother');
       }
       
       // Guardian Email
@@ -1010,7 +1010,7 @@ const guardianRelationField = page.locator('#relation')  // ← Add ID here
         .or(page.getByPlaceholder('Email'));
       if (await guardianEmailField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await guardianEmailField.clear();
-        await fillFieldWithDelay(guardianEmailField, 'guardian@email.com');
+        await FileInput(guardianEmailField, 'guardian@email.com');
       }
       
       // Guardian Village
@@ -1021,7 +1021,7 @@ const guardianRelationField = page.locator('#relation')  // ← Add ID here
         await guardianVillageField.scrollIntoViewIfNeeded();
         await guardianVillageField.clear();
         await page.waitForTimeout(200);
-        await fillFieldWithDelay(guardianVillageField, 'Toul Kork');
+        await FileInput(guardianVillageField, 'Toul Kork');
         await guardianVillageField.press('Tab');
         await page.waitForTimeout(1000);
       }
@@ -1043,7 +1043,7 @@ const guardianRelationField = page.locator('#relation')  // ← Add ID here
         await guardianCommuneField.clear();
         await guardianCommuneField.click();
         await page.waitForTimeout(200);
-        await fillFieldWithDelay(guardianCommuneField, 'Toul Kork');
+        await FileInput(guardianCommuneField, 'Toul Kork');
         await guardianCommuneField.blur();
         await page.waitForTimeout(500);
       }
@@ -1058,7 +1058,7 @@ const guardianRelationField = page.locator('#relation')  // ← Add ID here
           await guardianDistrictField.scrollIntoViewIfNeeded();
           await guardianDistrictField.clear();
           await page.waitForTimeout(200);
-          await fillFieldWithDelay(guardianDistrictField, 'Toul Kork');
+          await FileInput(guardianDistrictField, 'Toul Kork');
         }
       }
       
@@ -1072,7 +1072,7 @@ const guardianRelationField = page.locator('#relation')  // ← Add ID here
           await guardianCityField.scrollIntoViewIfNeeded();
           await guardianCityField.clear();
           await page.waitForTimeout(200);
-          await fillFieldWithDelay(guardianCityField, 'Phnom Penh');
+          await FileInput(guardianCityField, 'Phnom Penh');
         }
       }
       
@@ -1094,7 +1094,7 @@ const guardianRelationField = page.locator('#relation')  // ← Add ID here
         await emergencyNameField.scrollIntoViewIfNeeded();
         await emergencyNameField.clear();
         await page.waitForTimeout(200);
-        await fillFieldWithDelay(emergencyNameField, 'Emergency Contact Name');
+        await FileInput(emergencyNameField, 'Emergency Contact Name');
       }
       
       // Emergency Phone
@@ -1103,7 +1103,7 @@ const guardianRelationField = page.locator('#relation')  // ← Add ID here
         .or(page.getByPlaceholder('Phone Number'));
       if (await emergencyPhoneField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await emergencyPhoneField.clear();
-        await fillFieldWithDelay(emergencyPhoneField, '0111222333');
+        await FileInput(emergencyPhoneField, '0111222333');
       }
       
       // Emergency Relation
@@ -1112,7 +1112,7 @@ const guardianRelationField = page.locator('#relation')  // ← Add ID here
         .or(page.getByPlaceholder('Relation'));
       if (await emergencyRelationField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await emergencyRelationField.clear();
-        await fillFieldWithDelay(emergencyRelationField, 'Sibling');
+        await FileInput(emergencyRelationField, 'Sibling');
       }
       
       // Emergency Email
@@ -1120,7 +1120,7 @@ const guardianRelationField = page.locator('#relation')  // ← Add ID here
         .or(page.getByPlaceholder('Email'));
       if (await emergencyEmailField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await emergencyEmailField.clear();
-        await fillFieldWithDelay(emergencyEmailField, 'emergency@email.com');
+        await FileInput(emergencyEmailField, 'emergency@email.com');
       }
       
       // Emergency Village
@@ -1131,7 +1131,7 @@ const guardianRelationField = page.locator('#relation')  // ← Add ID here
         await emergencyVillageField.scrollIntoViewIfNeeded();
         await emergencyVillageField.clear();
         await page.waitForTimeout(200);
-        await fillFieldWithDelay(emergencyVillageField, 'Daun Penh');
+        await FileInput(emergencyVillageField, 'Daun Penh');
         await emergencyVillageField.press('Tab');
         await page.waitForTimeout(1000);
       }
@@ -1153,7 +1153,7 @@ const guardianRelationField = page.locator('#relation')  // ← Add ID here
         await emergencyCommuneField.clear();
         await emergencyCommuneField.click();
         await page.waitForTimeout(200);
-        await fillFieldWithDelay(emergencyCommuneField, 'Daun Penh');
+        await FileInput(emergencyCommuneField, 'Daun Penh');
         await emergencyCommuneField.blur();
         await page.waitForTimeout(500);
       }
@@ -1168,7 +1168,7 @@ const guardianRelationField = page.locator('#relation')  // ← Add ID here
           await emergencyDistrictField.scrollIntoViewIfNeeded();
           await emergencyDistrictField.clear();
           await page.waitForTimeout(200);
-          await fillFieldWithDelay(emergencyDistrictField, 'Daun Penh');
+          await FileInput(emergencyDistrictField, 'Daun Penh');
         }
       }
       
@@ -1182,7 +1182,7 @@ const guardianRelationField = page.locator('#relation')  // ← Add ID here
           await emergencyCityField.scrollIntoViewIfNeeded();
           await emergencyCityField.clear();
           await page.waitForTimeout(200);
-          await fillFieldWithDelay(emergencyCityField, 'Phnom Penh');
+          await FileInput(emergencyCityField, 'Phnom Penh');
         }
       }
 

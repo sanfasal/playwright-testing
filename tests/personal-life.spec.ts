@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { login } from '../utils/auth-helper';
 import { addCursorTracking } from '../utils/cursor-helper';
-import { fillFieldWithDelay } from '../utils/form-helper';
+import { FileInput } from '../utils/form-helper';
 import * as fs from 'fs';
 import * as path from 'path';
 import { getOTPFromEmail } from '../utils/email-helper2';
@@ -77,13 +77,13 @@ test.describe('Personal Life', () => {
     const firstNameField = page.getByLabel(/First Name/i).or(page.locator('#firstName, input[name="firstName"]'));
     if (await firstNameField.isVisible({ timeout: 2000 }).catch(() => false)) {
       await firstNameField.clear();
-      await fillFieldWithDelay(firstNameField, personalDataEdit.firstName);
+      await FileInput(firstNameField, personalDataEdit.firstName);
     }
 
     const lastNameField = page.getByLabel(/Last Name/i).or(page.locator('#lastName, input[name="lastName"]'));
     if (await lastNameField.isVisible({ timeout: 2000 }).catch(() => false)) {
       await lastNameField.clear();
-      await fillFieldWithDelay(lastNameField, personalDataEdit.lastName);
+      await FileInput(lastNameField, personalDataEdit.lastName);
     }
 
     // Gender selection (dropdown)
@@ -108,7 +108,7 @@ test.describe('Personal Life', () => {
     const phoneField = page.locator('#phone').or(page.getByLabel(/Phone Number|Phone/i)).or(page.getByPlaceholder(/012345678|098/));
     if (await phoneField.isVisible({ timeout: 2000 }).catch(() => false)) {
       await phoneField.clear();
-      await fillFieldWithDelay(phoneField, personalDataEdit.phone);
+      await FileInput(phoneField, personalDataEdit.phone);
     }
 
     // Date of Birth
@@ -124,7 +124,7 @@ test.describe('Personal Life', () => {
     const occupationField = page.getByLabel(/Occupation/i).or(page.locator('input[name="occupation"]'));
     if (await occupationField.isVisible({ timeout: 2000 }).catch(() => false)) {
       await occupationField.clear();
-      await fillFieldWithDelay(occupationField, personalDataEdit.occupation);
+      await FileInput(occupationField, personalDataEdit.occupation);
     }
 
     // Bio / About
@@ -137,7 +137,7 @@ test.describe('Personal Life', () => {
     const villageField = page.getByPlaceholder('Village').or(page.locator('input[name="address.village"]')).or(page.getByLabel(/Village/i));
     if (await villageField.isVisible({ timeout: 2000 }).catch(() => false)) {
       await villageField.clear();
-      await fillFieldWithDelay(villageField, personalDataEdit.address.village);
+      await FileInput(villageField, personalDataEdit.address.village);
       await page.waitForTimeout(300);
     }
 
@@ -147,7 +147,7 @@ test.describe('Personal Life', () => {
       const isDisabled = await communeField.isDisabled().catch(() => false);
       if (!isDisabled) {
         await communeField.clear();
-        await fillFieldWithDelay(communeField, personalDataEdit.address.commune);
+        await FileInput(communeField, personalDataEdit.address.commune);
       }
     }
 
@@ -157,7 +157,7 @@ test.describe('Personal Life', () => {
       const isDisabled = await districtField.isDisabled().catch(() => false);
       if (!isDisabled) {
         await districtField.clear();
-        await fillFieldWithDelay(districtField, personalDataEdit.address.district);
+        await FileInput(districtField, personalDataEdit.address.district);
       }
     }
 
@@ -167,7 +167,7 @@ test.describe('Personal Life', () => {
       const isDisabled = await cityField.isDisabled().catch(() => false);
       if (!isDisabled) {
         await cityField.clear();
-        await fillFieldWithDelay(cityField, personalDataEdit.address.city);
+        await FileInput(cityField, personalDataEdit.address.city);
       }
     }
 
@@ -317,7 +317,7 @@ test.describe('Change Email', () => {
     // Step 5: Fill New Email
     const newEmailInput = page.locator('#newEmail');
     await newEmailInput.waitFor({ state: 'visible', timeout: 10000 });
-    await fillFieldWithDelay(newEmailInput, targetEmail); 
+    await FileInput(newEmailInput, targetEmail); 
 
     const confirmEmailField = page.locator('#confirmNewEmail')
         .or(page.locator('input[name="confirmNewEmail"]'))
@@ -326,7 +326,7 @@ test.describe('Change Email', () => {
 
     await confirmEmailField.waitFor({ state: 'visible', timeout: 5000 });
     await confirmEmailField.clear();
-    await fillFieldWithDelay(confirmEmailField, targetEmail);
+    await FileInput(confirmEmailField, targetEmail);
 
     // Submit Change Request
     const otpSentTime = Date.now();
@@ -351,7 +351,7 @@ test.describe('Change Email', () => {
         timestamp: targetTimestamp
     }, undefined, 30000, otpSentTime);
 
-    await fillFieldWithDelay(otpField, otp);
+    await FileInput(otpField, otp);
     
     const verifyBtn = page.getByRole('button', { name: /Verify|Confirm|Submit/i });
     if (await verifyBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
@@ -408,7 +408,7 @@ test.describe('Update Password', () => {
         const currentPasswordField = page.locator('#currentPassword');
         if (await currentPasswordField.isVisible({ timeout: 2000 }).catch(() => false)) {
           await currentPasswordField.clear();
-          await fillFieldWithDelay(currentPasswordField, currentPassword);
+          await FileInput(currentPasswordField, currentPassword);
           // Scope icon to the field's container
           const fieldContainer = page.locator('div')
             .filter({ has: currentPasswordField })
@@ -428,7 +428,7 @@ test.describe('Update Password', () => {
         const newPasswordField = page.locator('#newPassword');
         if (await newPasswordField.isVisible({ timeout: 2000 }).catch(() => false)) {
           await newPasswordField.clear();
-          await fillFieldWithDelay(newPasswordField, newPassword);
+          await FileInput(newPasswordField, newPassword);
           const fieldContainer = page.locator('div')
             .filter({ has: newPasswordField })
             .filter({ has: page.locator(ICONS.eyeOff).or(page.locator(ICONS.eye)) })
@@ -446,7 +446,7 @@ test.describe('Update Password', () => {
         const confirmPasswordField = page.locator('#confirmPassword');
         if (await confirmPasswordField.isVisible({ timeout: 2000 }).catch(() => false)) {
           await confirmPasswordField.clear();
-          await fillFieldWithDelay(confirmPasswordField, newPassword);
+          await FileInput(confirmPasswordField, newPassword);
           const fieldContainer = page.locator('div')
             .filter({ has: confirmPasswordField })
             .filter({ has: page.locator(ICONS.eyeOff).or(page.locator(ICONS.eye)) })

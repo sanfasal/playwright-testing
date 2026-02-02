@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { login } from '../utils/auth-helper';
-import { fillFieldWithDelay } from '../utils/form-helper';
+import { FileInput } from '../utils/form-helper';
 
 test.describe('Contacts Page', () => {
   
@@ -21,19 +21,19 @@ test.describe('Contacts Page', () => {
     await expect(page.getByRole('textbox').first()).toBeVisible({ timeout: 9000 });
     await page.waitForTimeout(500);
     const nameField = page.getByRole('textbox').nth(0);
-    await fillFieldWithDelay(nameField, 'Test Contact');
+    await FileInput(nameField, 'Test Contact');
     
     const telField = page.getByRole('textbox').nth(1);
-    await fillFieldWithDelay(telField, '1234567890');
+    await FileInput(telField, '1234567890');
     
     const emailField = page.getByRole('textbox').nth(2);
-    await fillFieldWithDelay(emailField, 'test@example.com');
+    await FileInput(emailField, 'test@example.com');
 
     const dateField = page.getByRole('textbox').nth(3);
-    await fillFieldWithDelay(dateField, '2026-01-14');
+    await FileInput(dateField, '2026-01-14');
 
     const noteField = page.getByRole('textbox').nth(4);
-    await fillFieldWithDelay(noteField, 'This is a test contact note');
+    await FileInput(noteField, 'This is a test contact note');
     await page.getByRole('button', { name: /Add/i }).click();
   });
 });

@@ -4,7 +4,7 @@ import { getUserData, addUser } from "../../utils/data-store";
 import dotenv from "dotenv";
 import { addCursorTracking } from "../../utils/cursor-helper";
 import {
-  fillFieldWithDelay,
+  FileInput,
   verifyPasswordToggle,
 } from "../../utils/form-helper";
 
@@ -23,7 +23,7 @@ const TEST_USER = {
 test.describe("Sign Up", () => {
   test.setTimeout(60000);
 
-  test("Sign up testing", async ({ page }) => {
+  test("Sign up", async ({ page }) => {
     await addCursorTracking(page);
 
     const apiKey = process.env.TESTMAIL_API_KEY;
@@ -47,27 +47,27 @@ test.describe("Sign Up", () => {
     await page.waitForTimeout(50);
 
     // Fill form like a real user
-    await fillFieldWithDelay(
+    await FileInput(
       page.getByRole("textbox", { name: /first name/i }),
       TEST_USER.firstName
     );
-    await fillFieldWithDelay(
+    await FileInput(
       page.getByRole("textbox", { name: /last name/i }),
       TEST_USER.lastName
     );
-    await fillFieldWithDelay(
+    await FileInput(
       page.getByRole("textbox", { name: /company/i }),
       TEST_USER.company
     );
-    await fillFieldWithDelay(
+    await FileInput(
       page.getByRole("textbox", { name: /email/i }),
       email
     );
-    await fillFieldWithDelay(
+    await FileInput(
       page.getByRole("textbox", { name: /^password$/i }),
       password
     );
-    await fillFieldWithDelay(
+    await FileInput(
       page.getByRole("textbox", { name: /confirm password/i }),
       password
     );
@@ -90,7 +90,7 @@ test.describe("Sign Up", () => {
         namespace,
         timestamp: timestamp,
       });
-      await fillFieldWithDelay(
+      await FileInput(
         page.getByRole("textbox", { name: /code/i }),
         otp,
         { typingDelay: 50, afterTypingDelay: 50 }
@@ -109,35 +109,35 @@ test.describe("Sign Up", () => {
     }
   });
 
-  test("Sign up fails with existing email", async ({ page }) => {
+  test("Sign up with existing email", async ({ page }) => {
     await addCursorTracking(page);
 
     await page.goto("/signup");
     await page.waitForTimeout(50);
 
     // Fill form like a real user
-    await fillFieldWithDelay(
+    await FileInput(
       page.getByRole("textbox", { name: /first name/i }),
       TEST_USER.firstName
     );
-    await fillFieldWithDelay(
+    await FileInput(
       page.getByRole("textbox", { name: /last name/i }),
       TEST_USER.lastName
     );
-    await fillFieldWithDelay(
+    await FileInput(
       page.getByRole("textbox", { name: /company/i }),
       TEST_USER.company
     );
     const existingEmail = getUserData('signupEmail') || TEST_USER.existingEmail;
-    await fillFieldWithDelay(
+    await FileInput(
       page.getByRole("textbox", { name: /email/i }),
       existingEmail
     );
-    await fillFieldWithDelay(
+    await FileInput(
       page.getByRole("textbox", { name: /^password$/i }),
       TEST_USER.validPassword
     );
-    await fillFieldWithDelay(
+    await FileInput(
       page.getByRole("textbox", { name: /confirm password/i }),
       TEST_USER.validPassword
     );
@@ -166,27 +166,27 @@ test.describe("Sign Up", () => {
     await expect(errorMessage).toBeVisible({ timeout: 5000 });
   });
 
-  test("Sign up fails with passwords do not match", async ({ page }) => {
+  test("Sign up with passwords do not match", async ({ page }) => {
     await addCursorTracking(page);
 
     await page.goto("/signup");
     await page.waitForTimeout(50);
 
     // Fill in all required fields like a real user
-    await fillFieldWithDelay(
+    await FileInput(
       page.getByRole("textbox", { name: /first name/i }),
       TEST_USER.firstName
     );
-    await fillFieldWithDelay(
+    await FileInput(
       page.getByRole("textbox", { name: /last name/i }),
       TEST_USER.lastName
     );
-    await fillFieldWithDelay(
+    await FileInput(
       page.getByRole("textbox", { name: /company/i }),
       TEST_USER.company
     );
      const existingEmail = getUserData('signupEmail') || TEST_USER.existingEmail;
-    await fillFieldWithDelay(
+    await FileInput(
       page.getByRole("textbox", { name: /email/i }),
       existingEmail
     );
@@ -196,8 +196,8 @@ test.describe("Sign Up", () => {
       name: /confirm password/i,
     });
 
-    await fillFieldWithDelay(passwordField, TEST_USER.validPassword);
-    await fillFieldWithDelay(confirmPasswordField, TEST_USER.invalidPassword);
+    await FileInput(passwordField, TEST_USER.validPassword);
+    await FileInput(confirmPasswordField, TEST_USER.invalidPassword);
 
     // Verify password toggle works for both fields
     await verifyPasswordToggle(passwordField);
@@ -211,19 +211,19 @@ test.describe("Sign Up", () => {
     await page.waitForTimeout(50);
 
     // Fill in all required fields like a real user
-    await fillFieldWithDelay(
+    await FileInput(
       page.getByRole("textbox", { name: /first name/i }),
       TEST_USER.firstName
     );
-    await fillFieldWithDelay(
+    await FileInput(
       page.getByRole("textbox", { name: /last name/i }),
       TEST_USER.lastName
     );
-    await fillFieldWithDelay(
+    await FileInput(
       page.getByRole("textbox", { name: /company/i }),
       TEST_USER.company
     );
-    await fillFieldWithDelay(
+    await FileInput(
       page.getByRole("textbox", { name: /email/i }),
       "test@example.com"
     );
@@ -235,8 +235,8 @@ test.describe("Sign Up", () => {
       name: /confirm password/i,
     });
 
-    await fillFieldWithDelay(passwordField, weakPassword);
-    await fillFieldWithDelay(confirmPasswordField, weakPassword);
+    await FileInput(passwordField, weakPassword);
+    await FileInput(confirmPasswordField, weakPassword);
 
     // Verify password toggle works for both fields
     await verifyPasswordToggle(passwordField);

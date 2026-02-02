@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import path from 'path';
 import { login } from '../utils/auth-helper';
 import { addCursorTracking } from '../utils/cursor-helper';
-import { fillFieldWithDelay } from '../utils/form-helper';
+import { FileInput } from '../utils/form-helper';
 import { deleteEntityViaActionMenu } from '../utils/delete-helper';
 import { toggleViewMode } from '../utils/view-helper';
 import { uploadThumbnail } from '../utils/upload-thumbnail-helper';
@@ -150,12 +150,12 @@ test.describe('Students', () => {
     // Fill First Name
     const firstNameField = page.getByLabel(/First Name/i)
       .or(page.locator('#firstName, input[name="firstName"]'));
-    await fillFieldWithDelay(firstNameField, studentDataAdd.firstName);
+    await FileInput(firstNameField, studentDataAdd.firstName);
     
     // Fill Last Name
     const lastNameField = page.getByLabel(/Last Name/i)
       .or(page.locator('#lastName, input[name="lastName"]'));
-    await fillFieldWithDelay(lastNameField, studentDataAdd.lastName);
+    await FileInput(lastNameField, studentDataAdd.lastName);
     
     // Select Gender (before email)
     const genderButton = page.locator('button[role="combobox"]').filter({ has: page.locator('svg') })
@@ -173,7 +173,7 @@ test.describe('Students', () => {
     // Fill Email (use testmail helper to generate a unique inbox)
     const emailField = page.getByLabel(/Email/i)
       .or(page.locator('#email, input[name="email"]'));
-    await fillFieldWithDelay(emailField, studentDataAdd.email);
+    await FileInput(emailField, studentDataAdd.email);
 
     // Fill Date of Birth with today's date
     const dobField = page.getByLabel(/Date of Birth|DOB|Birth Date/i)
@@ -187,14 +187,14 @@ test.describe('Students', () => {
     const phoneField = page.getByLabel(/Phone/i)
       .or(page.locator('input[name="phone"]'));
     if (await phoneField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await fillFieldWithDelay(phoneField, studentDataAdd.phone);
+      await FileInput(phoneField, studentDataAdd.phone);
     }
     
     // Telegram usernames (if exists)
     const telegramField = page.getByPlaceholder(/Telegram/i)
       .or(page.locator('input[name="telegram"]'));
     if (await telegramField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await fillFieldWithDelay(telegramField, studentDataAdd.telegram);
+      await FileInput(telegramField, studentDataAdd.telegram);
     }
     
     // Village (if exists) - uses nested name attribute
@@ -202,7 +202,7 @@ test.describe('Students', () => {
       .or(page.locator('input[name="address.village"]'))
       .or(page.getByLabel(/Village/i));
     if (await villageField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await fillFieldWithDelay(villageField, studentDataAdd.address.village);
+      await FileInput(villageField, studentDataAdd.address.village);
       await villageField.press('Tab'); 
       await page.waitForTimeout(1000);
     }
@@ -231,7 +231,7 @@ test.describe('Students', () => {
 
       await targetCommune.click();
       await page.waitForTimeout(300);
-      await fillFieldWithDelay(targetCommune, studentDataAdd.address.commune);
+      await FileInput(targetCommune, studentDataAdd.address.commune);
       await targetCommune.blur();
       await page.waitForTimeout(500);
     }
@@ -246,7 +246,7 @@ test.describe('Students', () => {
       const isDisabled = await districtField.isDisabled().catch(() => false);
       if (!isDisabled) {
         await page.waitForTimeout(300);
-        await fillFieldWithDelay(districtField, studentDataAdd.address.district);
+        await FileInput(districtField, studentDataAdd.address.district);
       }
     }
 
@@ -260,7 +260,7 @@ test.describe('Students', () => {
       const isDisabled = await cityField.isDisabled().catch(() => false);
       if (!isDisabled) {
         await page.waitForTimeout(300);
-        await fillFieldWithDelay(cityField, studentDataAdd.address.city);
+        await FileInput(cityField, studentDataAdd.address.city);
       }
     }
     
@@ -280,7 +280,7 @@ test.describe('Students', () => {
     if (await guardianNameField.isVisible({ timeout: 2000 }).catch(() => false)) {
       await guardianNameField.scrollIntoViewIfNeeded();
       await page.waitForTimeout(200);
-      await fillFieldWithDelay(guardianNameField, studentDataAdd.guardian.name);
+      await FileInput(guardianNameField, studentDataAdd.guardian.name);
     }
 
     // Guardian Phone Number
@@ -290,7 +290,7 @@ test.describe('Students', () => {
     if (await guardianPhoneField.isVisible({ timeout: 2000 }).catch(() => false)) {
       await guardianPhoneField.scrollIntoViewIfNeeded();
       await page.waitForTimeout(200);
-      await fillFieldWithDelay(guardianPhoneField, studentDataAdd.guardian.phone);
+      await FileInput(guardianPhoneField, studentDataAdd.guardian.phone);
     }
 
     // Guardian Relation
@@ -300,7 +300,7 @@ test.describe('Students', () => {
     if (await guardianRelationField.isVisible({ timeout: 2000 }).catch(() => false)) {
       await guardianRelationField.scrollIntoViewIfNeeded();
       await page.waitForTimeout(200);
-      await fillFieldWithDelay(guardianRelationField, studentDataAdd.guardian.relation);
+      await FileInput(guardianRelationField, studentDataAdd.guardian.relation);
     }
 
     // Guardian Email
@@ -310,7 +310,7 @@ test.describe('Students', () => {
     if (await guardianEmailField.isVisible({ timeout: 2000 }).catch(() => false)) {
       await guardianEmailField.scrollIntoViewIfNeeded();
       await page.waitForTimeout(200);
-      await fillFieldWithDelay(guardianEmailField, studentDataAdd.guardian.email);
+      await FileInput(guardianEmailField, studentDataAdd.guardian.email);
     }
 
     // Guardian Village
@@ -320,7 +320,7 @@ test.describe('Students', () => {
     if (await guardianVillageField.isVisible({ timeout: 2000 }).catch(() => false)) {
       await guardianVillageField.scrollIntoViewIfNeeded();
       await page.waitForTimeout(200);
-      await fillFieldWithDelay(guardianVillageField, studentDataAdd.guardian.address.village);
+      await FileInput(guardianVillageField, studentDataAdd.guardian.address.village);
       await guardianVillageField.press('Tab'); 
       await page.waitForTimeout(1000);
     }
@@ -340,7 +340,7 @@ test.describe('Students', () => {
       
       await finalGuardianCommune.click();
       await page.waitForTimeout(200);
-      await fillFieldWithDelay(finalGuardianCommune, studentDataAdd.guardian.address.commune);
+      await FileInput(finalGuardianCommune, studentDataAdd.guardian.address.commune);
       await finalGuardianCommune.blur();
       await page.waitForTimeout(500);
     }
@@ -360,7 +360,7 @@ test.describe('Students', () => {
       const isDisabled = await guardianDistrictField.isDisabled().catch(() => false);
       if (!isDisabled) {
         await page.waitForTimeout(200);
-        await fillFieldWithDelay(guardianDistrictField, studentDataAdd.guardian.address.district);
+        await FileInput(guardianDistrictField, studentDataAdd.guardian.address.district);
       }
     }
 
@@ -379,7 +379,7 @@ test.describe('Students', () => {
       const isDisabled = await guardianCityField.isDisabled().catch(() => false);
       if (!isDisabled) {
         await page.waitForTimeout(200);
-        await fillFieldWithDelay(guardianCityField, studentDataAdd.guardian.address.city);
+        await FileInput(guardianCityField, studentDataAdd.guardian.address.city);
       }
     }
 
@@ -399,7 +399,7 @@ test.describe('Students', () => {
       await emergencyNameField.scrollIntoViewIfNeeded();
       await emergencyNameField.click();
       await page.waitForTimeout(200);
-      await fillFieldWithDelay(emergencyNameField, studentDataAdd.emergency.name);
+      await FileInput(emergencyNameField, studentDataAdd.emergency.name);
     }
 
     // Emergency Phone Number
@@ -410,7 +410,7 @@ test.describe('Students', () => {
       await emergencyPhoneField.scrollIntoViewIfNeeded();
       await emergencyPhoneField.click();
       await page.waitForTimeout(200);
-      await fillFieldWithDelay(emergencyPhoneField, studentDataAdd.emergency.phone);
+      await FileInput(emergencyPhoneField, studentDataAdd.emergency.phone);
     }
 
     // Emergency Relation
@@ -421,7 +421,7 @@ test.describe('Students', () => {
       await emergencyRelationField.scrollIntoViewIfNeeded();
       await emergencyRelationField.click();
       await page.waitForTimeout(200);
-      await fillFieldWithDelay(emergencyRelationField, studentDataAdd.emergency.relation);
+      await FileInput(emergencyRelationField, studentDataAdd.emergency.relation);
     }
 
     // Emergency Email
@@ -432,7 +432,7 @@ test.describe('Students', () => {
       await emergencyEmailField.scrollIntoViewIfNeeded();
       await emergencyEmailField.click();
       await page.waitForTimeout(200);
-      await fillFieldWithDelay(emergencyEmailField, studentDataAdd.emergency.email);
+      await FileInput(emergencyEmailField, studentDataAdd.emergency.email);
     }
 
     // Emergency Village
@@ -443,7 +443,7 @@ test.describe('Students', () => {
       await emergencyVillageField.scrollIntoViewIfNeeded();
       await emergencyVillageField.click();
       await page.waitForTimeout(200);
-      await fillFieldWithDelay(emergencyVillageField, studentDataAdd.emergency.address.village);
+      await FileInput(emergencyVillageField, studentDataAdd.emergency.address.village);
       await emergencyVillageField.press('Tab'); 
       await page.waitForTimeout(1000);
     }
@@ -462,7 +462,7 @@ test.describe('Students', () => {
       
       await emergencyCommune.click();
       await page.waitForTimeout(200);
-      await fillFieldWithDelay(emergencyCommune, studentDataAdd.emergency.address.commune);
+      await FileInput(emergencyCommune, studentDataAdd.emergency.address.commune);
       await emergencyCommune.blur();
       await page.waitForTimeout(500);
     }
@@ -482,7 +482,7 @@ test.describe('Students', () => {
       const isDisabled = await emergencyDistrictField.isDisabled().catch(() => false);
       if (!isDisabled) {
         await page.waitForTimeout(200);
-        await fillFieldWithDelay(emergencyDistrictField, studentDataAdd.emergency.address.district);
+        await FileInput(emergencyDistrictField, studentDataAdd.emergency.address.district);
       }
     }
 
@@ -501,7 +501,7 @@ test.describe('Students', () => {
       const isDisabled = await emergencyCityField.isDisabled().catch(() => false);
       if (!isDisabled) {
         await page.waitForTimeout(200);
-        await fillFieldWithDelay(emergencyCityField, studentDataAdd.emergency.address.city);
+        await FileInput(emergencyCityField, studentDataAdd.emergency.address.city);
       }
     }
 
@@ -572,7 +572,7 @@ test.describe('Students', () => {
         .or(page.locator('#firstName, input[name="firstName"]'));
       if (await firstNameField.isVisible({ timeout: 3000 }).catch(() => false)) {
         await firstNameField.clear();
-        await fillFieldWithDelay(firstNameField, studentDataEdit.firstName);
+        await FileInput(firstNameField, studentDataEdit.firstName);
       }
       
       // Edit Last Name
@@ -580,7 +580,7 @@ test.describe('Students', () => {
         .or(page.locator('#lastName, input[name="lastName"]'));
       if (await lastNameField.isVisible({ timeout: 3000 }).catch(() => false)) {
         await lastNameField.clear();
-        await fillFieldWithDelay(lastNameField, studentDataEdit.lastName);
+        await FileInput(lastNameField, studentDataEdit.lastName);
       }
 
     // Edit Gender (Dropdown)
@@ -606,7 +606,7 @@ test.describe('Students', () => {
         .or(page.locator('#email, input[name="email"]'));
       if (await emailField.isVisible({ timeout: 3000 }).catch(() => false)) {
         await emailField.clear();
-        await fillFieldWithDelay(emailField, studentDataEdit.email);
+        await FileInput(emailField, studentDataEdit.email);
       }
 
             // Edit Date of Birth
@@ -627,14 +627,14 @@ test.describe('Students', () => {
         .or(page.locator('input[name="phone"]'));
       if (await phoneField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await phoneField.clear();
-        await fillFieldWithDelay(phoneField, studentDataEdit.phone);
+        await FileInput(phoneField, studentDataEdit.phone);
       }
 
       // Telegram usernames (if exists)
     const telegramField = page.getByPlaceholder(/Telegram/i)
       .or(page.locator('input[name="telegram"]'));
     if (await telegramField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await fillFieldWithDelay(telegramField, studentDataEdit.telegram);
+      await FileInput(telegramField, studentDataEdit.telegram);
     }
 
       // Edit Village
@@ -643,7 +643,7 @@ test.describe('Students', () => {
         .or(page.getByLabel(/Village/i));
       if (await villageField.isVisible({ timeout: 2000 }).catch(() => false)) {
         await villageField.clear();
-        await fillFieldWithDelay(villageField, studentDataEdit.address.village);
+        await FileInput(villageField, studentDataEdit.address.village);
         await villageField.press('Tab');
         await page.waitForTimeout(1000);
       }
@@ -664,7 +664,7 @@ test.describe('Students', () => {
         await targetCommune.clear();
         await targetCommune.click();
         await page.waitForTimeout(300);
-        await fillFieldWithDelay(targetCommune, studentDataEdit.address.commune);
+        await FileInput(targetCommune, studentDataEdit.address.commune);
         await targetCommune.blur();
         await page.waitForTimeout(500);
       }
@@ -678,7 +678,7 @@ test.describe('Students', () => {
         if (!isDisabled) {
           await districtField.clear();
           await page.waitForTimeout(300);
-          await fillFieldWithDelay(districtField, studentDataEdit.address.district);
+          await FileInput(districtField, studentDataEdit.address.district);
         }
       }
 
@@ -691,7 +691,7 @@ test.describe('Students', () => {
         if (!isDisabled) {
           await cityField.clear();
           await page.waitForTimeout(300);
-          await fillFieldWithDelay(cityField, studentDataEdit.address.city);
+          await FileInput(cityField, studentDataEdit.address.city);
         }
       }
 
@@ -713,7 +713,7 @@ test.describe('Students', () => {
           await guardianNameField.scrollIntoViewIfNeeded();
           await guardianNameField.clear();
           await page.waitForTimeout(200);
-          await fillFieldWithDelay(guardianNameField, studentDataEdit.guardian.name);
+          await FileInput(guardianNameField, studentDataEdit.guardian.name);
         }
 
         // Edit Guardian Phone
@@ -724,7 +724,7 @@ test.describe('Students', () => {
           await guardianPhoneField.scrollIntoViewIfNeeded();
           await guardianPhoneField.clear();
           await page.waitForTimeout(200);
-          await fillFieldWithDelay(guardianPhoneField, studentDataEdit.guardian.phone);
+          await FileInput(guardianPhoneField, studentDataEdit.guardian.phone);
         }
 
         // Edit Guardian Relation
@@ -735,7 +735,7 @@ test.describe('Students', () => {
           await guardianRelationField.scrollIntoViewIfNeeded();
           await guardianRelationField.clear();
           await page.waitForTimeout(200);
-          await fillFieldWithDelay(guardianRelationField, studentDataEdit.guardian.relation);
+          await FileInput(guardianRelationField, studentDataEdit.guardian.relation);
         }
 
         // Edit Guardian Email
@@ -746,7 +746,7 @@ test.describe('Students', () => {
           await guardianEmailField.scrollIntoViewIfNeeded();
           await guardianEmailField.clear();
           await page.waitForTimeout(200);
-          await fillFieldWithDelay(guardianEmailField, studentDataEdit.guardian.email);
+          await FileInput(guardianEmailField, studentDataEdit.guardian.email);
         }
 
         // Edit Guardian Village
@@ -757,7 +757,7 @@ test.describe('Students', () => {
           await guardianVillageField.scrollIntoViewIfNeeded();
           await guardianVillageField.clear();
           await page.waitForTimeout(200);
-          await fillFieldWithDelay(guardianVillageField, studentDataEdit.guardian.address.village);
+          await FileInput(guardianVillageField, studentDataEdit.guardian.address.village);
           await guardianVillageField.press('Tab');
           await page.waitForTimeout(1000);
         }
@@ -776,7 +776,7 @@ test.describe('Students', () => {
           await guardianCommuneField.clear();
           await guardianCommuneField.click();
           await page.waitForTimeout(200);
-          await fillFieldWithDelay(guardianCommuneField, studentDataEdit.guardian.address.commune);
+          await FileInput(guardianCommuneField, studentDataEdit.guardian.address.commune);
           await guardianCommuneField.blur();
           await page.waitForTimeout(500);
         }
@@ -796,7 +796,7 @@ test.describe('Students', () => {
           if (!isDisabled) {
             await guardianDistrictField.clear();
             await page.waitForTimeout(200);
-            await fillFieldWithDelay(guardianDistrictField, studentDataEdit.guardian.address.district);
+            await FileInput(guardianDistrictField, studentDataEdit.guardian.address.district);
           }
         }
 
@@ -815,7 +815,7 @@ test.describe('Students', () => {
           if (!isDisabled) {
             await guardianCityField.clear();
             await page.waitForTimeout(200);
-            await fillFieldWithDelay(guardianCityField, studentDataEdit.guardian.address.city);
+            await FileInput(guardianCityField, studentDataEdit.guardian.address.city);
           }
         }
 
@@ -838,7 +838,7 @@ test.describe('Students', () => {
             await emergencyNameField.clear();
             await emergencyNameField.click();
             await page.waitForTimeout(200);
-            await fillFieldWithDelay(emergencyNameField, studentDataEdit.emergency.name);
+            await FileInput(emergencyNameField, studentDataEdit.emergency.name);
           }
 
           // Edit Emergency Phone
@@ -850,7 +850,7 @@ test.describe('Students', () => {
             await emergencyPhoneField.clear();
             await emergencyPhoneField.click();
             await page.waitForTimeout(200);
-            await fillFieldWithDelay(emergencyPhoneField, studentDataEdit.emergency.phone);
+            await FileInput(emergencyPhoneField, studentDataEdit.emergency.phone);
           }
 
           // Edit Emergency Relation
@@ -862,7 +862,7 @@ test.describe('Students', () => {
             await emergencyRelationField.clear();
             await emergencyRelationField.click();
             await page.waitForTimeout(200);
-            await fillFieldWithDelay(emergencyRelationField, studentDataEdit.emergency.relation);
+            await FileInput(emergencyRelationField, studentDataEdit.emergency.relation);
           }
 
           // Edit Emergency Email
@@ -874,7 +874,7 @@ test.describe('Students', () => {
             await emergencyEmailField.clear();
             await emergencyEmailField.click();
             await page.waitForTimeout(200);
-            await fillFieldWithDelay(emergencyEmailField, studentDataEdit.emergency.email);
+            await FileInput(emergencyEmailField, studentDataEdit.emergency.email);
           }
 
           // Edit Emergency Village
@@ -886,7 +886,7 @@ test.describe('Students', () => {
             await emergencyVillageField.clear();
             await emergencyVillageField.click();
             await page.waitForTimeout(200);
-            await fillFieldWithDelay(emergencyVillageField, studentDataEdit.emergency.address.village);
+            await FileInput(emergencyVillageField, studentDataEdit.emergency.address.village);
             await emergencyVillageField.press('Tab');
             await page.waitForTimeout(1000);
           }
@@ -905,7 +905,7 @@ test.describe('Students', () => {
             await emergencyCommune.clear();
             await emergencyCommune.click();
             await page.waitForTimeout(200);
-            await fillFieldWithDelay(emergencyCommune, studentDataEdit.emergency.address.commune);
+            await FileInput(emergencyCommune, studentDataEdit.emergency.address.commune);
             await emergencyCommune.blur();
             await page.waitForTimeout(500);
           }
@@ -925,7 +925,7 @@ test.describe('Students', () => {
             if (!isDisabled) {
               await emergencyDistrictField.clear();
               await page.waitForTimeout(200);
-              await fillFieldWithDelay(emergencyDistrictField, studentDataEdit.emergency.address.district);
+              await FileInput(emergencyDistrictField, studentDataEdit.emergency.address.district);
             }
           }
 
@@ -944,7 +944,7 @@ test.describe('Students', () => {
             if (!isDisabled) {
               await emergencyCityField.clear();
               await page.waitForTimeout(200);
-              await fillFieldWithDelay(emergencyCityField, studentDataEdit.emergency.address.city);
+              await FileInput(emergencyCityField, studentDataEdit.emergency.address.city);
             }
           }
         }

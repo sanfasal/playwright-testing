@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { login } from '../utils/auth-helper';
-import { fillFieldWithDelay } from '../utils/form-helper';
+import { FileInput } from '../utils/form-helper';
 import { deleteItem } from '../utils/delete-helper';
 
 // Test suite for Engagement Dashboard
@@ -77,11 +77,11 @@ test.describe('Engagement', () => {
     await page.waitForTimeout(500);
 
     const firstNameField = page.getByLabel(/First Name/i);
-    await fillFieldWithDelay(firstNameField, engagementDataAdd.firstName);
+    await FileInput(firstNameField, engagementDataAdd.firstName);
     
     // Fill Last Name
     const lastNameField = page.getByLabel(/Last Name/i);
-    await fillFieldWithDelay(lastNameField, engagementDataAdd.lastName);
+    await FileInput(lastNameField, engagementDataAdd.lastName);
 
     // Gender Selection (Dropdown)
     const genderButton = page
@@ -123,16 +123,16 @@ test.describe('Engagement', () => {
     
     // Fill Amount
     const amountField = page.getByLabel(/Amount \(\$\)/i);
-    await fillFieldWithDelay(amountField, engagementDataAdd.amount);
+    await FileInput(amountField, engagementDataAdd.amount);
     
     // Fill Email
     // Use exact name match or specific input locator to avoid matching "Emails" tab
     const emailField = page.locator('input[name="email"]');
-    await fillFieldWithDelay(emailField, engagementDataAdd.email);
+    await FileInput(emailField, engagementDataAdd.email);
     
     // Fill Phone
     const phoneField = page.getByLabel(/Phone/i);
-    await fillFieldWithDelay(phoneField, engagementDataAdd.phone);
+    await FileInput(phoneField, engagementDataAdd.phone);
 
          // Priority Selection (Dropdown)
     const priorityButton = page
@@ -174,7 +174,7 @@ test.describe('Engagement', () => {
 
     // Fill Probability
     const probabilityField = page.getByLabel(/Probability/i);
-    await fillFieldWithDelay(probabilityField, engagementDataAdd.probability);
+    await FileInput(probabilityField, engagementDataAdd.probability);
 
     // Fill Resource Type
     const resourceTypeButton = page
@@ -198,7 +198,7 @@ test.describe('Engagement', () => {
 
             // Fill Resource Link
     const resourceLink = page.getByLabel(/Resource Link/i);
-    await fillFieldWithDelay(resourceLink, engagementDataAdd.resourceLink);
+    await FileInput(resourceLink, engagementDataAdd.resourceLink);
 
     // Step 2: Click to open the assign to dropdown
     const assignToDropdown = page.locator('button')
@@ -231,7 +231,7 @@ test.describe('Engagement', () => {
             // Fill Note
     // Use specific ID or name locator to avoid matching "Notes" tab
     const note = page.locator('textarea#note');
-    await fillFieldWithDelay(note, engagementDataAdd.note);
+    await FileInput(note, engagementDataAdd.note);
     
     // Submit the form
     await page.waitForTimeout(800);
@@ -295,11 +295,11 @@ test.describe('Engagement', () => {
 
     // Edit First Name
     const firstNameField = page.getByLabel(/First Name/i);
-    await fillFieldWithDelay(firstNameField, engagementDataEdit.firstName);
+    await FileInput(firstNameField, engagementDataEdit.firstName);
     
     // Edit Last Name
     const lastNameField = page.getByLabel(/Last Name/i);
-    await fillFieldWithDelay(lastNameField, engagementDataEdit.lastName);
+    await FileInput(lastNameField, engagementDataEdit.lastName);
 
     // Edit Gender (Dropdown)
     const genderButton = page.locator('button[role="combobox"]').filter({ has: page.locator("svg") }).first();
@@ -331,15 +331,15 @@ test.describe('Engagement', () => {
     
     // Edit Amount
     const amountField = page.getByLabel(/Amount \(\$\)/i);
-    await fillFieldWithDelay(amountField, engagementDataEdit.amount);
+    await FileInput(amountField, engagementDataEdit.amount);
     
     // Edit Email
     const emailField = page.locator('input[name="email"]');
-    await fillFieldWithDelay(emailField, engagementDataEdit.email);
+    await FileInput(emailField, engagementDataEdit.email);
     
     // Edit Phone
     const phoneField = page.getByLabel(/Phone/i);
-    await fillFieldWithDelay(phoneField, engagementDataEdit.phone);
+    await FileInput(phoneField, engagementDataEdit.phone);
 
     // Edit Priority (Dropdown)
     const priorityButton = page.locator('button[role="combobox"]').filter({ has: page.locator("svg") }).nth(2);
@@ -371,7 +371,7 @@ test.describe('Engagement', () => {
 
     // Edit Probability
     const probabilityField = page.getByLabel(/Probability/i);
-    await fillFieldWithDelay(probabilityField, engagementDataEdit.probability);
+    await FileInput(probabilityField, engagementDataEdit.probability);
 
     // Edit Resource Type (Dropdown)
     const resourceTypeButton = page.locator('button[role="combobox"]').filter({ has: page.locator("svg") }).nth(4);
@@ -389,7 +389,7 @@ test.describe('Engagement', () => {
 
     // Edit Resource Link
     const resourceLink = page.getByLabel(/Resource Link/i);
-    await fillFieldWithDelay(resourceLink, engagementDataEdit.resourceLink);
+    await FileInput(resourceLink, engagementDataEdit.resourceLink);
 
     // Edit Assign To
     const assignToDropdown = page.locator('button').filter({ hasText: 'Assign To' }).or(page.locator('button[data-slot="popover-trigger"]').filter({ hasText: 'Assign To' })).first();
@@ -406,7 +406,7 @@ test.describe('Engagement', () => {
     
     // Edit Note
     const note = page.locator('textarea#note');
-    await fillFieldWithDelay(note, engagementDataEdit.note);
+    await FileInput(note, engagementDataEdit.note);
 
     // Submit the form
     await page.waitForTimeout(800);
@@ -474,7 +474,7 @@ test.describe('Engagement Tabs List', () => {
 
     // Fill Activity Name
     const activityName = page.getByLabel(/Title/i);
-    await fillFieldWithDelay(activityName, "Activity Title");
+    await FileInput(activityName, "Activity Title");
 
     // Select category
     await page.waitForTimeout(500);
@@ -501,14 +501,14 @@ test.describe('Engagement Tabs List', () => {
     const startDateField = page.getByLabel(/start date/i)
       .or(page.getByPlaceholder(/start date/i))
       .or(page.locator('input[type="date"]').first());
-    await fillFieldWithDelay(startDateField, startDate);
+    await FileInput(startDateField, startDate);
     
     // Fill End Date field (static date)
     const endDateFormatted = '01-16-2026'; // Static end date    
     const endDateField = page.getByLabel(/end date/i)
       .or(page.getByPlaceholder(/end date/i))
       .or(page.locator('input[type="date"]').nth(1));
-    await fillFieldWithDelay(endDateField, endDateFormatted);
+    await FileInput(endDateField, endDateFormatted);
     
     // Fill Start Time field
     await page.waitForTimeout(500);
@@ -516,7 +516,7 @@ test.describe('Engagement Tabs List', () => {
       .or(page.locator('#startTime'))
       .or(page.getByPlaceholder(/start time/i));
     
-    await fillFieldWithDelay(startTimeInput, '08:30AM');
+    await FileInput(startTimeInput, '08:30AM');
     
     // Fill End Time field
     await page.waitForTimeout(500);
@@ -524,11 +524,11 @@ test.describe('Engagement Tabs List', () => {
       .or(page.locator('#endTime'))
       .or(page.getByPlaceholder(/end time/i));
     
-    await fillFieldWithDelay(endTimeInput, '11:30AM');
+    await FileInput(endTimeInput, '11:30AM');
     
     // Fill Activity Description
     const activityDescription = page.locator('textarea#note').or(page.getByPlaceholder('Add notes here...'));
-    await fillFieldWithDelay(activityDescription, "Activity Description");
+    await FileInput(activityDescription, "Activity Description");
 
     // Toggle Activity Completed
     const completedSwitch = page.locator('button#isCompleted').or(page.getByLabel('Activity completed'));
@@ -573,7 +573,7 @@ test.describe('Engagement Tabs List', () => {
     // Edit Activity Name
     const activityName = page.getByLabel(/Title/i);
     await activityName.clear();
-    await fillFieldWithDelay(activityName, "Update Activity Title");
+    await FileInput(activityName, "Update Activity Title");
 
     // Select category
     await page.waitForTimeout(500);
@@ -601,7 +601,7 @@ test.describe('Engagement Tabs List', () => {
       .or(page.getByPlaceholder(/start date/i))
       .or(page.locator('input[type="date"]').first());
     await startDateField.clear();
-    await fillFieldWithDelay(startDateField, startDate);
+    await FileInput(startDateField, startDate);
     
     // Edit End Date field (static date)
     const endDateFormatted = '01-16-2026'; // Static end date    
@@ -609,7 +609,7 @@ test.describe('Engagement Tabs List', () => {
       .or(page.getByPlaceholder(/end date/i))
       .or(page.locator('input[type="date"]').nth(1));
     await endDateField.clear();
-    await fillFieldWithDelay(endDateField, endDateFormatted);
+    await FileInput(endDateField, endDateFormatted);
     
     // Edit Start Time field
     await page.waitForTimeout(500);
@@ -617,7 +617,7 @@ test.describe('Engagement Tabs List', () => {
       .or(page.locator('#startTime'))
       .or(page.getByPlaceholder(/start time/i));
     await startTimeInput.clear();
-    await fillFieldWithDelay(startTimeInput, '09:30AM');
+    await FileInput(startTimeInput, '09:30AM');
     
     // Edit End Time field
     await page.waitForTimeout(500);
@@ -625,12 +625,12 @@ test.describe('Engagement Tabs List', () => {
       .or(page.locator('#endTime'))
       .or(page.getByPlaceholder(/end time/i));
     await endTimeInput.clear();
-    await fillFieldWithDelay(endTimeInput, '12:30PM');
+    await FileInput(endTimeInput, '12:30PM');
     
     // Edit Activity Description
     const activityDescription = page.locator('textarea#note').or(page.getByPlaceholder('Add notes here...'));
     await activityDescription.clear();
-    await fillFieldWithDelay(activityDescription, "Updated Activity Description");
+    await FileInput(activityDescription, "Updated Activity Description");
 
     // Toggle Activity Completed (if needed)
     const completedSwitch = page.locator('button#isCompleted').or(page.getByLabel('Activity completed'));
@@ -664,7 +664,7 @@ test.describe('Engagement Tabs List', () => {
 
     // Fill Comment
     const commentField = page.locator('textarea#comment');
-    await fillFieldWithDelay(commentField, "Comment on activity");
+    await FileInput(commentField, "Comment on activity");
 
     // Submit the form  
     await page.waitForTimeout(800);
@@ -700,7 +700,7 @@ test.describe('Engagement Tabs List', () => {
     // Edit comment field
     const commentFieldUpdate = page.locator('textarea#comment');
     await commentFieldUpdate.clear();
-    await fillFieldWithDelay(commentFieldUpdate, "Updated Comment on activity");
+    await FileInput(commentFieldUpdate, "Updated Comment on activity");
     
     await page.getByRole('button', { name: /Update|Save/i }).click();
     await page.waitForTimeout(1500);
@@ -783,15 +783,15 @@ test.describe('Engagement Tabs List', () => {
 
     // Fill recipient
     const recipient = page.getByLabel(/recipient/i);
-    await fillFieldWithDelay(recipient, "recipient.tech@email.com");
+    await FileInput(recipient, "recipient.tech@email.com");
 
         // Fill subject
     const subject = page.getByLabel(/subject/i);
-    await fillFieldWithDelay(subject, "Web development");
+    await FileInput(subject, "Web development");
    
     // Fill Body
     const body = page.locator('textarea#body').or(page.getByPlaceholder('Body'));
-    await fillFieldWithDelay(body, "body of email");
+    await FileInput(body, "body of email");
 
     // Submit the form  
     await page.waitForTimeout(800);
@@ -828,17 +828,17 @@ test.describe('Engagement Tabs List', () => {
     // Edit recipient
     const recipient = page.getByLabel(/recipient/i);
     await recipient.clear();
-    await fillFieldWithDelay(recipient, "updated.recipient@email.com");
+    await FileInput(recipient, "updated.recipient@email.com");
 
     // Edit subject
     const subject = page.getByLabel(/subject/i);
     await subject.clear();
-    await fillFieldWithDelay(subject, "Updated Web development");
+    await FileInput(subject, "Updated Web development");
    
     // Edit Body
     const body = page.locator('textarea#body').or(page.getByPlaceholder('Body'));
     await body.clear();
-    await fillFieldWithDelay(body, "Updated body of email");
+    await FileInput(body, "Updated body of email");
 
     // Submit the form  
     await page.waitForTimeout(800);
@@ -865,7 +865,7 @@ test.describe('Engagement Tabs List', () => {
 
     // Fill Comment
     const commentField = page.locator('textarea#comment');
-    await fillFieldWithDelay(commentField, "Comment on email");
+    await FileInput(commentField, "Comment on email");
 
     // Submit the form  
     await page.waitForTimeout(800);
@@ -901,7 +901,7 @@ test.describe('Engagement Tabs List', () => {
     // Edit comment field
     const commentFieldUpdate = page.locator('textarea#comment');
     await commentFieldUpdate.clear();
-    await fillFieldWithDelay(commentFieldUpdate, "Updated Comment on email");
+    await FileInput(commentFieldUpdate, "Updated Comment on email");
     
     await page.getByRole('button', { name: /Update|Save/i }).click();
     await page.waitForTimeout(1500);
@@ -1002,11 +1002,11 @@ test.describe('Engagement Tabs List', () => {
     const endDateField = page.getByLabel(/Call date/i)
       .or(page.getByPlaceholder(/Call date/i))
       .or(page.locator('input[type="date"]').nth(1));
-    await fillFieldWithDelay(endDateField, endDateFormatted);
+    await FileInput(endDateField, endDateFormatted);
 
     // Fill call note
     const callNote = page.locator('textarea#note').or(page.getByPlaceholder('Add notes here...'));
-    await fillFieldWithDelay(callNote, "call note");
+    await FileInput(callNote, "call note");
 
     // Submit the form  
     await page.waitForTimeout(800);
@@ -1064,12 +1064,12 @@ test.describe('Engagement Tabs List', () => {
       .or(page.getByPlaceholder(/Call date/i))
       .or(page.locator('input[type="date"]').nth(1));
     await endDateField.clear();
-    await fillFieldWithDelay(endDateField, endDateFormatted);
+    await FileInput(endDateField, endDateFormatted);
 
     // Edit call note
     const callNote = page.locator('textarea#note').or(page.getByPlaceholder('Add notes here...'));
     await callNote.clear();
-    await fillFieldWithDelay(callNote, "Updated call note");
+    await FileInput(callNote, "Updated call note");
     
     // Submit the form  
     await page.waitForTimeout(800);
@@ -1097,7 +1097,7 @@ test.describe('Engagement Tabs List', () => {
 
     // Fill Comment
     const commentField = page.locator('textarea#comment');
-    await fillFieldWithDelay(commentField, "Comment on calls");
+    await FileInput(commentField, "Comment on calls");
 
     // Submit the form  
     await page.waitForTimeout(800);
@@ -1130,7 +1130,7 @@ test.describe('Engagement Tabs List', () => {
     await page.getByText(/Edit/i).click();
 
     const commentFieldUpdate = page.locator('textarea#comment');
-    await fillFieldWithDelay(commentFieldUpdate, "Updated Comment on calls");
+    await FileInput(commentFieldUpdate, "Updated Comment on calls");
     
     await page.getByRole('button', { name: /Update|Save/i }).click();
     await page.waitForTimeout(1500);
@@ -1212,7 +1212,7 @@ test.describe('Engagement Tabs List', () => {
 
     // Fill Note
     const noteField = page.locator('textarea#note');
-    await fillFieldWithDelay(noteField, "Note on engagement");
+    await FileInput(noteField, "Note on engagement");
 
     // Submit the form  
     await page.waitForTimeout(800);
@@ -1250,7 +1250,7 @@ test.describe('Engagement Tabs List', () => {
     await page.getByText(/Edit/i).click();
 
     const noteFieldUpdate = page.locator('textarea#note');
-    await fillFieldWithDelay(noteFieldUpdate, "Updated Note on engagement");
+    await FileInput(noteFieldUpdate, "Updated Note on engagement");
     
     await page.getByRole('button', { name: /Update|Save/i }).click();
     await page.waitForTimeout(1500);
@@ -1275,7 +1275,7 @@ test.describe('Engagement Tabs List', () => {
 
     // Fill Comment
     const commentField = page.locator('textarea#comment');
-    await fillFieldWithDelay(commentField, "Comment on Notes");
+    await FileInput(commentField, "Comment on Notes");
 
     // Submit the form  
     await page.waitForTimeout(800);
@@ -1308,7 +1308,7 @@ test.describe('Engagement Tabs List', () => {
     await page.getByText(/Edit/i).click();
 
     const commentFieldUpdate = page.locator('textarea#comment');
-    await fillFieldWithDelay(commentFieldUpdate, "Updated Comment on Notes");
+    await FileInput(commentFieldUpdate, "Updated Comment on Notes");
     
     await page.getByRole('button', { name: /Update|Save/i }).click();
     await page.waitForTimeout(1500);

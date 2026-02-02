@@ -1,12 +1,15 @@
 import { test, expect } from "@playwright/test";
-import { getOTPFromEmail } from "../../utils/email-helper";
+import { getOTPFromEmail, generateRandomPassword } from "../../utils/email-helper";
 import { addUser } from "../../utils/data-store";
 import dotenv from "dotenv";
 import { addCursorTracking } from "../../utils/cursor-helper";
 import {
-  fillFieldWithDelay,
+  FileInput,
   verifyPasswordToggle,
 } from "../../utils/form-helper";
+import { generateVerifiedEmails } from "../../utils/email-generator";
+import * as fs from "fs";
+import * as path from "path";
 
 dotenv.config();
 
@@ -30,7 +33,6 @@ test.describe("Sign Up", () => {
     const namespace = process.env.TESTMAIL_NAMESPACE;
 
     // Generate fresh emails before starting
-    const { generateVerifiedEmails } = await import("../../utils/email-generator");
     generateVerifiedEmails();
 
 
@@ -40,8 +42,6 @@ test.describe("Sign Up", () => {
       );
     }
     // Read generated emails
-    const fs = await import("fs");
-    const path = await import("path");
     const emailsPath = path.resolve(__dirname, "../../generated-emails.json");
     
     if (!fs.existsSync(emailsPath)) {
@@ -65,7 +65,6 @@ test.describe("Sign Up", () => {
     }
     const timestamp = match[1];
 
-    const { generateRandomPassword } = await import("../../utils/email-helper");
     // Use the password from the generated email if available, otherwise generate a new one
     const password = emailObj.password || generateRandomPassword(12);
     
@@ -82,27 +81,27 @@ test.describe("Sign Up", () => {
     await page.waitForTimeout(50);
 
     // Fill form like a real user
-    await fillFieldWithDelay(
+    await FileInput(
       page.getByRole("textbox", { name: /first name/i }),
       TEST_USER.firstName
     );
-    await fillFieldWithDelay(
+    await FileInput(
       page.getByRole("textbox", { name: /last name/i }),
       TEST_USER.lastName
     );
-    await fillFieldWithDelay(
+    await FileInput(
       page.getByRole("textbox", { name: /company/i }),
       TEST_USER.company
     );
-    await fillFieldWithDelay(
+    await FileInput(
       page.getByRole("textbox", { name: /email/i }),
       email
     );
-    await fillFieldWithDelay(
+    await FileInput(
       page.getByRole("textbox", { name: /^password$/i }),
       password
     );
-    await fillFieldWithDelay(
+    await FileInput(
       page.getByRole("textbox", { name: /confirm password/i }),
       password
     );
@@ -125,7 +124,7 @@ test.describe("Sign Up", () => {
         namespace,
         timestamp: timestamp,
       });
-      await fillFieldWithDelay(
+      await FileInput(
         page.getByRole("textbox", { name: /code/i }),
         otp,
         { typingDelay: 50, afterTypingDelay: 50 }

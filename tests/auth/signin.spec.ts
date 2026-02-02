@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { addCursorTracking } from '../../utils/cursor-helper';
-import { fillFieldWithDelay } from '../../utils/form-helper';
+import { FileInput } from '../../utils/form-helper';
 import dotenv from 'dotenv';
 import { createAndSaveSignupCredentials } from '../../utils/email-helper';
 import { getUserData, saveUserData } from '../../utils/data-store';
@@ -47,9 +47,9 @@ test.describe('Sign In', () => {
     await page.waitForTimeout(50);
     const SIGNIN_USER = getSigninUser();
     const emailField = page.getByRole('textbox', { name: /email/i });
-    await fillFieldWithDelay(emailField, SIGNIN_USER.email);
+    await FileInput(emailField, SIGNIN_USER.email);
     const passwordField = page.getByRole('textbox', { name: /password/i });
-    await fillFieldWithDelay(passwordField, SIGNIN_USER.validPassword);
+    await FileInput(passwordField, SIGNIN_USER.validPassword);
     await page.locator(ICONS.eyeOff).click();
     await page.waitForTimeout(50);
     await page.locator(ICONS.eye).click();
@@ -68,10 +68,58 @@ test.describe('Sign In', () => {
 
     const SIGNIN_USER = getSigninUser();
     const emailField = page.getByRole('textbox', { name: /email/i });
-    await fillFieldWithDelay(emailField, SIGNIN_USER.email);
+    await FileInput(emailField, SIGNIN_USER.email);
   
     const passwordField = page.getByRole('textbox', { name: /password/i });
-    await fillFieldWithDelay(passwordField, SIGNIN_USER.invalidPassword);
+    await FileInput(passwordField, SIGNIN_USER.invalidPassword);
+    await page.locator(ICONS.eyeOff).click();
+    await page.waitForTimeout(50);
+    await page.locator(ICONS.eye).click();
+    await page.waitForTimeout(50);
+
+    await page.getByRole('button', { name: /signin|login/i }).click();
+    await page.waitForTimeout(100);
+
+    await expect(page).toHaveURL(/signin/i);
+  });
+
+  //sign in with invalid email
+  test('User sign in with invalid email', async ({ page }) => {
+    await addCursorTracking(page);
+    await page.goto('/signin');
+    await expect(page).toHaveTitle(/signin|login/i);
+    await page.waitForTimeout(50);
+
+    const SIGNIN_USER = getSigninUser();
+    const emailField = page.getByRole('textbox', { name: /email/i });
+    await FileInput(emailField, 'seksaagmail.com');
+  
+    const passwordField = page.getByRole('textbox', { name: /password/i });
+    await FileInput(passwordField, SIGNIN_USER.validPassword);
+    await page.locator(ICONS.eyeOff).click();
+    await page.waitForTimeout(50);
+    await page.locator(ICONS.eye).click();
+    await page.waitForTimeout(50);
+
+    await page.getByRole('button', { name: /signin|login/i }).click();
+    await page.waitForTimeout(100);
+
+    await expect(page).toHaveURL(/signin/i);
+  });
+
+  //sign in with invalid password
+  test('User sign in with invalid password', async ({ page }) => {
+    await addCursorTracking(page);
+    await page.goto('/signin');
+    await expect(page).toHaveTitle(/signin|login/i);
+    await page.waitForTimeout(50);
+
+    const SIGNIN_USER = getSigninUser();
+    const emailField = page.getByRole('textbox', { name: /email/i });
+    await FileInput(emailField, SIGNIN_USER.email);
+  
+    const passwordField = page.getByRole('textbox', { name: /password/i });
+    await FileInput(passwordField, 'Sal@12345##');
     await page.locator(ICONS.eyeOff).click();
     await page.waitForTimeout(50);
     await page.locator(ICONS.eye).click();

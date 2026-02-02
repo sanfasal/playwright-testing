@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { login } from '../../utils/auth-helper';
 import { addCursorTracking } from '../../utils/cursor-helper';
-import { fillFieldWithDelay } from '../../utils/form-helper';
+import { FileInput } from '../../utils/form-helper';
 import { deleteEntityViaActionMenu } from '../../utils/delete-helper';
 import { toggleViewMode } from '../../utils/view-helper';
 import { uploadThumbnail } from '../../utils/upload-thumbnail-helper';
@@ -49,7 +49,7 @@ test.describe('Courses', () => {
     await page.waitForTimeout(500); // Stability wait
     
     // Fill Title
-    await fillFieldWithDelay(titleField, 'Introduction to Advanced Programming');
+    await FileInput(titleField, 'Introduction to Advanced Programming');
 
     // 3. Select Subject (Dropdown)
     // Locates the button specifically next to or under the "Subject" label
@@ -96,7 +96,7 @@ test.describe('Courses', () => {
         .first();
         
     await durationField.scrollIntoViewIfNeeded();
-    await fillFieldWithDelay(durationField, '50');
+    await FileInput(durationField, '50');
 
     // 6. Fill Prerequisite (Textarea)
     const prerequisiteField = page.locator('textarea[name="prerequisite"]')
@@ -106,37 +106,37 @@ test.describe('Courses', () => {
         
     if (await prerequisiteField.isVisible({ timeout: 3000 }).catch(() => false)) {
         await prerequisiteField.scrollIntoViewIfNeeded();
-        await fillFieldWithDelay(prerequisiteField, 'Basic JS knowledge');
+        await FileInput(prerequisiteField, 'Basic JS knowledge');
     }
 
     // Optional: Preparation (if exists on form, not in screenshot but good to keep if dynamic)
     const preparationField = page.getByLabel(/preparation/i).or(page.getByPlaceholder(/preparation/i));
     if (await preparationField.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await fillFieldWithDelay(preparationField, 'Laptop and Internet');
+        await FileInput(preparationField, 'Laptop and Internet');
     }
 
     // Optional: Purpose
     const purposeField = page.getByLabel(/purpose/i).or(page.getByPlaceholder(/purpose/i));
     if (await purposeField.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await fillFieldWithDelay(purposeField, 'To learn advanced coding.');
+        await FileInput(purposeField, 'To learn advanced coding.');
     }
 
     // Optional: Overview
     const overviewField = page.getByLabel(/overview/i).or(page.getByPlaceholder(/overview/i));
     if (await overviewField.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await fillFieldWithDelay(overviewField, 'Course overview content.');
+        await FileInput(overviewField, 'Course overview content.');
     }
     
     // Optional: Objective
     const objectiveField = page.getByLabel(/objective/i).or(page.getByPlaceholder(/objective/i));
     if (await objectiveField.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await fillFieldWithDelay(objectiveField, 'Course objectives.');
+        await FileInput(objectiveField, 'Course objectives.');
     }
 
     // Optional: Link
     const linkField = page.getByLabel(/link/i).or(page.getByPlaceholder(/link/i));
     if (await linkField.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await fillFieldWithDelay(linkField, 'https://example.com');
+        await FileInput(linkField, 'https://example.com');
     }
 
     // 7. Upload Thumbnail
@@ -276,7 +276,7 @@ test.describe('Courses', () => {
       
       if (await titleField.isVisible().catch(() => false)) {
         await titleField.clear();
-        await fillFieldWithDelay(titleField, 'Updated Course Title - Advanced Programming');
+        await FileInput(titleField, 'Updated Course Title - Advanced Programming');
       }
 
       // Edit Subject (Dropdown) - Try to pick another option if available
@@ -315,28 +315,28 @@ test.describe('Courses', () => {
       const durationField = page.getByLabel(/duration/i).or(page.getByPlaceholder(/duration/i));
       if (await durationField.isVisible()) {
            await durationField.clear();
-           await fillFieldWithDelay(durationField, '60');
+           await FileInput(durationField, '60');
       }
 
       // Edit Prerequisite
       const prerequisiteField = page.getByLabel(/prerequisite/i).or(page.getByPlaceholder(/prerequisite/i));
       if (await prerequisiteField.isVisible()) {
           await prerequisiteField.clear();
-          await fillFieldWithDelay(prerequisiteField, 'Updated JS knowledge');
+          await FileInput(prerequisiteField, 'Updated JS knowledge');
       }
 
       // Edit Preparation
       const preparationField = page.getByLabel(/preparation/i).or(page.getByPlaceholder(/preparation/i));
       if (await preparationField.isVisible()) {
           await preparationField.clear();
-          await fillFieldWithDelay(preparationField, 'Updated Preparation steps');
+          await FileInput(preparationField, 'Updated Preparation steps');
       }
 
       // Edit Purpose
       const purposeField = page.getByLabel(/purpose/i).or(page.getByPlaceholder(/purpose/i));
       if (await purposeField.isVisible()) {
           await purposeField.clear();
-          await fillFieldWithDelay(purposeField, 'Updated Purpose: Master advanced concepts.');
+          await FileInput(purposeField, 'Updated Purpose: Master advanced concepts.');
       }
 
       // Edit Overview/Description field (Consistent with Add Course)
@@ -347,21 +347,21 @@ test.describe('Courses', () => {
 
       if (await overviewField.isVisible({ timeout: 3000 }).catch(() => false)) {
         await overviewField.clear();
-        await fillFieldWithDelay(overviewField, 'Updated description with new content and objectives.');
+        await FileInput(overviewField, 'Updated description with new content and objectives.');
       }
 
     // Edit Objective
       const objectiveField = page.getByLabel(/objective/i).or(page.getByPlaceholder(/objective/i));
       if (await objectiveField.isVisible()) {
           await objectiveField.clear();
-          await fillFieldWithDelay(objectiveField, 'Updated Objective: Master advanced concepts.');
+          await FileInput(objectiveField, 'Updated Objective: Master advanced concepts.');
       }
       
       // Edit Link
       const linkField = page.getByLabel(/link/i).or(page.getByPlaceholder(/link/i));
       if (await linkField.isVisible()) {
            await linkField.clear();
-           await fillFieldWithDelay(linkField, 'https://www.youtube.com/results?search_query=playwright');
+           await FileInput(linkField, 'https://www.youtube.com/results?search_query=playwright');
       }
 
     const nextButton = page.getByRole('button', { name: /next/i });

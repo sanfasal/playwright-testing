@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { login } from '../utils/auth-helper';
 import { addCursorTracking } from '../utils/cursor-helper';
-import { fillFieldWithDelay } from '../utils/form-helper';
+import { FileInput } from '../utils/form-helper';
 import { toggleViewMode } from '../utils/view-helper';
 import { deleteItem } from '../utils/delete-helper';
 
@@ -56,13 +56,13 @@ test.describe('Invoices Page', () => {
     await statusOptions.first().click();
     
     // Fill Due Date
-    await fillFieldWithDelay(page.getByLabel(/Due Date/i), '2026-01-14');
+    await FileInput(page.getByLabel(/Due Date/i), '2026-01-14');
     
     // Fill Amount
-    await fillFieldWithDelay(page.getByLabel(/Amount \(\$\)/i), '500');
+    await FileInput(page.getByLabel(/Amount \(\$\)/i), '500');
     
     // Fill Discount (optional field)
-    await fillFieldWithDelay(page.getByLabel(/Discount \(\$\)/i), '50');
+    await FileInput(page.getByLabel(/Discount \(\$\)/i), '50');
 
     // Select reference
     await page.getByText('Select referent', { exact: true }).click();
@@ -73,7 +73,7 @@ test.describe('Invoices Page', () => {
     
     
     // Fill Note (optional textarea)
-    await fillFieldWithDelay(page.getByLabel(/Note/i), 'Test invoice note');
+    await FileInput(page.getByLabel(/Note/i), 'Test invoice note');
     
     // Submit the form by clicking the Create button
     await page.getByRole('button', { name: /Create/i }).click();

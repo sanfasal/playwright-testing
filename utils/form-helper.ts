@@ -6,7 +6,7 @@ import { Locator } from '@playwright/test';
  * @param value - The text to type into the field
  * @param options - Optional configuration for delays
  */
-export async function fillFieldWithDelay(
+export async function FileInput(
   field: Locator,
   value: string,
   options?: {
