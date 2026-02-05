@@ -178,10 +178,9 @@ test.describe('Personal Life', () => {
       await page.waitForTimeout(1000);
     }
   });
-
 });
 
-
+//Change Email
 test.describe('Change Email', () => {
     test('Change Gmail', async ({ page }) => {
     test.setTimeout(180000);
@@ -210,9 +209,6 @@ test.describe('Change Email', () => {
         }
     }
 
-    // Determine target email for the change
-    // If currentEmail is found in generatedEmails, pick the OTHER one.
-    // Default to index 0 if current not found (will trigger signup) -> target index 1
     let currentIndex = generatedEmails.findIndex((e: any) => e.email === currentEmail);
     
     if (currentIndex === -1) {
@@ -244,27 +240,7 @@ test.describe('Change Email', () => {
         throw new Error(`Could not find API keys for source: ${targetEmailData.source} (Target Email: ${targetEmail}). Check .env`);
     }
 
-    // Also need credentials for CURRENT email if we need to signup (rare, but good for completeness)
-    const currentApiKey = generatedEmails[currentIndex].source === 'email-helper1' 
-        ? process.env.TESTMAIL_API_KEY! 
-        : process.env.TESTMAIL_API_KEY2!;
-    const currentNamespace = generatedEmails[currentIndex].source === 'email-helper1'
-        ? process.env.TESTMAIL_NAMESPACE!
-        : process.env.TESTMAIL_NAMESPACE2!;
-
-
-    await addCursorTracking(page);
-
-    // Step 2: Ensure User is Logged In
-    // Check if current user is actually signed up in user-data.json (simulated check)
-    // Real check: try login. If fail, signup.
-    
-    console.log(`Step 2: Checking/Ensuring Login with ${currentEmail}...`);
-    
-    // We can use the helper's login. If it fails (caught by us or helper?), we might need signup.
-    // However, the test requirement implies we are likely already simulating a user flow.
-    // Let's safe-guard: Check if email exists in user-data. If not, signup.
-    
+    await addCursorTracking(page);    
     let isSignedUp = false;
     let knownPassword = getUserPasswordByEmail(currentEmail);
 
@@ -273,30 +249,15 @@ test.describe('Change Email', () => {
          isSignedUp = userData.users?.some((u: any) => u.email === currentEmail) || userData.signupEmail === currentEmail;
     }
 
-    // if (!isSignedUp) {
-    //     console.log(`   - User ${currentEmail} not found in local records. Performing Signup first.`);
-    //     await performSignup(page, currentApiKey, currentNamespace, {
-    //          firstName: 'TestCycle',
-    //          lastName: 'User',
-    //          company: 'CycleCo'
-    //     });
-    //     knownPassword = getUserPasswordByEmail(currentEmail); // password generated during signup
-    // } else {
-    //     console.log(`   - User found in local records. Logging in directly.`);
-    // }
-
     await login(page, currentEmail, knownPassword || undefined);
     await expect(page).toHaveURL(/dashboard/);
     await expect(page.getByText('Please wait while we load your workspace')).toBeHidden({ timeout: 10000 });
 
     // Step 3: Navigate to Personal Life
-    console.log("Step 3: Navigating to Personal Life page...");
     await page.getByText('Personal Life', { exact: true }).click().catch(() => null);
     await expect(page).toHaveURL(/\/personal-life/).catch(() => null);
     
     // Step 4: Initiate Email Change
-    console.log(`Step 4: Changing email to ${targetEmail}...`);
-    
     const pageUpdateBtn = page.getByRole('button', { name: /^(Change Email|Update Email)$/i }).first();
     if (await pageUpdateBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
       await pageUpdateBtn.click();
@@ -366,6 +327,8 @@ test.describe('Change Email', () => {
   });
 })
 
+
+//Update Password
 test.describe('Update Password', () => {
 
     test.beforeEach(async ({ page }) => {

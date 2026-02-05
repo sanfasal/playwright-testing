@@ -47,7 +47,7 @@ test.describe('Modules', () => {
       await submitButton.click();
       await page.waitForTimeout(2000);
     }
-    
+
   });
 
 //   =====================================

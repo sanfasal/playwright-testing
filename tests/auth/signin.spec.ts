@@ -40,7 +40,7 @@ test.describe('Sign In', () => {
     }
   });
   
-    test('Sign in with valid credentials', async ({ page }) => {
+  test('Sign in with valid credentials', async ({ page }) => {
     await addCursorTracking(page);
     await page.goto('/signin');
     await expect(page).toHaveTitle(/signin|login/i);

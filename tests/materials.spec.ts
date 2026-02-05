@@ -4,6 +4,7 @@ import { addCursorTracking } from '../utils/cursor-helper';
 import { toggleViewMode } from '../utils/view-helper';
 import { deleteItem, deleteEntityViaActionMenu } from '../utils/delete-helper';
 import { uploadThumbnail } from '../utils/upload-thumbnail-helper';
+import path from 'path';
 
 test.describe('Materials Page', () => {
   
@@ -48,57 +49,52 @@ test.describe('Materials Page', () => {
     await page.waitForTimeout(1500);
   }
 
-  test('View materials page', async ({ page }) => {
-    await page.waitForTimeout(1000);
-    await toggleViewMode(page);
-    await page.waitForTimeout(1000);
-    await selectMaterial(page, 0);
-  });
+
 
   // ===================================
-  // Add new material with link
+  // Add new material with documents
   // ===================================
 
-  // test('Add new material with link', async ({ page }) => {
-  //   // Click the add button using the specific ID
-  //   await page.locator('#add-material-button').click();
-    
-  //   // Wait for the form/drawer to appear
-  //   await expect(page.getByRole('textbox').first()).toBeVisible({ timeout: 9000 });
-    
-  //   // Fill YouTube Link - try multiple selector strategies
-  //   const youtubeLinkField = page.locator('#YoutubeLink, input[name="youtubeLink"], input[placeholder*="youtube" i], input[placeholder*="link" i]').first();
-  //   await youtubeLinkField.waitFor({ state: 'visible', timeout: 5000 });
-  //   await youtubeLinkField.fill('https://www.youtube.com/watch?v=5v4cIOgBTCc');
-    
-  //   // Fill Title - try multiple selector strategies
-  //   const titleField = page.locator('#title, input[name="title"], input[placeholder*="title" i]').first();
-  //   await titleField.waitFor({ state: 'visible', timeout: 5000 });
-  //   await titleField.fill('Basic Electronics');
-    
-  //   // Smooth scroll to and click the Create/Save button
-  //   const submitButton = page.getByRole('button', { name: /Create|Save|Submit/i });
-  //   await submitButton.scrollIntoViewIfNeeded();
-  //   await page.waitForTimeout(500); // Brief pause for smooth scroll animation
-  //   await submitButton.click();
-    
-  //   // Wait for success message or page update
-  //   await page.waitForTimeout(2000);
-  // });
-
-  // ===================================
-  // Add new material with thumbnail
-  // ===================================
-
-  test('Add new material with thumbnail', async ({ page }) => {
+  test('Add new material with documents', async ({ page }) => {
     await page.locator('#add-material-button').click();
     await expect(page.getByRole('textbox').first()).toBeVisible({ timeout: 9000 });
-    await uploadThumbnail(page, "Click to upload new material");
+    await uploadThumbnail(page, "materialFile", {
+      imagePath: path.join(__dirname, '..', 'public', 'images', 'thumbnial-create.pdf')
+    });
     await page.waitForTimeout(500);
     const submitButton = page.getByRole('button', { name: /Create|Save|Submit/i });
     await submitButton.scrollIntoViewIfNeeded();
     await page.waitForTimeout(500); // Brief pause for smooth scroll animation
     await submitButton.click();
+    await page.waitForTimeout(1200);
+  });
+
+  // ===================================
+  // Add new material with video
+  // ===================================
+
+  test('Add new material with video', async ({ page }) => {
+    await page.locator('#add-material-button').click();
+    await expect(page.getByRole('textbox').first()).toBeVisible({ timeout: 9000 });
+    await uploadThumbnail(page, "materialFile", {
+      imagePath: path.join(__dirname, '..', 'public', 'video', 'seksaa-vdo.mp4')
+    });
+    await page.waitForTimeout(500);
+    const submitButton = page.getByRole('button', { name: /Create|Save|Submit/i });
+    await submitButton.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(500); // Brief pause for smooth scroll animation
+    await submitButton.click();
+    await page.waitForTimeout(1200);
+  });
+
+  // ===================================
+  // View materials page
+  // ===================================
+    test('View materials page', async ({ page }) => {
+    await page.waitForTimeout(1000);
+    await toggleViewMode(page);
+    await page.waitForTimeout(1000);
+    await selectMaterial(page, 0);
   });
 
   // ===================================
@@ -110,7 +106,10 @@ test.describe('Materials Page', () => {
     await selectMaterial(page, 0);
     
     // Open the actions menu (three-dot icon)
-    const actionsMenuButton = page.getByRole('button', { name: /more options|actions|menu/i }).or(page.locator('button[aria-haspopup="menu"]')).first();
+    const actionsMenuButton = page.getByRole('button', { name: /more options|actions|menu/i })
+      .or(page.locator('button[aria-haspopup="menu"]'))
+      .or(page.locator('svg.lucide-ellipsis-vertical'))
+      .first();
     await actionsMenuButton.click();
     await page.waitForTimeout(500);
     
@@ -122,32 +121,29 @@ test.describe('Materials Page', () => {
       
       // Wait for edit form to appear
       await page.waitForTimeout(1000);
+
+        // Click "Remove file" button first to remove existing file
+        const removeFileButton = page.getByRole('button', { name: /Remove file/i })
+          .or(page.locator('button[aria-label*="Remove file"]'))
+          .or(page.locator('button:has-text("Remove file")'));
+        
+        if (await removeFileButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+          console.log('Clicking Remove file button...');
+          await removeFileButton.click();
+          await page.waitForTimeout(500);
+        }
+      // Update Thumbnail (using the same ID as Add)
+      await uploadThumbnail(page, "materialFile",{
+        imagePath: path.join(__dirname, '..', 'public', 'images', 'thumbnial-update.pdf')
+      });
+      await page.waitForTimeout(500);
       
-      // Edit YouTube Link field
-      const youtubeLinkField = page.locator('#YoutubeLink, input[name="youtubeLink"], input[placeholder*="youtube" i], input[placeholder*="link" i]').first();
-      if (await youtubeLinkField.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await youtubeLinkField.clear();
-        await youtubeLinkField.fill('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
-      }
-      
-      // Edit Title field
-      const titleField = page.locator('#title, input[name="title"], input[placeholder*="title" i]').first();
-      if (await titleField.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await titleField.clear();
-        await titleField.fill('Advanced Electronics - Updated');
-      }
       
       // Save changes
       await page.getByRole('button', { name: /Save|Update/i }).click();
       
       // Wait for update to complete
       await page.waitForTimeout(2000);
-      
-      // Take a screenshot after successful edit
-      await page.screenshot({ 
-        path: 'test-results/screenshots/material-edited.png',
-        fullPage: true 
-      });
     } else {
       console.log('Edit functionality not found');
     }
@@ -158,18 +154,8 @@ test.describe('Materials Page', () => {
   // ===================================
 
   test('Delete material', async ({ page }) => {
-    // Get all material rows for count verification
-    const materialRows = page.locator('table tbody tr, [role="row"], .material-row');
-    
-    // Get initial count
-    const initialCount = await materialRows.count();
-    
-    // Select and open the last material
-    const lastIndex = initialCount -1;
-    await selectMaterial(page, lastIndex);
-    
-    // Use delete helper to handle deletion via action menu
-    // Pass null since we already clicked the row to open details
+    // Select and open the first material (index 0)
+    await selectMaterial(page, 0);
     await deleteEntityViaActionMenu(page, null, 'Confirm Delete');
   });
 });

@@ -18,7 +18,7 @@ export async function uploadThumbnail(
   }
 ): Promise<boolean> {
     const {
-    imagePath = path.join(__dirname, '..', 'public', 'images', 'sample-thumbnail.png'),
+    imagePath = path.join(__dirname, '..', 'public', 'images', 'thumbnail-create.png'),
     uploadAreaSelector,
     timeout = 10000,
     waitAfterUpload = 1500

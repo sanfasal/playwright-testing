@@ -70,7 +70,8 @@ test.describe('Attendances', () => {
         await dueDateInput.click();
         await page.waitForTimeout(200);
         await dueDateInput.fill(formattedDate);
-        await page.keyboard.press('Enter'); 
+        // Don't press Enter - it submits the form prematurely
+        await page.waitForTimeout(300); // Give time for date picker to close
     }
 
     // Fill Notes field
@@ -88,11 +89,17 @@ test.describe('Attendances', () => {
         console.log('⚠ Notes field not found or not visible');
     }
     
-    // Click submit button
+    // Click submit button inside the dialog (not the floating action button)
     await page.waitForTimeout(500);
-    await page.locator('button[type="submit"]').filter({ hasText: /Create|Add/i })
-        .or(page.locator('button[color="primary"]'))
-        .or(page.getByRole('button', { name: /Create|Add/i })).click();
+    const dialog = page.getByRole('dialog');
+    const submitButton = dialog.locator('button[type="submit"]')
+        .or(dialog.getByRole('button', { name: /^Create$|^Add$/i }));
+    
+    await expect(submitButton).toBeVisible();
+    await submitButton.click();
+    
+    // Wait for the drawer/dialog to close after successful submission
+    await expect(dialog).toBeHidden({ timeout: 10000 });
   });
 
   //   ======================================

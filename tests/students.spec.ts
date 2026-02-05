@@ -144,7 +144,7 @@ test.describe('Students', () => {
 
     // Upload Profile Image
     await uploadThumbnail(page, "file-input-profile || selected-exist-profile", {
-      imagePath: path.join(__dirname, '..', 'public', 'images', 'sample-thumbnail-create.png')
+      imagePath: path.join(__dirname, '..', 'public', 'images', 'profile-create.png')
     });
     
     // Fill First Name
@@ -544,8 +544,13 @@ test.describe('Students', () => {
     await page.waitForTimeout(1500);
     
     // Open the actions menu (three-dot icon)
-    const actionsMenuButton = page.getByRole('button', { name: /more options|actions|menu/i })
-      .or(page.locator('button[aria-haspopup="menu"]')).first();
+    const actionsMenuButton = page.locator('button:has(svg.lucide-ellipsis-vertical)')
+      .or(page.getByRole('button', { name: /more options|actions|menu/i }))
+      .or(page.locator('button[aria-haspopup="menu"]'))
+      .or(page.locator('svg.lucide-ellipsis-vertical'))
+      .first();
+    
+    await actionsMenuButton.waitFor({ state: 'visible', timeout: 5000 });
     await actionsMenuButton.click();
     await page.waitForTimeout(500);
     
@@ -564,7 +569,7 @@ test.describe('Students', () => {
       
     // Upload Profile Image
     await uploadThumbnail(page, "file-input-profile || selected-exist-profile", {
-      imagePath: path.join(__dirname, '..', 'public', 'images', 'sample-thumbnail-update.png')
+      imagePath: path.join(__dirname, '..', 'public', 'images', 'profile-update.png')
     });
       
       // Edit First Name

@@ -64,8 +64,11 @@ export async function deleteEntityViaActionMenu(
   }
 
   // 2. Find and click the three-dot menu button
-  const actionsMenuButton = page.getByRole('button', { name: /more options|actions|menu/i })
-    .or(page.locator('button[aria-haspopup="menu"]')).first();
+  const actionsMenuButton = page.locator('button:has(svg.lucide-ellipsis-vertical)')
+    .or(page.getByRole('button', { name: /more options|actions|menu/i }))
+    .or(page.locator('button[aria-haspopup="menu"]'))
+    .or(page.locator('svg.lucide-ellipsis-vertical'))
+    .first();
   if (await actionsMenuButton.isVisible({ timeout: 3000 }).catch(() => false)) {
       await actionsMenuButton.click();
       await page.waitForTimeout(800);

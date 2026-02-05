@@ -85,7 +85,7 @@ test.describe('Coaches', () => {
     
     // Upload Profile Image
     await uploadThumbnail(page, "file-input-profile || selected-exist-profile", {
-      imagePath: path.join(__dirname, '..', 'public', 'images', 'sample-thumbnail-create.png')
+      imagePath: path.join(__dirname, '..', 'public', 'images', 'profile-create.png')
     });
     
     // Personal Details
@@ -631,8 +631,13 @@ test.describe('Coaches', () => {
     await page.waitForTimeout(1500);
     
     // Open the actions menu (three-dot icon)
-    const actionsMenuButton = page.getByRole('button', { name: /more options|actions|menu/i })
-      .or(page.locator('button[aria-haspopup="menu"]')).first();
+    const actionsMenuButton = page.locator('button:has(svg.lucide-ellipsis-vertical)')
+      .or(page.getByRole('button', { name: /more options|actions|menu/i }))
+      .or(page.locator('button[aria-haspopup="menu"]'))
+      .or(page.locator('svg.lucide-ellipsis-vertical'))
+      .first();
+    
+    await actionsMenuButton.waitFor({ state: 'visible', timeout: 5000 });
     await actionsMenuButton.click();
     await page.waitForTimeout(500);
     
@@ -648,7 +653,7 @@ test.describe('Coaches', () => {
 
     // Upload Profile Image
     await uploadThumbnail(page, "file-input-profile || selected-exist-profile", {
-      imagePath: path.join(__dirname, '..', 'public', 'images', 'sample-thumbnail-update.png')
+      imagePath: path.join(__dirname, '..', 'public', 'images', 'profile-update.png')
     });
       
       // Edit First Name
@@ -1192,6 +1197,22 @@ const guardianRelationField = page.locator('#relation')  // ← Add ID here
       await updateButton.scrollIntoViewIfNeeded();
       await updateButton.click();
       await page.waitForTimeout(2000);
+      
+      // Click Back button (arrow icon) to return to coaches list
+      // Wait a bit longer for any success message or transition
+      await page.waitForTimeout(2000);
+      
+      // Target the button containing the lucide-arrow-left SVG
+      const backButton = page.locator('button:has(svg.lucide-arrow-left)')
+        .or(page.locator('svg.lucide-arrow-left').locator('xpath=..'))
+        .or(page.locator('button').filter({ has: page.locator('svg[class*="lucide-arrow-left"]') }))
+        .or(page.locator('button[aria-label*="back" i]'))
+        .or(page.getByRole('button', { name: /Back|back/i }));
+      
+      await backButton.first().waitFor({ state: 'visible', timeout: 5000 });
+      await backButton.first().scrollIntoViewIfNeeded();
+      await backButton.first().click();
+      await page.waitForTimeout(1500);
     }
   });
 

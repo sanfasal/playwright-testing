@@ -3,6 +3,8 @@ import { login } from '../../utils/auth-helper';
 import { addCursorTracking } from '../../utils/cursor-helper';
 import { FileInput } from '../../utils/form-helper';
 import { deleteItem } from '../../utils/delete-helper';
+import { uploadThumbnail } from '../../utils/upload-thumbnail-helper';
+import path from 'path';
 
 
 test.describe('Lessons', () => {
@@ -25,6 +27,7 @@ test.describe('Lessons', () => {
     // Ensure we are on the lessons page before each test starts
     await expect(page).toHaveURL(/courses\/lessons/);
   });
+
 //   =====================================
 // Add new lesson
 //   =====================================
@@ -68,22 +71,23 @@ test.describe('Lessons', () => {
       .or(page.getByPlaceholder(/description|content/i));
     
     await FileInput(descriptionField, 'In this lesson, you will learn about React js');
+
+
     
-    // THEN click "Attach Material" button after description is filled
-    await page.waitForTimeout(500);
-    const attachMaterialButton = page.getByRole('button', { name: /attach material/i })
-      .or(page.getByText(/attach material/i))
-      .or(page.locator('button:has-text("Attach Material")'));
+    //=============================================================================
+    //Attach Video
+
+      // THEN click "Attach Videos" button after description is filled
+    const attachVideoButton = page.getByRole('button', { name: /Attach Videos/i })
+      .or(page.getByText(/Attach Videos/i))
+      .or(page.locator('button:has-text("Attach Videos")'));
     
-    if (await attachMaterialButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await attachMaterialButton.click();
-      console.log('✓ Clicked Attach Material button after filling description');
+    if (await attachVideoButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await attachVideoButton.click();
       await page.waitForTimeout(1500); // Wait for modal to open
       
-      // Debug: Log the modal structure to understand what we're working with
       await page.evaluate(() => {
         const modal = document.querySelector('[role="dialog"]') || document.querySelector('.modal') || document.body;
-        console.log('=== Modal Structure Debug ===');
         const allDivs = modal.querySelectorAll('div');
         allDivs.forEach((div, idx) => {
           const text = div.textContent?.trim().substring(0, 50) || '';
@@ -96,75 +100,181 @@ test.describe('Lessons', () => {
       
       await page.waitForTimeout(500);
       
-      // Select material:
-      // The grid contains [Add Button (Index 0), Material Card (Index 1), Material Card (Index 2)...]
-      // We want to click "Index 1" of the grid, which is the FIRST material card.
-      
-      console.log('Using data-slot="card" selector to find materials...');
-      const materialCards = page.locator('div[data-slot="card"]');
-      const cardCount = await materialCards.count();
-      console.log(`Debug: Found ${cardCount} material cards`);
+      const videoCards = page.locator('div[data-slot="card"]');
+      // Filter out 'Upload new video' to check for actual video content cards
+      const contentCards = videoCards.filter({ hasNotText: /Upload new video/i });
+      const contentCount = await contentCards.count();
 
       let selected = false;
       
-      if (cardCount > 0) {
-          // Click the first card (closest to the Add button)
-          const firstCard = materialCards.nth(0); 
+      if (contentCount === 0) {
+          // Use a specific locator for the button shown in the screenshot
+          const uploadButton = page.locator('button').filter({ hasText: 'Upload new video' }).first();
+          
+          if (await uploadButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+              await uploadButton.click();
+
+                  await expect(page.getByRole('textbox').first()).toBeVisible({ timeout: 9000 });
+                  await uploadThumbnail(page, "materialFile", {
+                    imagePath: path.join(__dirname, '..', '..', 'public', 'video', 'seksaa-vdo.mp4')
+                  });
+                  
+                  await page.waitForTimeout(500);
+                  
+                  // Target the Create button specifically within the dialog/modal to avoid "strict mode violation"
+                  // caused by the main page's Create button also being present.
+                  const createButton = page.locator('[role="dialog"]').getByRole('button', { name: 'Create', exact: true })
+                    .or(page.locator('.modal').getByRole('button', { name: 'Create', exact: true }))
+                    .or(page.locator('button[type="submit"]:not([disabled])').filter({ hasText: 'Create' }).last());
+                  
+                  // Ensure explicit scroll to the button
+                  if (await createButton.isVisible()) {
+                      console.log('Scrolling to Create button...');
+                      await createButton.evaluate((el) => {
+                          el.scrollIntoView({ behavior: 'instant', block: 'center' });
+                      });
+                  }
+                  
+                  await page.waitForTimeout(1000); // Wait for scroll to settle
+                  await createButton.click({ force: true });
+
+                  await page.waitForTimeout(2000);
+                  const newContentCards = page.locator('div[data-slot="card"]').filter({ hasNotText: /Upload new video/i });
+                  if (await newContentCards.first().isVisible({ timeout: 5000 }).catch(() => false)) {
+                       await newContentCards.first().click();
+                       await page.waitForTimeout(500);
+                  }
+
+                  
+          } else {
+             // Fallback to simpler text match
+             console.log('Button not found by strict selector, trying generic text match...');
+             await page.getByText('Upload new video', { exact: false }).click();
+          }
+      } else {
+          // Select the first available video card
+          const firstCard = contentCards.nth(0); 
           if (await firstCard.isVisible({ timeout: 5000 }).catch(() => false)) {
               await firstCard.click();
               selected = true;
-              console.log('✓ Success: Clicked first material card (Grid Index 1)');
               await page.waitForTimeout(500); 
           }
-      }
     
-      if (!selected && cardCount > 1) {
-           await materialCards.nth(1).click();
-           selected = true;
-           console.log('✓ Fallback: Clicked second material card');
-           await page.waitForTimeout(500);
+          if (!selected && contentCount > 1) {
+               await contentCards.nth(1).click();
+               selected = true;
+               await page.waitForTimeout(500);
+          }
       }
       
       // Click Save button with visible cursor movement
-      const saveButton = page.getByRole('button', { name: /Save|save/i })
-        .or(page.locator('button:has-text("Save")'));
+      await page.getByRole('button', { name: /Save|save/i })
+        .or(page.locator('button:has-text("Save")')).click();
+        await page.waitForTimeout(1500);
+    }
+    //========================================================================================
+    // Attach documents
+
+    const attachDocumentButton = page.getByRole('button', { name: /Attach Documents/i })
+      .or(page.getByText(/Attach Documents/i))
+      .or(page.locator('button:has-text("Attach Documents")'));
+    
+    if (await attachDocumentButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await attachDocumentButton.click();
+      await page.waitForTimeout(1500); // Wait for modal to open
       
-      if (await saveButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-        // Move mouse to button to show cursor
-        const box = await saveButton.boundingBox();
-        if (box) {
-            await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-            await page.waitForTimeout(500); // Wait for user to see cursor
-        }
-        await saveButton.click();
-        await page.waitForTimeout(500);
+      await page.evaluate(() => {
+        const modal = document.querySelector('[role="dialog"]') || document.querySelector('.modal') || document.body;
+        const allDivs = modal.querySelectorAll('div');
+        allDivs.forEach((div, idx) => {
+          const text = div.textContent?.trim().substring(0, 50) || '';
+          const classes = div.className || 'no-class';
+          if (text.includes('file')) {
+            console.log(`Div ${idx}: classes="${classes}", text="${text}"`);
+          }
+        });
+      });
+      
+      await page.waitForTimeout(500);
+      
+      const videoCards = page.locator('div[data-slot="card"]');
+      // Filter out 'Upload new video' to check for actual video content cards
+      const contentCards = videoCards.filter({ hasNotText: /Upload new video/i });
+      const contentCount = await contentCards.count();
+
+      let selected = false;
+      
+      if (contentCount === 0) {
+          // Use a specific locator for the button shown in the screenshot
+          const uploadButton = page.locator('button').filter({ hasText: 'Upload new document' }).first();
+          
+          if (await uploadButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+              await uploadButton.click();
+
+              await page.waitForTimeout(1000); // Wait for modal animation
+              
+                    await uploadThumbnail(page, "Click to upload new material", {
+                      imagePath: path.join(__dirname, '..', '..', 'public', 'images', 'thumbnial-create.pdf')
+                    });
+                  
+                  await page.waitForTimeout(500);
+                  
+                  const createButton = page.locator('[role="dialog"]').getByRole('button', { name: 'Create', exact: true })
+                    .or(page.locator('.modal').getByRole('button', { name: 'Create', exact: true }))
+                    .or(page.locator('button[type="submit"]:not([disabled])').filter({ hasText: 'Create' }).last());
+                  
+                  // Ensure explicit scroll to the button
+                  if (await createButton.isVisible()) {
+                      console.log('Scrolling to Create button...');
+                      await createButton.evaluate((el) => {
+                          el.scrollIntoView({ behavior: 'instant', block: 'center' });
+                      });
+                  }
+                  
+                  await page.waitForTimeout(1000); // Wait for scroll to settle
+                  await createButton.click({ force: true });
+                  console.log('Clicked Create button');
+
+                  await page.waitForTimeout(2000);
+                  const newContentCards = page.locator('div[data-slot="card"]').filter({ hasNotText: /Upload new document/i });
+                  if (await newContentCards.first().isVisible({ timeout: 5000 }).catch(() => false)) {
+                       await newContentCards.first().click();
+                       await page.waitForTimeout(500);
+                  }
+
+                  
+          } else {
+             // Fallback to simpler text match
+             console.log('Button not found by strict selector, trying generic text match...');
+             await page.getByText('Upload new document', { exact: false }).click();
+          }
+      } else {
+          // Select the first available video card
+          const firstCard = contentCards.nth(0); 
+          if (await firstCard.isVisible({ timeout: 5000 }).catch(() => false)) {
+              await firstCard.click();
+              selected = true;
+              await page.waitForTimeout(500); 
+          }
+    
+          if (!selected && contentCount > 1) {
+               await contentCards.nth(1).click();
+               selected = true;
+               await page.waitForTimeout(500);
+          }
       }
+      
+      // Click Save button with visible cursor movement
+      await page.getByRole('button', { name: /Save|save/i })
+        .or(page.locator('button:has-text("Save")')).click();
+        await page.waitForTimeout(1500);
     }
 
-    
-    // Toggle Publish button to TRUE (enabled)
-    await page.waitForTimeout(500);
-    const publishToggle = page.getByText('Publish', { exact: true })
-      .or(page.locator('button:has-text("Publish")'))
-      .or(page.locator('[role="switch"]').filter({ hasText: /publish/i }))
-      .or(page.locator('label:has-text("Publish")'));
-    
-    if (await publishToggle.isVisible({ timeout: 2000 }).catch(() => false)) {
-      const isChecked = await publishToggle.getAttribute('aria-checked').catch(() => 'false');
-      if (isChecked !== 'true') {
-        await publishToggle.click();
-      }
-      await page.waitForTimeout(500);
-    }
-    
+
+
     // Submit the form
     await page.waitForTimeout(500);
-    const submitButton = page.getByRole('button', { name: /Add|Create|Submit/i });
-    if (await submitButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await submitButton.click();
-      await page.waitForTimeout(2000);
-    }
-    
+    await page.getByRole('button', { name: /Add|Create|Submit/i }).click();
   });
 
   //   =====================================

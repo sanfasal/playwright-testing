@@ -13,7 +13,6 @@ const systemDataEdit = {
   commune: "Prek leap",
   district: "Chroy Changva",
   city: "Phnom Penh",
-
 };
 
 test.describe("System", () => {

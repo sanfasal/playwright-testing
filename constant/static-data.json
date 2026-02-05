@@ -1,0 +1,219 @@
+{
+    "TEST_USER": {
+        "firstName": "Seksaa",
+        "lastName": "Tech",
+        "company": "SeksaaTech",
+        "existingEmail": "sanfasal70@gmail.com",
+        "validPassword": "Password@123",
+        "invalidPassword": "DifferentPassword@456"
+    },
+    "personalDataEdit": {
+        "firstName": "Jane",
+        "lastName": "Smith",
+        "gender": "Female",
+        "phone": "0987654321",
+        "dob": "1995-05-15",
+        "occupation": "Engineer",
+        "bio": "Updated bio for testing",
+        "address": {
+            "village": "Phom 4",
+            "commune": "Chroy Changva",
+            "district": "Chroy Changva",
+            "city": "Phnom Penh"
+        }
+    },
+    "systemDataEdit": {
+        "name": "SeksaaTech Academy",
+        "contactEmail": "seksaaTech@gmail.com",
+        "phone": "0973355321",
+        "website": "https://seksaatech.com",
+        "village": "Prek leap",
+        "commune": "Prek leap",
+        "district": "Chroy Changva",
+        "city": "Phnom Penh"
+    },
+    "userDataAdd": {
+        "firstName": "John",
+        "lastName": "Doe",
+        "email": "johndoe@gmail.com",
+        "phone": "0123456789",
+        "role": "Admin",
+        "dob": "1990-01-01",
+        "address": {
+            "village": "Chamkar Mon",
+            "commune": "BKK1",
+            "district": "Chamkar Mon",
+            "city": "Phnom Penh"
+        }
+    },
+    "userDataEdit": {
+        "firstName": "Jane",
+        "lastName": "Smith",
+        "phone": "0987654321",
+        "role": "Manager",
+        "dob": "1995-05-15",
+        "gender": "Female",
+        "address": {
+            "village": "Boeung Keng Kang",
+            "commune": "Boeung Keng Kang",
+            "district": "Chamkar Mon",
+            "city": "Phnom Penh"
+        }
+    },
+    "coachDataAdd": {
+        "firstName": "Michael",
+        "lastName": "Johnson",
+        "emailPrefix": "michael6.johnson",
+        "phone": "0975566888",
+        "telegram": "@coach_michael",
+        "idNumber": "1234567890",
+        "abaAccountName": "Michael Johnson",
+        "abaAccountNumber": "001234567890",
+        "major": "Computer Science",
+        "costPerHour": "10",
+        "dob": "1985-03-15",
+        "address": {
+            "village": "Toul Kork",
+            "commune": "Prek leab",
+            "district": "Phnom Penh",
+            "city": "Phnom Penh"
+        }
+    },
+    "coachDataEdit": {
+        "firstName": "Sarah",
+        "lastName": "Williams",
+        "emailPrefix": "sarah.williams",
+        "phone": "0987654321",
+        "telegram": "@coach_sarah",
+        "idNumber": "0987654321",
+        "abaAccountName": "Sarah Williams",
+        "abaAccountNumber": "009876543210",
+        "major": "Mathematics",
+        "costPerHour": "15",
+        "dob": "1988-07-20",
+        "address": {
+            "village": "Boeung Keng Kang",
+            "commune": "Boeung Keng Kang",
+            "district": "Chamkar Mon",
+            "city": "Phnom Penh"
+        }
+    },
+    "studentDataAdd": {
+        "firstName": "John",
+        "lastNamePrefix": "Doe",
+        "emailPrefix": "john.doe",
+        "phone": "0975566777",
+        "telegramPrefix": "@sim_lina",
+        "dob": "2005-06-10",
+        "address": {
+            "village": "Toul Kork",
+            "commune": "Prek leab",
+            "district": "Phnom Penh",
+            "city": "Phnom Penh"
+        },
+        "guardian": {
+            "name": "Dara Sok",
+            "phone": "0987654321",
+            "relation": "Father",
+            "emailPrefix": "darasok",
+            "address": {
+                "village": "Toul Kork",
+                "commune": "Toul Kork",
+                "district": "Phnom Penh",
+                "city": "Phnom Penh"
+            }
+        },
+        "emergency": {
+            "name": "Heng Leakana",
+            "phone": "0123456789",
+            "relation": "Mother",
+            "emailPrefix": "leakana.heng",
+            "address": {
+                "village": "Toul Kork",
+                "commune": "Toul Kork",
+                "district": "Phnom Penh",
+                "city": "Phnom Penh"
+            }
+        }
+    },
+    "studentDataEdit": {
+        "firstName": "Jane",
+        "lastName": "Smith",
+        "emailPrefix": "jane.smith",
+        "phone": "0987654321",
+        "telegramPrefix": "@sim_lina",
+        "dob": "2006-08-15",
+        "address": {
+            "village": "Boeung Keng Kang",
+            "commune": "Boeung Keng Kang",
+            "district": "Chamkar Mon",
+            "city": "Phnom Penh"
+        },
+        "guardian": {
+            "name": "Updated Guardian",
+            "phone": "0123456789",
+            "relation": "Uncle",
+            "emailPrefix": "updated.guardian",
+            "address": {
+                "village": "Boeung Keng Kang",
+                "commune": "Boeung Keng Kang",
+                "district": "Chamkar Mon",
+                "city": "Phnom Penh"
+            }
+        },
+        "emergency": {
+            "name": "Updated Emergency Contact",
+            "phone": "0999888777",
+            "relation": "Aunt",
+            "emailPrefix": "updated.emergency",
+            "address": {
+                "village": "Boeung Keng Kang",
+                "commune": "Boeung Keng Kang",
+                "district": "Chamkar Mon",
+                "city": "Phnom Penh"
+            }
+        }
+    },
+    "classDataAdd": {
+        "title": "Class Web Development Fundamentals",
+        "price": "500",
+        "progress": "50",
+        "startDate": "01-12-2026",
+        "endDate": "04-16-2026",
+        "startTime": "08:30AM",
+        "endTime": "11:30AM",
+        "publish": true,
+        "online": true
+    },
+    "classDataEdit": {
+        "title": "Updated Class - Advanced Web Development",
+        "price": "1500",
+        "progress": "75",
+        "startDate": "01-12-2026",
+        "endDate": "04-16-2026",
+        "startTime": "10:00AM",
+        "endTime": "01:00PM",
+        "publish": false,
+        "online": false
+    },
+    "courseDataAdd": {
+        "title": "Introduction to Advanced Programming",
+        "duration": "50",
+        "prerequisite": "Basic JS knowledge",
+        "preparation": "Laptop and Internet",
+        "purpose": "To learn advanced coding.",
+        "overview": "Course overview content.",
+        "objective": "Course objectives.",
+        "link": "https://example.com"
+    },
+    "courseDataEdit": {
+        "title": "Updated Course Title - Advanced Programming",
+        "duration": "60",
+        "prerequisite": "Updated JS knowledge",
+        "preparation": "Updated Preparation steps",
+        "purpose": "Updated Purpose: Master advanced concepts.",
+        "overview": "Updated description with new content and objectives.",
+        "objective": "Updated Objective: Master advanced concepts.",
+        "link": "https://www.youtube.com/results?search_query=playwright"
+    }
+}

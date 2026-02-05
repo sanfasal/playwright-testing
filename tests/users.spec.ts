@@ -69,8 +69,6 @@ test.describe("Users", () => {
       .click();
     await page.waitForTimeout(200);
 
-
-
     // Upload Profile Image
     await uploadThumbnail(page, "file-input-profile || selected-exist-profile");
 
@@ -361,25 +359,26 @@ test.describe("Users", () => {
         await FileInput(phoneField, userDataEdit.phone);
       }
 
-      // Select Role from dropdown
+    await page.waitForTimeout(500);
+    const roleDropdown = page
+      .locator('button[role="combobox"]')
+      .filter({ has: page.locator('svg.lucide-chevron-down') })
+      .filter({ hasText: /Admin|Manager|User|Select a role/i })
+      .first();
+
+    if (await roleDropdown.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await roleDropdown.scrollIntoViewIfNeeded();
+      await roleDropdown.click();
       await page.waitForTimeout(500);
-      const roleDropdown = page
-        .getByRole("combobox", { name: /Select a role/i })
-        .or(page.locator('button:has-text("Select a role")'))
-        .or(page.locator('[aria-label="Select a role"]'));
 
-      if (await roleDropdown.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await roleDropdown.click();
-        await page.waitForTimeout(500);
-
-        // Select the first option (index 0)
-        const firstOption = page.locator('[role="option"]').nth(1);
-        if (await firstOption.isVisible({ timeout: 2000 }).catch(() => false)) {
-          await firstOption.click();
-          console.log("✓ Selected role from dropdown");
-          await page.waitForTimeout(400);
-        }
+      // Select the first option (index 0)
+      const firstOption = page.locator('[role="option"]').nth(1);
+      if (await firstOption.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await firstOption.click();
+        console.log("✓ Selected role from dropdown");
+        await page.waitForTimeout(400);
       }
+    }
 
       // Edit Address Fields
       // Village
