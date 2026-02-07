@@ -3,6 +3,7 @@ import { login } from '../utils/auth-helper';
 import { addCursorTracking } from '../utils/cursor-helper';
 import { FileInput } from '../utils/form-helper';
 import { deleteEntityViaActionMenu } from '../utils/delete-helper';
+import { openActionMenu } from '../utils/action-menu-helper';
 
 test.describe('Attendances', () => {
   
@@ -156,10 +157,8 @@ test.describe('Attendances', () => {
     // Wait for detail view
     await page.waitForTimeout(1000);
 
-    // Click Edit button
-    const actionsMenuButton = page.locator('button[aria-haspopup="menu"]').first();
-    await expect(actionsMenuButton).toBeVisible();
-    await actionsMenuButton.click();
+    // Open the actions menu (three-dot icon)
+    await openActionMenu(page);
     
     const editButton = page.getByRole('menuitem', { name: /Edit/i })
         .or(page.getByRole('button', { name: /Edit/i }));

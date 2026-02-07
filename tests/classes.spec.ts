@@ -7,6 +7,7 @@ import { toggleViewMode } from '../utils/view-helper';
 import { uploadThumbnail } from '../utils/upload-thumbnail-helper';
 import staticData from '../constant/static-data.json';
 import path from 'path';
+import { openActionMenu } from '../utils/action-menu-helper';
 
 test.describe('Class', () => {
   
@@ -216,11 +217,8 @@ test.describe('Class', () => {
     // Wait for detail view to load - look for specific detail page indicators
     await page.waitForTimeout(1000);
 
-    // Find the three-dot menu button - should be visible in detail view
-    const actionsMenuButton = page.locator('button[aria-haspopup="menu"]').first();
-    await expect(actionsMenuButton).toBeVisible({ timeout: 5000 });
-    await actionsMenuButton.click();
-    await page.waitForTimeout(800);
+    // Open the actions menu (three-dot icon)
+    await openActionMenu(page);
     
     // Click on Edit option in the menu
     const editButton = page.getByRole('menuitem', { name: /Edit/i }).or(page.getByRole('button', { name: /Edit/i }));

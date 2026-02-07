@@ -12,6 +12,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import staticData from '../../constant/static-data.json';
 import { toggleViewMode } from '../../utils/view-helper';
+import { openActionMenu } from '../../utils/action-menu-helper';
+import { createStudent, updateStudent } from './students/student-helper';
 
 // Load environment variables
 dotenv.config();
@@ -105,7 +107,7 @@ test.describe.serial('Full Test', () => {
   // 1. Auth
   // ========================================
   test.describe('Auth', () => {
-    test.skip("Sign Up", async ({ page }) => {
+    test("Sign Up", async ({ page }) => {
     await addCursorTracking(page);
 
     const apiKey = process.env.TESTMAIL_API_KEY;
@@ -1298,7 +1300,25 @@ test.describe.serial('Full Test', () => {
   
             // Contact Information
       const emailField = page.getByLabel(/Email/i).or(page.locator('#email, input[name="email"]'));
-      await FileInput(emailField, coachDataAdd.email);
+      if (await emailField.isVisible({ timeout: 10000 }).catch(() => false)) {
+        const timestamp = Date.now();
+        const uniqueSuffix = Math.floor(Math.random() * 1000);
+        // We can't easily check for gmail env inside this specific block without copying logic, 
+        // but assuming we want to use the data object's base email or generate a new one.
+        // Let's modify the email in the data object itself or just type a unique one.
+        
+        // Construct a unique email based on the coachDataAdd base
+        const emailParts = coachDataAdd.email.split('@');
+        const uniqueEmail = `${emailParts[0]}+${timestamp}${uniqueSuffix}@${emailParts[1]}`;
+        
+        console.log('Using unique test email for new coach:', uniqueEmail);
+        await FileInput(emailField, uniqueEmail);
+      } else {
+         // Fallback if not using the visibility check pattern or if it was just a direct clear/fill
+         // But the original code was just await FileInput(emailField, coachDataAdd.email);
+         // Let's wrap it to be safe and unique.
+         await FileInput(emailField, coachDataAdd.email); 
+      }
       
       const phoneField = page.getByLabel(/Phone/i).or(page.locator('input[name="phone"]'));
       if (await phoneField.isVisible({ timeout: 2000 }).catch(() => false)) {
@@ -1872,9 +1892,7 @@ test.describe.serial('Full Test', () => {
         if (await emailField.isVisible({ timeout: 3000 }).catch(() => false)) {
           await emailField.clear();
           await FileInput(emailField, coachDataEdit.email);
-        }
-        
-        
+        }  
         // Edit Phone
         const phoneField = page.getByLabel(/Phone/i)
           .or(page.locator('input[name="phone"]'));
@@ -2389,6 +2407,536 @@ test.describe.serial('Full Test', () => {
       await deleteEntityViaActionMenu(page);
       
       await page.waitForTimeout(1000);
+
+
+//====================================================================
+    // Create Coach Again
+
+      await page.getByRole('button').filter({ has: page.locator('svg.lucide-plus') }).click();
+      await uploadThumbnail(page, "file-input-profile || selected-exist-profile", {
+        imagePath: path.join(__dirname, '..','..', 'public', 'images', 'profile-create.png')
+      });
+      
+      const firstNameFieldAgain = page.getByLabel(/First Name/i).or(page.locator('#firstName, input[name="firstName"]'));
+      await FileInput(firstNameFieldAgain, coachDataAdd.firstName);
+      
+      const lastNameFieldAgain = page.getByLabel(/Last Name/i).or(page.locator('#lastName, input[name="lastName"]'));
+      await FileInput(lastNameFieldAgain, coachDataAdd.lastName);
+      
+      // Gender Selection (Dropdown)
+      const genderButtonAgain = page.locator('button[role="combobox"]').filter({ has: page.locator('svg') })
+        .or(page.locator('button[role="combobox"][aria-controls*="radix"]')).first();
+      
+      if (await genderButtonAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await genderButtonAgain.click();
+        await page.waitForTimeout(500);
+        const firstOption = page.locator('[role="option"]').first();
+        await firstOption.click();
+        await page.waitForTimeout(400);
+      }
+      
+      // Fill Date of Birth
+      const dobFieldAgain = page.locator('input[name="dateOfBirth"]')
+          .or(page.getByLabel(/Date of Birth/i))
+          .or(page.getByPlaceholder(/Date of Birth/i));
+        if (await dobFieldAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await dobFieldAgain.scrollIntoViewIfNeeded();
+      await dobFieldAgain.click();
+      await page.waitForTimeout(300);
+          await dobFieldAgain.fill('1998-05-20');
+      await page.waitForTimeout(400);
+        }
+  
+            // Contact Information
+      const emailFieldAgain = page.getByLabel(/Email/i).or(page.locator('#email, input[name="email"]'));
+      if (await emailFieldAgain.isVisible({ timeout: 10000 }).catch(() => false)) {
+        const timestamp = Date.now();
+        const uniqueSuffix = Math.floor(Math.random() * 1000);
+        
+        // Construct a unique email based on the coachDataAdd base
+        const emailParts = coachDataAdd.email.split('@');
+        const uniqueEmail = `${emailParts[0]}+${timestamp}${uniqueSuffix}@${emailParts[1]}`;
+        
+        console.log('Using unique test email for new coach (again):', uniqueEmail);
+        await FileInput(emailFieldAgain, uniqueEmail);
+      } else {
+        await FileInput(emailFieldAgain, coachDataAdd.email);
+      }
+      
+      const phoneFieldAgain = page.getByLabel(/Phone/i).or(page.locator('input[name="phone"]'));
+      if (await phoneFieldAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await FileInput(phoneFieldAgain, coachDataAdd.phone);
+      }
+      
+      const telegramFieldAgain = page.getByPlaceholder(/Telegram/i).or(page.locator('input[name="telegram"]'));
+      if (await telegramFieldAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await FileInput(telegramFieldAgain, coachDataAdd.telegram);
+      }
+  
+      // Professional & Banking Information
+      const idNumberFieldAgain = page.getByLabel(/ID Number/i).or(page.locator('input[name="idNumber"]'));
+      if (await idNumberFieldAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await FileInput(idNumberFieldAgain, coachDataAdd.idNumber);
+      }
+  
+      const abaAccountNameFieldAgain = page.getByLabel(/ABA Account Name/i).or(page.locator('input[name="ABAAccountName"]'));
+      if (await abaAccountNameFieldAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await FileInput(abaAccountNameFieldAgain, coachDataAdd.abaAccountName);
+      }
+  
+      const abaAccountNumberFieldAgain = page.getByLabel(/ABA Account Number/i).or(page.locator('input[name="ABAAccountNumber"]'));
+      if (await abaAccountNumberFieldAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await FileInput(abaAccountNumberFieldAgain, coachDataAdd.abaAccountNumber);
+      }
+  
+      const joinDateFieldAgain = page.getByLabel(/Join Date/i).or(page.locator('input[name="joinDate"]'));
+      if (await joinDateFieldAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+        const today = new Date();
+        const todayFormatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        await joinDateFieldAgain.scrollIntoViewIfNeeded();
+        await joinDateFieldAgain.click();
+        await page.waitForTimeout(300);
+        await joinDateFieldAgain.fill(todayFormatted);
+        await page.waitForTimeout(400);
+      }
+  
+      const majorFieldAgain = page.getByLabel(/Major/i).or(page.locator('input[name="major"]'));
+      if (await majorFieldAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await FileInput(majorFieldAgain, coachDataAdd.major);
+      }
+  
+      const coursePerHourFieldAgain = page.getByLabel(/Course Per Hour/i).or(page.locator('input[name="costPerHour"]'));
+      if (await coursePerHourFieldAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await FileInput(coursePerHourFieldAgain, coachDataAdd.costPerHour);
+      }
+  
+      // Select Education Level (dropdown)
+      const educationLevelButtonAgain = page.getByRole('combobox', { name: /Education Level/i })
+        .or(page.locator('button:has-text("Education Level")'))
+        .or(page.locator('[aria-label*="Education Level"]'))
+        .first();
+      
+      if (await educationLevelButtonAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+        // Click to open the dropdown
+        await educationLevelButtonAgain.click();
+        await page.waitForTimeout(500);
+        
+        // Select the first option (index 0)
+        const firstOption = page.locator('[role="option"]').first();
+        if (await firstOption.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await firstOption.click();
+          await page.waitForTimeout(400);
+        }
+      }
+      
+      // Village (if exists) - uses nested name attribute
+      const villageFieldAgain = page.getByPlaceholder('Village')
+        .or(page.locator('input[name="address.village"]'))
+        .or(page.getByLabel(/Village/i));
+      if (await villageFieldAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await FileInput(villageFieldAgain, coachDataAdd.address.village);
+        await villageFieldAgain.press('Tab'); 
+        await page.waitForTimeout(1000);
+      }
+  
+      // Commune / Songkat 
+      const communeFieldAgain = page.getByRole('textbox', { name: /Commune/i })
+        .or(page.getByRole('combobox', { name: /Commune/i }))
+        .or(page.getByPlaceholder(/Commune/i))
+        .or(page.locator('input[name="address.commune"]'))
+        .or(page.locator('#commune'));
+        
+      // Use .first() to avoid strict mode violations if duplicates exist
+      const targetCommuneAgain = communeFieldAgain.first();
+      const isCommuneVisibleAgain = await targetCommuneAgain.isVisible({ timeout: 3000 }).catch((e) => {
+        console.log('Ignore: Commune visibility check failed (might be hidden or optional):', e);
+        return false;
+      });
+      console.log(`Debug: Commune field visible? ${isCommuneVisibleAgain}`);
+  
+      if (isCommuneVisibleAgain) {
+        // Explicitly wait for the field to be enabled in case it depends on Village
+        try {
+          await expect(targetCommuneAgain).toBeEnabled({ timeout: 5000 });
+        } catch (e) {
+          console.log('Warning: Commune field did not become enabled:', e);
+        }
+  
+        await targetCommuneAgain.click();
+        await page.waitForTimeout(300);
+        await FileInput(targetCommuneAgain, coachDataAdd.address.commune);
+        await targetCommuneAgain.blur();
+        await page.waitForTimeout(500);
+      }
+  
+      // District / Khan (if exists)
+      const districtFieldAgain = page.getByPlaceholder('District / Khan')
+        .or(page.locator('input[name="address.district"]'))
+        .or(page.locator('#district'));
+      if (await districtFieldAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await districtFieldAgain.scrollIntoViewIfNeeded();
+        
+        const isDisabled = await districtFieldAgain.isDisabled().catch(() => false);
+        if (!isDisabled) {
+          await page.waitForTimeout(300);
+          await FileInput(districtFieldAgain, coachDataAdd.address.district);
+        }
+      }
+  
+      // City / Province (if exists)
+      const cityFieldAgain = page.getByPlaceholder('City / Province')
+        .or(page.locator('input[name="address.city"]'))
+        .or(page.locator('#city'));
+      if (await cityFieldAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await cityFieldAgain.scrollIntoViewIfNeeded();
+        
+        const isDisabled = await cityFieldAgain.isDisabled().catch(() => false);
+        if (!isDisabled) {
+          await page.waitForTimeout(300);
+          await FileInput(cityFieldAgain, coachDataAdd.address.city);
+        }
+      }
+  
+      // Click "Add Work History" button
+      const addWorkHistoryButtonAgain = page.getByRole('button', { name: /Add Work History/i })
+        .or(page.locator('button:has-text("Add Work History")'))
+        .or(page.locator('button:has(svg.lucide-plus)').filter({ hasText: /Work History/i }));
+      
+      if (await addWorkHistoryButtonAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await addWorkHistoryButtonAgain.scrollIntoViewIfNeeded();
+        await addWorkHistoryButtonAgain.click();
+        await page.waitForTimeout(800);
+        
+        // Fill Position
+        const positionField = page.getByPlaceholder('Position')
+          .or(page.locator('input[name="workHistory.0.position"]'))
+          .or(page.getByLabel(/Position/i));
+        if (await positionField.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await FileInput(positionField, 'Senior Developer');
+        }
+        
+        // Fill Organization
+        const organizationField = page.getByPlaceholder('Organization')
+          .or(page.locator('input[name="workHistory.0.organization"]'))
+          .or(page.getByLabel(/Organization/i));
+        if (await organizationField.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await FileInput(organizationField, 'Tech Company Ltd');
+        }
+        
+        // Fill Start Date
+        const startDateField = page.getByPlaceholder('Start Date')
+          .or(page.locator('input[name="workHistory.0.startDate"]'))
+          .or(page.getByLabel(/Start Date/i));
+        if (await startDateField.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await startDateField.click();
+          await page.waitForTimeout(300);
+          await startDateField.fill('2020-01-15');
+          await page.waitForTimeout(400);
+        }
+        
+        // Fill End Date
+        const endDateField = page.getByPlaceholder('End Date')
+          .or(page.locator('input[name="workHistory.0.endDate"]'))
+          .or(page.getByLabel(/End Date/i));
+        if (await endDateField.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await endDateField.click();
+          await page.waitForTimeout(300);
+          await endDateField.fill('2023-12-31');
+          await page.waitForTimeout(400);
+        }
+      }
+  
+       // Click Education Background
+      const addEducationBackgroundButtonAgain = page.getByRole('button', { name: /Add Education Background/i })
+        .or(page.locator('button:has-text("Add Education Background")'))
+        .or(page.locator('button:has(svg.lucide-plus)').filter({ hasText: /Education Background/i }));
+      
+      if (await addEducationBackgroundButtonAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await addEducationBackgroundButtonAgain.scrollIntoViewIfNeeded();
+        await addEducationBackgroundButtonAgain.click();
+        await page.waitForTimeout(800);
+        
+        // Fill School Name
+        const schoolNameField = page.getByPlaceholder('School Name')
+          .or(page.locator('input[name="educationBackground.0.schoolName"]'))
+          .or(page.getByLabel(/School Name/i));
+        await schoolNameField.fill('Royal University of Phnom Penh');
+        
+        // Fill Major
+        const majorField = page.locator('input[name="educationBackground.0.major"]');
+        await FileInput(majorField, 'Computer Science');
+        
+     // Fill Start Date
+        const startDateField = page.locator('input[name="educationBackground.0.startDate"]');
+        if (await startDateField.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await startDateField.click();
+        await page.waitForTimeout(300);
+        await startDateField.fill('2020-01-15');
+          await page.waitForTimeout(400);
+        }
+        
+        // Fill End Date
+        const endDateField = page.locator('input[name="educationBackground.0.endDate"]');
+        if (await endDateField.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await endDateField.click();
+        await page.waitForTimeout(300);
+        await endDateField.fill('2023-12-31');
+          await page.waitForTimeout(400);
+        }
+      }
+          
+      // Click Next button to proceed to Guardian tab
+      await page.waitForTimeout(1000);
+      const nextButtonAgain = page.getByRole('button', { name: /Next|next/i });
+      await nextButtonAgain.scrollIntoViewIfNeeded();
+      await nextButtonAgain.click();
+      await page.waitForTimeout(2000);
+  
+      // ===== GUARDIAN TAB =====    
+      // Guardian Name
+      const guardianNameFieldAgain = page.locator('input[name="guardian.name"]')
+        .or(page.getByPlaceholder('Name'))
+        .or(page.getByLabel(/Name/i));
+      if (await guardianNameFieldAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await guardianNameFieldAgain.scrollIntoViewIfNeeded();
+        await page.waitForTimeout(200);
+        await FileInput(guardianNameFieldAgain, 'Dara Sok');
+      }
+  
+      // Guardian Phone Number
+      const guardianPhoneFieldAgain = page.locator('input[name="guardian.phone"]')
+        .or(page.getByPlaceholder('Phone Number'))
+        .or(page.getByLabel(/Phone/i));
+      if (await guardianPhoneFieldAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await guardianPhoneFieldAgain.scrollIntoViewIfNeeded();
+        await page.waitForTimeout(200);
+        await FileInput(guardianPhoneFieldAgain, '0987654321');
+      }
+  
+      // Guardian Relation
+      const guardianRelationFieldAgain = page.locator('input[name="guardian.relation"]')
+        .or(page.getByPlaceholder('Relation'))
+        .or(page.getByLabel(/Relation/i));
+      if (await guardianRelationFieldAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await guardianRelationFieldAgain.scrollIntoViewIfNeeded();
+        await page.waitForTimeout(200);
+        await FileInput(guardianRelationFieldAgain, 'Father');
+      }
+  
+      // Guardian Email
+      const guardianEmailFieldAgain = page.locator('input[name="guardian.email"]')
+        .or(page.getByPlaceholder('Email'))
+        .or(page.getByLabel(/Email/i));
+      if (await guardianEmailFieldAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await guardianEmailFieldAgain.scrollIntoViewIfNeeded();
+        await page.waitForTimeout(200);
+        await FileInput(guardianEmailFieldAgain, 'darasok@gmail.com');
+      }
+  
+      // Guardian Village
+      const guardianVillageFieldAgain = page.locator('input[name="guardian.address.village"]')
+        .or(page.getByPlaceholder('Village'))
+        .or(page.getByLabel(/Village/i));
+      if (await guardianVillageFieldAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await guardianVillageFieldAgain.scrollIntoViewIfNeeded();
+        await page.waitForTimeout(200);
+        await FileInput(guardianVillageFieldAgain, 'Toul Kork');
+        // Use Tab to ensure natural user behavior and trigger blur events
+        await guardianVillageFieldAgain.press('Tab'); 
+        // Wait for address fields to become enabled
+        await page.waitForTimeout(1000);
+      }
+  
+      // Guardian Commune / Songkat
+      const finalGuardianCommuneAgain = page.locator('input[name="guardian.address.commune"]')
+        .or(page.locator('#commune'))
+        .or(page.getByPlaceholder(/Khum\/Sangkat|Commune/i))
+        .or(page.getByLabel(/Commune/i));
+  
+      if (await finalGuardianCommuneAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+        // Explicitly wait for the field to be enabled
+        try {
+          await expect(finalGuardianCommuneAgain).toBeEnabled({ timeout: 5000 });
+        } catch (e) {
+          console.log('Warning: Guardian Commune field did not become enabled:', e);
+        }
+        
+        await finalGuardianCommune.click();
+        await page.waitForTimeout(200);
+        await FileInput(finalGuardianCommune, 'Toul Kork');
+        await finalGuardianCommune.blur();
+        await page.waitForTimeout(500);
+      }
+  
+      // Guardian District / Khan
+      const guardianDistrictFieldAgain = page.locator('input[name="guardian.address.district"]')
+        .or(page.locator('#district'))
+        .or(page.getByPlaceholder(/District|Khan/i))
+        .or(page.getByLabel(/District/i));
+      if (await guardianDistrictFieldAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+         try {
+          await expect(guardianDistrictFieldAgain).toBeEnabled({ timeout: 5000 });
+        } catch (e) {
+          console.log('Warning: Guardian District field did not become enabled:', e);
+        }
+  
+        const isDisabled = await guardianDistrictFieldAgain.isDisabled().catch(() => false);
+        if (!isDisabled) {
+          // await guardianDistrictFieldAgain.click(); // Removed to prevent scrolling jump
+          await page.waitForTimeout(200);
+          await FileInput(guardianDistrictFieldAgain, 'Phnom Penh');
+        }
+      }
+  
+      // Guardian City / Province
+      const guardianCityFieldAgain = page.locator('input[name="guardian.address.city"]')
+        .or(page.locator('#city'))
+        .or(page.getByPlaceholder(/City|Province/i))
+        .or(page.getByLabel(/City|Province/i));
+      if (await guardianCityFieldAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+         try {
+          await expect(guardianCityFieldAgain).toBeEnabled({ timeout: 5000 });
+        } catch (e) {
+          console.log('Warning: Guardian City field did not become enabled:', e);
+        }
+  
+        const isDisabled = await guardianCityFieldAgain.isDisabled().catch(() => false);
+        if (!isDisabled) {
+          await page.waitForTimeout(200);
+          await FileInput(guardianCityFieldAgain, 'Phnom Penh');
+        }
+      }
+  
+      // Click Next button to proceed to Emergency tab
+      await page.waitForTimeout(1000);
+      const nextButton2Again = page.getByRole('button', { name: /Next|next/i });
+      await nextButton2Again.scrollIntoViewIfNeeded();
+      await nextButton2Again.click();
+      await page.waitForTimeout(2000);
+  
+      // ===== EMERGENCY TAB =====
+      
+      // Emergency Name
+      const emergencyNameFieldAgain = page.locator('input[name="emergency.name"]')
+        .or(page.getByPlaceholder('Name'))
+        .or(page.getByLabel(/Name/i));
+      if (await emergencyNameFieldAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await emergencyNameFieldAgain.scrollIntoViewIfNeeded();
+        await emergencyNameFieldAgain.click();
+        await page.waitForTimeout(200);
+        await FileInput(emergencyNameFieldAgain, 'Heng Leakana');
+      }
+  
+      // Emergency Phone Number
+      const emergencyPhoneFieldAgain = page.locator('input[name="emergency.phone"]')
+        .or(page.getByPlaceholder('Phone Number'))
+        .or(page.getByLabel(/Phone/i));
+      if (await emergencyPhoneFieldAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await emergencyPhoneFieldAgain.scrollIntoViewIfNeeded();
+        await emergencyPhoneFieldAgain.click();
+        await page.waitForTimeout(200);
+        await FileInput(emergencyPhoneFieldAgain, '0123456789');
+      }
+  
+      // Emergency Relation
+      const emergencyRelationFieldAgain = page.locator('input[name="emergency.relation"]')
+        .or(page.getByPlaceholder('Relation'))
+        .or(page.getByLabel(/Relation/i));
+      if (await emergencyRelationFieldAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await emergencyRelationFieldAgain.scrollIntoViewIfNeeded();
+        await emergencyRelationFieldAgain.click();
+        await page.waitForTimeout(200);
+        await FileInput(emergencyRelationFieldAgain, 'Mother');
+      }
+  
+      // Emergency Email
+      const emergencyEmailFieldAgain = page.locator('input[name="emergency.email"]')
+        .or(page.getByPlaceholder('Email'))
+        .or(page.getByLabel(/Email/i));
+      if (await emergencyEmailFieldAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await emergencyEmailFieldAgain.scrollIntoViewIfNeeded();
+        await emergencyEmailFieldAgain.click();
+        await page.waitForTimeout(200);
+        await FileInput(emergencyEmailFieldAgain, 'leakana.heng@gmail.com');
+      }
+  
+      // Emergency Village
+      const emergencyVillageFieldAgain = page.locator('input[name="emergency.address.village"]')
+        .or(page.getByPlaceholder('Village'))
+        .or(page.getByLabel(/Village/i));
+      if (await emergencyVillageFieldAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await emergencyVillageFieldAgain.scrollIntoViewIfNeeded();
+        await emergencyVillageFieldAgain.click();
+        await page.waitForTimeout(200);
+        await FileInput(emergencyVillageFieldAgain, 'Toul Kork');
+        // Use Tab to ensure natural user behavior and trigger blur events
+        await emergencyVillageFieldAgain.press('Tab'); 
+        // Wait for address fields to become enabled
+        await page.waitForTimeout(1000);
+      }
+  
+      // Emergency Commune / Songkat
+      const emergencyCommuneAgain = page.locator('input[name="emergency.address.commune"]')
+        .or(page.locator('#commune'))
+        .or(page.getByPlaceholder(/Khum\/Sangkat|Commune/i))
+        .or(page.getByLabel(/Commune/i));
+      if (await emergencyCommuneAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+        // Explicitly wait for the field to be enabled
+        try {
+          await expect(emergencyCommuneAgain).toBeEnabled({ timeout: 5000 });
+        } catch (e) {
+          console.log('Warning: Emergency Commune field did not become enabled:', e);
+        }
+        
+        await emergencyCommuneAgain.click();
+        await page.waitForTimeout(200);
+        await FileInput(emergencyCommuneAgain, 'Toul Kork ');
+        await emergencyCommuneAgain.blur();
+        await page.waitForTimeout(500);
+      }
+  
+      // Emergency District / Khan
+      const emergencyDistrictFieldAgain = page.locator('input[name="emergency.address.district"]')
+        .or(page.locator('#district'))
+        .or(page.getByPlaceholder(/District|Khan/i))
+        .or(page.getByLabel(/District/i));
+      if (await emergencyDistrictFieldAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+         try {
+          await expect(emergencyDistrictFieldAgain).toBeEnabled({ timeout: 5000 });
+        } catch (e) {
+          console.log('Warning: Emergency District field did not become enabled:', e);
+        }
+  
+        const isDisabled = await emergencyDistrictFieldAgain.isDisabled().catch(() => false);
+        if (!isDisabled) {
+          await page.waitForTimeout(200);
+          await FileInput(emergencyDistrictFieldAgain, 'Phnom Penh');
+        }
+      }
+  
+      // Emergency City / Province
+      const emergencyCityFieldAgain = page.locator('input[name="emergency.address.city"]')
+        .or(page.locator('#city'))
+        .or(page.getByPlaceholder(/City|Province/i))
+        .or(page.getByLabel(/City|Province/i));
+      if (await emergencyCityFieldAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+         try {
+          await expect(emergencyCityFieldAgain).toBeEnabled({ timeout: 5000 });
+        } catch (e) {
+          console.log('Warning: Emergency City field did not become enabled:', e);
+        }
+  
+        const isDisabled = await emergencyCityFieldAgain.isDisabled().catch(() => false);
+        if (!isDisabled) {
+          await page.waitForTimeout(200);
+          await FileInput(emergencyCityFieldAgain, 'Phnom Penh');
+        }
+      }
+  
+      // Click Create button to submit the form
+      await page.waitForTimeout(1000);
+      await page.getByRole('button', { name: /Create/i }).click();
+      await page.waitForTimeout(1000);
     });
   });
 
@@ -2424,379 +2972,7 @@ test.describe('Students', () => {
   test('CRUD Students', async ({ page }) => {
     await page.locator('body > div > div.flex-1.flex.gap-10 > div.flex-1.min-w-\\[600px\\].overflow-auto > div > button').click();
     
-    // Wait for the drawer form to appear
-    await expect(page.getByRole('textbox').first()).toBeVisible({ timeout: 1000 });
-
-    // Upload Profile Image
-    await uploadThumbnail(page, "file-input-profile || selected-exist-profile", {
-      imagePath: path.join(__dirname, '..', '..','public', 'images', 'profile-create.png')
-    });
-    
-    // Fill First Name
-    const firstNameField = page.getByLabel(/First Name/i)
-      .or(page.locator('#firstName, input[name="firstName"]'));
-    await FileInput(firstNameField, studentDataAdd.firstName);
-    
-    // Fill Last Name
-    const lastNameField = page.getByLabel(/Last Name/i)
-      .or(page.locator('#lastName, input[name="lastName"]'));
-    await FileInput(lastNameField, studentDataAdd.lastName);
-    
-    // Select Gender (before email)
-    const genderButton = page.locator('button[role="combobox"]').filter({ has: page.locator('svg') })
-      .or(page.locator('button[role="combobox"][aria-controls*="radix"]'))
-      .first();
-    
-    if (await genderButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await genderButton.click();
-      await page.waitForTimeout(500);
-      const firstOption = page.locator('[role="option"]').first();
-      await firstOption.click();
-      await page.waitForTimeout(400);
-    }
-    
-    // Fill Email (use testmail helper to generate a unique inbox)
-    const emailField = page.getByLabel(/Email/i)
-      .or(page.locator('#email, input[name="email"]'));
-    await FileInput(emailField, studentDataAdd.email);
-
-    // Fill Date of Birth with today's date
-    const dobField = page.getByLabel(/Date of Birth|DOB|Birth Date/i)
-      .or(page.locator('#dob, input[name="dob"], input[name="dateOfBirth"], input[type="date"]'));
-    await dobField.click();
-    await page.waitForTimeout(300);
-    await dobField.fill(studentDataAdd.dob);
-    await page.waitForTimeout(400);
-    
-    // Fill Phone (if exists)
-    const phoneField = page.getByLabel(/Phone/i)
-      .or(page.locator('input[name="phone"]'));
-    if (await phoneField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await FileInput(phoneField, studentDataAdd.phone);
-    }
-    
-    // Telegram usernames (if exists)
-    const telegramField = page.getByPlaceholder(/Telegram/i)
-      .or(page.locator('input[name="telegram"]'));
-    if (await telegramField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await FileInput(telegramField, studentDataAdd.telegram);
-    }
-    
-    // Village (if exists) - uses nested name attribute
-    const villageField = page.getByPlaceholder('Village')
-      .or(page.locator('input[name="address.village"]'))
-      .or(page.getByLabel(/Village/i));
-    if (await villageField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await FileInput(villageField, studentDataAdd.address.village);
-      await villageField.press('Tab'); 
-      await page.waitForTimeout(1000);
-    }
-
-    // Commune / Songkat
-    const communeField = page.getByRole('textbox', { name: /Commune/i })
-      .or(page.getByRole('combobox', { name: /Commune/i }))
-      .or(page.getByPlaceholder(/Commune/i))
-      .or(page.locator('input[name="address.commune"]'))
-      .or(page.locator('#commune'));
-      
-    // Use .first() to avoid strict mode violations if duplicates exist
-    const targetCommune = communeField.first();
-    const isCommuneVisible = await targetCommune.isVisible({ timeout: 3000 }).catch((e) => {
-      console.log('Ignore: Commune visibility check failed (might be hidden or optional):', e);
-      return false;
-    });
-    console.log(`Debug: Commune field visible? ${isCommuneVisible}`);
-
-    if (isCommuneVisible) {
-      try {
-        await expect(targetCommune).toBeEnabled({ timeout: 5000 });
-      } catch (e) {
-        console.log('Warning: Commune field did not become enabled:', e);
-      }
-
-      await targetCommune.click();
-      await page.waitForTimeout(300);
-      await FileInput(targetCommune, studentDataAdd.address.commune);
-      await targetCommune.blur();
-      await page.waitForTimeout(500);
-    }
-
-    // District / Khan
-    const districtField = page.getByPlaceholder('District / Khan')
-      .or(page.locator('input[name="address.district"]'))
-      .or(page.locator('#district'));
-    if (await districtField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await districtField.scrollIntoViewIfNeeded();
-      
-      const isDisabled = await districtField.isDisabled().catch(() => false);
-      if (!isDisabled) {
-        await page.waitForTimeout(300);
-        await FileInput(districtField, studentDataAdd.address.district);
-      }
-    }
-
-    // City / Province
-    const cityField = page.getByPlaceholder('City / Province')
-      .or(page.locator('input[name="address.city"]'))
-      .or(page.locator('#city'));
-    if (await cityField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await cityField.scrollIntoViewIfNeeded();
-      
-      const isDisabled = await cityField.isDisabled().catch(() => false);
-      if (!isDisabled) {
-        await page.waitForTimeout(300);
-        await FileInput(cityField, studentDataAdd.address.city);
-      }
-    }
-    
-    
-    // Click Next button to proceed to Guardian tab
-    await page.waitForTimeout(1000);
-    const nextButton = page.getByRole('button', { name: /Next|next/i });
-    await nextButton.scrollIntoViewIfNeeded();
-    await nextButton.click();
-    await page.waitForTimeout(2000);
-
-    // ===== GUARDIAN TAB =====
-    // Guardian Name
-    const guardianNameField = page.locator('input[name="guardian.name"]')
-      .or(page.getByPlaceholder('Name'))
-      .or(page.getByLabel(/Name/i));
-    if (await guardianNameField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await guardianNameField.scrollIntoViewIfNeeded();
-      await page.waitForTimeout(200);
-      await FileInput(guardianNameField, studentDataAdd.guardian.name);
-    }
-
-    // Guardian Phone Number
-    const guardianPhoneField = page.locator('input[name="guardian.phone"]')
-      .or(page.getByPlaceholder('Phone Number'))
-      .or(page.getByLabel(/Phone/i));
-    if (await guardianPhoneField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await guardianPhoneField.scrollIntoViewIfNeeded();
-      await page.waitForTimeout(200);
-      await FileInput(guardianPhoneField, studentDataAdd.guardian.phone);
-    }
-
-    // Guardian Relation
-    const guardianRelationField = page.locator('input[name="guardian.relation"]')
-      .or(page.getByPlaceholder('Relation'))
-      .or(page.getByLabel(/Relation/i));
-    if (await guardianRelationField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await guardianRelationField.scrollIntoViewIfNeeded();
-      await page.waitForTimeout(200);
-      await FileInput(guardianRelationField, studentDataAdd.guardian.relation);
-    }
-
-    // Guardian Email
-    const guardianEmailField = page.locator('input[name="guardian.email"]')
-      .or(page.getByPlaceholder('Email'))
-      .or(page.getByLabel(/Email/i));
-    if (await guardianEmailField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await guardianEmailField.scrollIntoViewIfNeeded();
-      await page.waitForTimeout(200);
-      await FileInput(guardianEmailField, studentDataAdd.guardian.email);
-    }
-
-    // Guardian Village
-    const guardianVillageField = page.locator('input[name="guardian.address.village"]')
-      .or(page.getByPlaceholder('Village'))
-      .or(page.getByLabel(/Village/i));
-    if (await guardianVillageField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await guardianVillageField.scrollIntoViewIfNeeded();
-      await page.waitForTimeout(200);
-      await FileInput(guardianVillageField, studentDataAdd.guardian.address.village);
-      await guardianVillageField.press('Tab'); 
-      await page.waitForTimeout(1000);
-    }
-
-    // Guardian Commune / Songkat
-    const finalGuardianCommune = page.locator('input[name="guardian.address.commune"]')
-      .or(page.locator('#commune'))
-      .or(page.getByPlaceholder(/Khum\/Sangkat|Commune/i))
-      .or(page.getByLabel(/Commune/i));
-
-    if (await finalGuardianCommune.isVisible({ timeout: 2000 }).catch(() => false)) {
-      try {
-        await expect(finalGuardianCommune).toBeEnabled({ timeout: 5000 });
-      } catch (e) {
-        console.log('Warning: Guardian Commune field did not become enabled:', e);
-      }
-      
-      await finalGuardianCommune.click();
-      await page.waitForTimeout(200);
-      await FileInput(finalGuardianCommune, studentDataAdd.guardian.address.commune);
-      await finalGuardianCommune.blur();
-      await page.waitForTimeout(500);
-    }
-
-    // Guardian District / Khan
-    const guardianDistrictField = page.locator('input[name="guardian.address.district"]')
-      .or(page.locator('#district'))
-      .or(page.getByPlaceholder(/District|Khan/i))
-      .or(page.getByLabel(/District/i));
-    if (await guardianDistrictField.isVisible({ timeout: 2000 }).catch(() => false)) {
-       try {
-        await expect(guardianDistrictField).toBeEnabled({ timeout: 5000 });
-      } catch (e) {
-        console.log('Warning: Guardian District field did not become enabled:', e);
-      }
-
-      const isDisabled = await guardianDistrictField.isDisabled().catch(() => false);
-      if (!isDisabled) {
-        await page.waitForTimeout(200);
-        await FileInput(guardianDistrictField, studentDataAdd.guardian.address.district);
-      }
-    }
-
-    // Guardian City / Province
-    const guardianCityField = page.locator('input[name="guardian.address.city"]')
-      .or(page.locator('#city'))
-      .or(page.getByPlaceholder(/City|Province/i))
-      .or(page.getByLabel(/City|Province/i));
-    if (await guardianCityField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      try {
-        await expect(guardianCityField).toBeEnabled({ timeout: 5000 });
-      } catch (e) {
-        console.log('Warning: Guardian City field did not become enabled:', e);
-      }
-
-      const isDisabled = await guardianCityField.isDisabled().catch(() => false);
-      if (!isDisabled) {
-        await page.waitForTimeout(200);
-        await FileInput(guardianCityField, studentDataAdd.guardian.address.city);
-      }
-    }
-
-    // Click Next button to proceed to Emergency tab
-    await page.waitForTimeout(1000);
-    const nextButton2 = page.getByRole('button', { name: /Next|next/i });
-    await nextButton2.scrollIntoViewIfNeeded();
-    await nextButton2.click();
-    await page.waitForTimeout(2000);
-
-    // ===== EMERGENCY TAB =====
-    // Emergency Name
-    const emergencyNameField = page.locator('input[name="emergency.name"]')
-      .or(page.getByPlaceholder('Name'))
-      .or(page.getByLabel(/Name/i));
-    if (await emergencyNameField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await emergencyNameField.scrollIntoViewIfNeeded();
-      await emergencyNameField.click();
-      await page.waitForTimeout(200);
-      await FileInput(emergencyNameField, studentDataAdd.emergency.name);
-    }
-
-    // Emergency Phone Number
-    const emergencyPhoneField = page.locator('input[name="emergency.phone"]')
-      .or(page.getByPlaceholder('Phone Number'))
-      .or(page.getByLabel(/Phone/i));
-    if (await emergencyPhoneField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await emergencyPhoneField.scrollIntoViewIfNeeded();
-      await emergencyPhoneField.click();
-      await page.waitForTimeout(200);
-      await FileInput(emergencyPhoneField, studentDataAdd.emergency.phone);
-    }
-
-    // Emergency Relation
-    const emergencyRelationField = page.locator('input[name="emergency.relation"]')
-      .or(page.getByPlaceholder('Relation'))
-      .or(page.getByLabel(/Relation/i));
-    if (await emergencyRelationField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await emergencyRelationField.scrollIntoViewIfNeeded();
-      await emergencyRelationField.click();
-      await page.waitForTimeout(200);
-      await FileInput(emergencyRelationField, studentDataAdd.emergency.relation);
-    }
-
-    // Emergency Email
-    const emergencyEmailField = page.locator('input[name="emergency.email"]')
-      .or(page.getByPlaceholder('Email'))
-      .or(page.getByLabel(/Email/i));
-    if (await emergencyEmailField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await emergencyEmailField.scrollIntoViewIfNeeded();
-      await emergencyEmailField.click();
-      await page.waitForTimeout(200);
-      await FileInput(emergencyEmailField, studentDataAdd.emergency.email);
-    }
-
-    // Emergency Village
-    const emergencyVillageField = page.locator('input[name="emergency.address.village"]')
-      .or(page.getByPlaceholder('Village'))
-      .or(page.getByLabel(/Village/i));
-    if (await emergencyVillageField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await emergencyVillageField.scrollIntoViewIfNeeded();
-      await emergencyVillageField.click();
-      await page.waitForTimeout(200);
-      await FileInput(emergencyVillageField, studentDataAdd.emergency.address.village);
-      await emergencyVillageField.press('Tab'); 
-      await page.waitForTimeout(1000);
-    }
-
-    // Emergency Commune / Songkat
-    const emergencyCommune = page.locator('input[name="emergency.address.commune"]')
-      .or(page.locator('#commune'))
-      .or(page.getByPlaceholder(/Khum\/Sangkat|Commune/i))
-      .or(page.getByLabel(/Commune/i));
-    if (await emergencyCommune.isVisible({ timeout: 2000 }).catch(() => false)) {
-      try {
-        await expect(emergencyCommune).toBeEnabled({ timeout: 5000 });
-      } catch (e) {
-        console.log('Warning: Emergency Commune field did not become enabled:', e);
-      }
-      
-      await emergencyCommune.click();
-      await page.waitForTimeout(200);
-      await FileInput(emergencyCommune, studentDataAdd.emergency.address.commune);
-      await emergencyCommune.blur();
-      await page.waitForTimeout(500);
-    }
-
-    // Emergency District / Khan
-    const emergencyDistrictField = page.locator('input[name="emergency.address.district"]')
-      .or(page.locator('#district'))
-      .or(page.getByPlaceholder(/District|Khan/i))
-      .or(page.getByLabel(/District/i));
-    if (await emergencyDistrictField.isVisible({ timeout: 2000 }).catch(() => false)) {
-       try {
-        await expect(emergencyDistrictField).toBeEnabled({ timeout: 5000 });
-      } catch (e) {
-        console.log('Warning: Emergency District field did not become enabled:', e);
-      }
-
-      const isDisabled = await emergencyDistrictField.isDisabled().catch(() => false);
-      if (!isDisabled) {
-        await page.waitForTimeout(200);
-        await FileInput(emergencyDistrictField, studentDataAdd.emergency.address.district);
-      }
-    }
-
-    // Emergency City / Province
-    const emergencyCityField = page.locator('input[name="emergency.address.city"]')
-      .or(page.locator('#city'))
-      .or(page.getByPlaceholder(/City|Province/i))
-      .or(page.getByLabel(/City|Province/i));
-    if (await emergencyCityField.isVisible({ timeout: 2000 }).catch(() => false)) {
-       try {
-        await expect(emergencyCityField).toBeEnabled({ timeout: 5000 });
-      } catch (e) {
-        console.log('Warning: Emergency City field did not become enabled:', e);
-      }
-
-      const isDisabled = await emergencyCityField.isDisabled().catch(() => false);
-      if (!isDisabled) {
-        await page.waitForTimeout(200);
-        await FileInput(emergencyCityField, studentDataAdd.emergency.address.city);
-      }
-    }
-
-    // Click Create button to submit the form
-    await page.waitForTimeout(1000);
-    const createButton = page.getByRole('button', { name: /Create/i });
-    await createButton.scrollIntoViewIfNeeded();
-    await createButton.click();
-    await page.waitForTimeout(1000);
-
+    await createStudent(page, studentDataAdd);
 
 //===================================================================
 // Students list or gird view page
@@ -2838,407 +3014,7 @@ test.describe('Students', () => {
     if (await editButton.isVisible({ timeout: 3000 }).catch(() => false)) {
       await editButton.click();
       
-      // Wait for edit form to appear
-      await page.waitForTimeout(1000);
-      
-      // ===== STUDENT TAB =====
-      
-    // Upload Profile Image
-    await uploadThumbnail(page, "file-input-profile || selected-exist-profile", {
-      imagePath: path.join(__dirname, '..', '..','public', 'images', 'profile-update.png')
-    });
-      
-      // Edit First Name
-      const firstNameField = page.getByLabel(/First Name/i)
-        .or(page.locator('#firstName, input[name="firstName"]'));
-      if (await firstNameField.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await firstNameField.clear();
-        await FileInput(firstNameField, studentDataEdit.firstName);
-      }
-      
-      // Edit Last Name
-      const lastNameField = page.getByLabel(/Last Name/i)
-        .or(page.locator('#lastName, input[name="lastName"]'));
-      if (await lastNameField.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await lastNameField.clear();
-        await FileInput(lastNameField, studentDataEdit.lastName);
-      }
-
-    // Edit Gender (Dropdown)
-    const genderButton = page.locator('button[role="combobox"]').filter({ has: page.locator('svg') })
-      .or(page.locator('button[role="combobox"][aria-controls*="radix"]')).first();
-    
-    if (await genderButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await genderButton.click();
-      await page.waitForTimeout(500);
-      const firstOption = page.locator('[role="option"]').nth(1); // Select 2nd option for change
-      if (await firstOption.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await firstOption.click();
-        await page.waitForTimeout(400);
-      } else {
-         // Fallback to first option if only one exists
-         await page.locator('[role="option"]').first().click();
-         await page.waitForTimeout(400);
-      }
-    }
-      
-      // Edit Email
-      const emailField = page.getByLabel(/Email/i)
-        .or(page.locator('#email, input[name="email"]'));
-      if (await emailField.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await emailField.clear();
-        await FileInput(emailField, studentDataEdit.email);
-      }
-
-            // Edit Date of Birth
-      const dobField = page.locator('input[name="dateOfBirth"]')
-        .or(page.getByLabel(/Date of Birth/i))
-        .or(page.getByPlaceholder(/Date of Birth/i));
-      if (await dobField.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await dobField.scrollIntoViewIfNeeded();
-        await dobField.clear();
-        await dobField.click();
-        await page.waitForTimeout(300);
-        await dobField.fill('1995-05-20');
-        await page.waitForTimeout(400);
-      }
-      
-      // Edit Phone
-      const phoneField = page.getByLabel(/Phone/i)
-        .or(page.locator('input[name="phone"]'));
-      if (await phoneField.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await phoneField.clear();
-        await FileInput(phoneField, studentDataEdit.phone);
-      }
-
-      // Telegram usernames (if exists)
-    const telegramField = page.getByPlaceholder(/Telegram/i)
-      .or(page.locator('input[name="telegram"]'));
-    if (await telegramField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await FileInput(telegramField, studentDataEdit.telegram);
-    }
-
-      // Edit Village
-      const villageField = page.getByPlaceholder('Village')
-        .or(page.locator('input[name="address.village"]'))
-        .or(page.getByLabel(/Village/i));
-      if (await villageField.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await villageField.clear();
-        await FileInput(villageField, studentDataEdit.address.village);
-        await villageField.press('Tab');
-        await page.waitForTimeout(1000);
-      }
-
-      // Edit Commune
-      const communeField = page.getByRole('textbox', { name: /Commune/i })
-        .or(page.getByRole('combobox', { name: /Commune/i }))
-        .or(page.getByPlaceholder(/Commune/i))
-        .or(page.locator('input[name="address.commune"]'))
-        .or(page.locator('#commune'));
-      const targetCommune = communeField.first();
-      if (await targetCommune.isVisible({ timeout: 3000 }).catch(() => false)) {
-        try {
-          await expect(targetCommune).toBeEnabled({ timeout: 5000 });
-        } catch (e) {
-          console.log('Warning: Commune field did not become enabled:', e);
-        }
-        await targetCommune.clear();
-        await targetCommune.click();
-        await page.waitForTimeout(300);
-        await FileInput(targetCommune, studentDataEdit.address.commune);
-        await targetCommune.blur();
-        await page.waitForTimeout(500);
-      }
-
-      // Edit District
-      const districtField = page.getByPlaceholder('District / Khan')
-        .or(page.locator('input[name="address.district"]'))
-        .or(page.locator('#district'));
-      if (await districtField.isVisible({ timeout: 2000 }).catch(() => false)) {
-        const isDisabled = await districtField.isDisabled().catch(() => false);
-        if (!isDisabled) {
-          await districtField.clear();
-          await page.waitForTimeout(300);
-          await FileInput(districtField, studentDataEdit.address.district);
-        }
-      }
-
-      // Edit City
-      const cityField = page.getByPlaceholder('City / Province')
-        .or(page.locator('input[name="address.city"]'))
-        .or(page.locator('#city'));
-      if (await cityField.isVisible({ timeout: 2000 }).catch(() => false)) {
-        const isDisabled = await cityField.isDisabled().catch(() => false);
-        if (!isDisabled) {
-          await cityField.clear();
-          await page.waitForTimeout(300);
-          await FileInput(cityField, studentDataEdit.address.city);
-        }
-      }
-
-      // Click Next to go to Guardian tab
-      await page.waitForTimeout(1000);
-      const nextButton1 = page.getByRole('button', { name: /Next|next/i });
-      if (await nextButton1.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await nextButton1.scrollIntoViewIfNeeded();
-        await nextButton1.click();
-        await page.waitForTimeout(2000);
-
-        // ===== GUARDIAN TAB =====
-
-        // Edit Guardian Name
-        const guardianNameField = page.locator('input[name="guardian.name"]')
-          .or(page.getByPlaceholder('Name'))
-          .or(page.getByLabel(/Name/i));
-        if (await guardianNameField.isVisible({ timeout: 2000 }).catch(() => false)) {
-          await guardianNameField.scrollIntoViewIfNeeded();
-          await guardianNameField.clear();
-          await page.waitForTimeout(200);
-          await FileInput(guardianNameField, studentDataEdit.guardian.name);
-        }
-
-        // Edit Guardian Phone
-        const guardianPhoneField = page.locator('input[name="guardian.phone"]')
-          .or(page.getByPlaceholder('Phone Number'))
-          .or(page.getByLabel(/Phone/i));
-        if (await guardianPhoneField.isVisible({ timeout: 2000 }).catch(() => false)) {
-          await guardianPhoneField.scrollIntoViewIfNeeded();
-          await guardianPhoneField.clear();
-          await page.waitForTimeout(200);
-          await FileInput(guardianPhoneField, studentDataEdit.guardian.phone);
-        }
-
-        // Edit Guardian Relation
-        const guardianRelationField = page.locator('input[name="guardian.relation"]')
-          .or(page.getByPlaceholder('Relation'))
-          .or(page.getByLabel(/Relation/i));
-        if (await guardianRelationField.isVisible({ timeout: 2000 }).catch(() => false)) {
-          await guardianRelationField.scrollIntoViewIfNeeded();
-          await guardianRelationField.clear();
-          await page.waitForTimeout(200);
-          await FileInput(guardianRelationField, studentDataEdit.guardian.relation);
-        }
-
-        // Edit Guardian Email
-        const guardianEmailField = page.locator('input[name="guardian.email"]')
-          .or(page.getByPlaceholder('Email'))
-          .or(page.getByLabel(/Email/i));
-        if (await guardianEmailField.isVisible({ timeout: 2000 }).catch(() => false)) {
-          await guardianEmailField.scrollIntoViewIfNeeded();
-          await guardianEmailField.clear();
-          await page.waitForTimeout(200);
-          await FileInput(guardianEmailField, studentDataEdit.guardian.email);
-        }
-
-        // Edit Guardian Village
-        const guardianVillageField = page.locator('input[name="guardian.address.village"]')
-          .or(page.getByPlaceholder('Village'))
-          .or(page.getByLabel(/Village/i));
-        if (await guardianVillageField.isVisible({ timeout: 2000 }).catch(() => false)) {
-          await guardianVillageField.scrollIntoViewIfNeeded();
-          await guardianVillageField.clear();
-          await page.waitForTimeout(200);
-          await FileInput(guardianVillageField, studentDataEdit.guardian.address.village);
-          await guardianVillageField.press('Tab');
-          await page.waitForTimeout(1000);
-        }
-
-        // Edit Guardian Commune
-        const guardianCommuneField = page.locator('input[name="guardian.address.commune"]')
-          .or(page.locator('#commune'))
-          .or(page.getByPlaceholder(/Khum\/Sangkat|Commune/i))
-          .or(page.getByLabel(/Commune/i));
-        if (await guardianCommuneField.isVisible({ timeout: 2000 }).catch(() => false)) {
-          try {
-            await expect(guardianCommuneField).toBeEnabled({ timeout: 5000 });
-          } catch (e) {
-            console.log('Warning: Guardian Commune field did not become enabled:', e);
-          }
-          await guardianCommuneField.clear();
-          await guardianCommuneField.click();
-          await page.waitForTimeout(200);
-          await FileInput(guardianCommuneField, studentDataEdit.guardian.address.commune);
-          await guardianCommuneField.blur();
-          await page.waitForTimeout(500);
-        }
-
-        // Edit Guardian District
-        const guardianDistrictField = page.locator('input[name="guardian.address.district"]')
-          .or(page.locator('#district'))
-          .or(page.getByPlaceholder(/District|Khan/i))
-          .or(page.getByLabel(/District/i));
-        if (await guardianDistrictField.isVisible({ timeout: 2000 }).catch(() => false)) {
-          try {
-            await expect(guardianDistrictField).toBeEnabled({ timeout: 5000 });
-          } catch (e) {
-            console.log('Warning: Guardian District field did not become enabled:', e);
-          }
-          const isDisabled = await guardianDistrictField.isDisabled().catch(() => false);
-          if (!isDisabled) {
-            await guardianDistrictField.clear();
-            await page.waitForTimeout(200);
-            await FileInput(guardianDistrictField, studentDataEdit.guardian.address.district);
-          }
-        }
-
-        // Edit Guardian City
-        const guardianCityField = page.locator('input[name="guardian.address.city"]')
-          .or(page.locator('#city'))
-          .or(page.getByPlaceholder(/City|Province/i))
-          .or(page.getByLabel(/City|Province/i));
-        if (await guardianCityField.isVisible({ timeout: 2000 }).catch(() => false)) {
-          try {
-            await expect(guardianCityField).toBeEnabled({ timeout: 5000 });
-          } catch (e) {
-            console.log('Warning: Guardian City field did not become enabled:', e);
-          }
-          const isDisabled = await guardianCityField.isDisabled().catch(() => false);
-          if (!isDisabled) {
-            await guardianCityField.clear();
-            await page.waitForTimeout(200);
-            await FileInput(guardianCityField, studentDataEdit.guardian.address.city);
-          }
-        }
-
-        // Click Next to go to Emergency tab
-        await page.waitForTimeout(1000);
-        const nextButton2 = page.getByRole('button', { name: /Next|next/i });
-        if (await nextButton2.isVisible({ timeout: 2000 }).catch(() => false)) {
-          await nextButton2.scrollIntoViewIfNeeded();
-          await nextButton2.click();
-          await page.waitForTimeout(2000);
-
-          // ===== EMERGENCY TAB =====
-
-          // Edit Emergency Name
-          const emergencyNameField = page.locator('input[name="emergency.name"]')
-            .or(page.getByPlaceholder('Name'))
-            .or(page.getByLabel(/Name/i));
-          if (await emergencyNameField.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await emergencyNameField.scrollIntoViewIfNeeded();
-            await emergencyNameField.clear();
-            await emergencyNameField.click();
-            await page.waitForTimeout(200);
-            await FileInput(emergencyNameField, studentDataEdit.emergency.name);
-          }
-
-          // Edit Emergency Phone
-          const emergencyPhoneField = page.locator('input[name="emergency.phone"]')
-            .or(page.getByPlaceholder('Phone Number'))
-            .or(page.getByLabel(/Phone/i));
-          if (await emergencyPhoneField.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await emergencyPhoneField.scrollIntoViewIfNeeded();
-            await emergencyPhoneField.clear();
-            await emergencyPhoneField.click();
-            await page.waitForTimeout(200);
-            await FileInput(emergencyPhoneField, studentDataEdit.emergency.phone);
-          }
-
-          // Edit Emergency Relation
-          const emergencyRelationField = page.locator('input[name="emergency.relation"]')
-            .or(page.getByPlaceholder('Relation'))
-            .or(page.getByLabel(/Relation/i));
-          if (await emergencyRelationField.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await emergencyRelationField.scrollIntoViewIfNeeded();
-            await emergencyRelationField.clear();
-            await emergencyRelationField.click();
-            await page.waitForTimeout(200);
-            await FileInput(emergencyRelationField, studentDataEdit.emergency.relation);
-          }
-
-          // Edit Emergency Email
-          const emergencyEmailField = page.locator('input[name="emergency.email"]')
-            .or(page.getByPlaceholder('Email'))
-            .or(page.getByLabel(/Email/i));
-          if (await emergencyEmailField.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await emergencyEmailField.scrollIntoViewIfNeeded();
-            await emergencyEmailField.clear();
-            await emergencyEmailField.click();
-            await page.waitForTimeout(200);
-            await FileInput(emergencyEmailField, studentDataEdit.emergency.email);
-          }
-
-          // Edit Emergency Village
-          const emergencyVillageField = page.locator('input[name="emergency.address.village"]')
-            .or(page.getByPlaceholder('Village'))
-            .or(page.getByLabel(/Village/i));
-          if (await emergencyVillageField.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await emergencyVillageField.scrollIntoViewIfNeeded();
-            await emergencyVillageField.clear();
-            await emergencyVillageField.click();
-            await page.waitForTimeout(200);
-            await FileInput(emergencyVillageField, studentDataEdit.emergency.address.village);
-            await emergencyVillageField.press('Tab');
-            await page.waitForTimeout(1000);
-          }
-
-          // Edit Emergency Commune
-          const emergencyCommune = page.locator('input[name="emergency.address.commune"]')
-            .or(page.locator('#commune'))
-            .or(page.getByPlaceholder(/Khum\/Sangkat|Commune/i))
-            .or(page.getByLabel(/Commune/i));
-          if (await emergencyCommune.isVisible({ timeout: 2000 }).catch(() => false)) {
-            try {
-              await expect(emergencyCommune).toBeEnabled({ timeout: 5000 });
-            } catch (e) {
-              console.log('Warning: Emergency Commune field did not become enabled:', e);
-            }
-            await emergencyCommune.clear();
-            await emergencyCommune.click();
-            await page.waitForTimeout(200);
-            await FileInput(emergencyCommune, studentDataEdit.emergency.address.commune);
-            await emergencyCommune.blur();
-            await page.waitForTimeout(500);
-          }
-
-          // Edit Emergency District
-          const emergencyDistrictField = page.locator('input[name="emergency.address.district"]')
-            .or(page.locator('#district'))
-            .or(page.getByPlaceholder(/District|Khan/i))
-            .or(page.getByLabel(/District/i));
-          if (await emergencyDistrictField.isVisible({ timeout: 2000 }).catch(() => false)) {
-            try {
-              await expect(emergencyDistrictField).toBeEnabled({ timeout: 5000 });
-            } catch (e) {
-              console.log('Warning: Emergency District field did not become enabled:', e);
-            }
-            const isDisabled = await emergencyDistrictField.isDisabled().catch(() => false);
-            if (!isDisabled) {
-              await emergencyDistrictField.clear();
-              await page.waitForTimeout(200);
-              await FileInput(emergencyDistrictField, studentDataEdit.emergency.address.district);
-            }
-          }
-
-          // Edit Emergency City
-          const emergencyCityField = page.locator('input[name="emergency.address.city"]')
-            .or(page.locator('#city'))
-            .or(page.getByPlaceholder(/City|Province/i))
-            .or(page.getByLabel(/City|Province/i));
-          if (await emergencyCityField.isVisible({ timeout: 2000 }).catch(() => false)) {
-            try {
-              await expect(emergencyCityField).toBeEnabled({ timeout: 5000 });
-            } catch (e) {
-              console.log('Warning: Emergency City field did not become enabled:', e);
-            }
-            const isDisabled = await emergencyCityField.isDisabled().catch(() => false);
-            if (!isDisabled) {
-              await emergencyCityField.clear();
-              await page.waitForTimeout(200);
-              await FileInput(emergencyCityField, studentDataEdit.emergency.address.city);
-            }
-          }
-        }
-      }
-      
-      // Save/Update button
-      await page.waitForTimeout(1000);
-      const saveButton = page.getByRole('button', { name: /Save|Update/i });
-      await saveButton.scrollIntoViewIfNeeded();
-      await saveButton.click();
-      
-      // Wait for update to complete
-      await page.waitForTimeout(1000);
+      await updateStudent(page, studentDataEdit);
     } else {
       console.log('Edit functionality not found');
     }
@@ -3270,6 +3046,18 @@ test.describe('Students', () => {
     await page.waitForTimeout(1500);
     await deleteEntityViaActionMenu(page, null, 'Confirm Delete');
     await page.waitForTimeout(1000);
+
+
+//==============================================================================
+ //Create Student Again
+
+ // Generate new email for re-creation
+ const randomSuffixAgain = Math.floor(Math.random() * 10000);
+ studentDataAdd.email = `${staticData.studentDataAdd.emailPrefix}.${randomSuffixAgain}@gmail.com`;
+
+ await page.locator('body > div > div.flex-1.flex.gap-10 > div.flex-1.min-w-\\[600px\\].overflow-auto > div > button').click();
+    
+ await createStudent(page, studentDataAdd);
 
   });
 });
@@ -3652,7 +3440,7 @@ test.describe('Students', () => {
     const closeIcon = page.locator('button').filter({ has: page.locator('svg.lucide-x') }).first();
     if (await closeIcon.isVisible().catch(() => false)) {
       await closeIcon.click();
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(1000);
     }
 
 
@@ -3803,6 +3591,229 @@ test.describe('Students', () => {
         await deleteItem(page, 'Confirm Delete');
       }
     } 
+
+    //================================================================================
+    //Create Lesson again
+
+     await page.locator('#add-lesson-button').or(page.getByRole('button', { name: /add lesson/i })).click();
+    
+    // Wait for the drawer form to appear
+    await expect(page.getByRole('textbox').first()).toBeVisible();
+    await page.waitForTimeout(500);
+    
+    // Fill Title field with realistic typing
+    const titleFieldagain  = page.locator('#title').or(page.getByLabel(/title/i)).or(page.getByPlaceholder(/title/i));
+    await FileInput(titleFieldagain , 'React js');
+    
+        // Fill Duration field (if exists)
+    await page.waitForTimeout(500);
+    const durationFieldAgain = page.getByLabel(/duration/i)
+      .or(page.getByPlaceholder(/duration/i))
+      .or(page.locator('input[type="number"]').nth(1));
+    if (await durationFieldAgain.isVisible().catch(() => false)) {
+      await FileInput(durationFieldAgain, '45');
+    }
+
+        // Fill Description/Content field
+    const objectiveFieldAgain = page.locator('#objective')
+      .or(page.locator('#content'))
+      .or(page.getByLabel(/objective|content/i))
+      .or(page.getByPlaceholder(/objective|content/i));
+    await FileInput(objectiveFieldAgain, 'objective');
+    
+    // Fill Description field first
+    const descriptionFieldAgain = page.locator('#description')
+      .or(page.locator('#content'))
+      .or(page.getByLabel(/description|content/i))
+      .or(page.getByPlaceholder(/description|content/i));
+    
+    await FileInput(descriptionFieldAgain, 'In this lesson, you will learn about React js');
+    
+    //=============================================================================
+    //Attach Video
+
+      // THEN click "Attach Videos" button after description is filled
+    const attachVideoButtonAgain = page.getByRole('button', { name: /Attach Videos/i })
+      .or(page.getByText(/Attach Videos/i))
+      .or(page.locator('button:has-text("Attach Videos")'));
+    
+    if (await attachVideoButtonAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await attachVideoButtonAgain.click();
+      await page.waitForTimeout(1500); // Wait for modal to open
+      
+      await page.waitForTimeout(500);
+      
+      const videoCards = page.locator('div[data-slot="card"]');
+      // Filter out 'Upload new video' to check for actual video content cards
+      const contentCards = videoCards.filter({ hasNotText: /Upload new video/i });
+      const contentCount = await contentCards.count();
+
+      let selected = false;
+      
+      if (contentCount === 0) {
+          // Use a specific locator for the button shown in the screenshot
+          const uploadButton = page.locator('button').filter({ hasText: 'Upload new video' }).first();
+          
+          if (await uploadButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+              await uploadButton.click();
+
+                  await expect(page.getByRole('textbox').first()).toBeVisible({ timeout: 9000 });
+                  await uploadThumbnail(page, "materialFile", {
+                    imagePath: path.join(__dirname, '..', '..', 'public', 'video', 'seksaa-vdo.mp4')
+                  });
+                  
+                  await page.waitForTimeout(500);
+                  
+                  const createButton = page.locator('[role="dialog"]').getByRole('button', { name: 'Create', exact: true })
+                    .or(page.locator('.modal').getByRole('button', { name: 'Create', exact: true }))
+                    .or(page.locator('button[type="submit"]:not([disabled])').filter({ hasText: 'Create' }).last());
+                  
+                  // Ensure explicit scroll to the button
+                  if (await createButton.isVisible()) {
+                      await createButton.evaluate((el) => {
+                          el.scrollIntoView({ behavior: 'instant', block: 'center' });
+                      });
+                  }
+                  
+                  await page.waitForTimeout(1000); // Wait for scroll to settle
+                  await createButton.click({ force: true });
+
+                  await page.waitForTimeout(2000);
+                  const newContentCards = page.locator('div[data-slot="card"]').filter({ hasNotText: /Upload new video/i });
+                  if (await newContentCards.first().isVisible({ timeout: 5000 }).catch(() => false)) {
+                       await newContentCards.first().click();
+                       await page.waitForTimeout(500);
+                  }
+
+                  
+          } else {
+             // Fallback to simpler text match
+             console.log('Button not found by strict selector, trying generic text match...');
+             await page.getByText('Upload new video', { exact: false }).click();
+          }
+      } else {
+          // Select the first available video card
+          const firstCard = contentCards.nth(0); 
+          if (await firstCard.isVisible({ timeout: 5000 }).catch(() => false)) {
+              await firstCard.click();
+              selected = true;
+              await page.waitForTimeout(500); 
+          }
+    
+          if (!selected && contentCount > 1) {
+               await contentCards.nth(1).click();
+               selected = true;
+               await page.waitForTimeout(500);
+          }
+      }
+      
+      // Click Save button with visible cursor movement
+      await page.getByRole('button', { name: /Save|save/i })
+        .or(page.locator('button:has-text("Save")')).click();
+        await page.waitForTimeout(1500);
+    }
+
+    //===========================================================================================
+    //Attach documents
+    
+    const attachDocumentButtonAgain = page.getByRole('button', { name: /Attach Documents/i })
+      .or(page.getByText(/Attach Documents/i))
+      .or(page.locator('button:has-text("Attach Documents")'));
+    
+    if (await attachDocumentButtonAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await attachDocumentButtonAgain.click();
+      await page.waitForTimeout(1500); // Wait for modal to open
+      
+      await page.waitForTimeout(500);
+      
+      const docCards = page.locator('div[data-slot="card"]');
+      // Filter out 'Upload new' to check for actual content cards
+      const contentCards = docCards.filter({ hasNotText: /Upload new document/i });
+      const contentCount = await contentCards.count();
+
+      let selected = false;
+      
+      if (contentCount === 0) {
+          // Use a specific locator for the button
+          const uploadButton = page.locator('button').filter({ hasText: 'Upload new document' }).first();
+          
+          if (await uploadButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+              await uploadButton.click();
+
+              await page.waitForTimeout(1000); // Wait for modal animation
+              
+                    await uploadThumbnail(page, "Click to upload new material", {
+                      imagePath: path.join(__dirname, '..', '..', 'public', 'images', 'thumbnial-create.pdf')
+                    });
+                  
+                  await page.waitForTimeout(500);
+                  
+                  const createButton = page.locator('[role="dialog"]').getByRole('button', { name: 'Create', exact: true })
+                    .or(page.locator('.modal').getByRole('button', { name: 'Create', exact: true }))
+                    .or(page.locator('button[type="submit"]:not([disabled])').filter({ hasText: 'Create' }).last());
+                  
+                  // Ensure explicit scroll to the button
+                  if (await createButton.isVisible()) {
+                      await createButton.evaluate((el) => {
+                          el.scrollIntoView({ behavior: 'instant', block: 'center' });
+                      });
+                  }
+                  
+                  await page.waitForTimeout(1000); // Wait for scroll to settle
+                  await createButton.click({ force: true });
+
+                  await page.waitForTimeout(2000);
+                  const newContentCards = page.locator('div[data-slot="card"]').filter({ hasNotText: /Upload new document/i });
+                  if (await newContentCards.first().isVisible({ timeout: 5000 }).catch(() => false)) {
+                       await newContentCards.first().click();
+                       await page.waitForTimeout(500);
+                  }
+
+                  
+          } else {
+             // Fallback to simpler text match
+             console.log('Button not found by strict selector, trying generic text match...');
+             await page.getByText('Upload new document', { exact: false }).click();
+          }
+      } else {
+          // Select the first available card
+          const firstCard = contentCards.nth(0); 
+          if (await firstCard.isVisible({ timeout: 5000 }).catch(() => false)) {
+              await firstCard.click();
+              selected = true;
+              await page.waitForTimeout(500); 
+          }
+    
+          if (!selected && contentCount > 1) {
+               await contentCards.nth(1).click();
+               selected = true;
+               await page.waitForTimeout(500);
+          }
+      }
+      
+      // Click Save button with visible cursor movement
+      await page.getByRole('button', { name: /Save|save/i })
+        .or(page.locator('button:has-text("Save")')).click();
+        await page.waitForTimeout(1500);
+    }
+    
+    // Toggle Publish button to TRUE (enabled)
+    await page.waitForTimeout(500);
+    const publishToggleAgain = page.getByText('Publish', { exact: true })
+      .or(page.locator('button:has-text("Publish")'))
+      .or(page.locator('[role="switch"]').filter({ hasText: /publish/i }))
+      .or(page.locator('label:has-text("Publish")'));
+    
+    if (await publishToggleAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+      const isChecked = await publishToggleAgain.getAttribute('aria-checked').catch(() => 'false');
+      if (isChecked !== 'true') {
+        await publishToggleAgain.click();
+      }
+      await page.waitForTimeout(500);
+    }
+    
+    await page.getByRole('button', { name: /Add|Create|Submit/i }).click();
+    await page.waitForTimeout(1000);
   });
 });
 
@@ -3903,7 +3914,29 @@ test.describe('Students', () => {
         await deleteItem(page, 'Confirm Delete');
       }
     }
+
+//=====================================================================================================
+//Create Module Again
+
+ await page.locator('#add-module-button').or(page.getByRole('button', { name: /add module/i })).click();
     
+    // Wait for the drawer form to appear
+    await expect(page.getByRole('textbox').first()).toBeVisible();
+    await page.waitForTimeout(500);
+    
+    // Fill Title field with realistic typing
+    const titleFieldAgain = page.locator('#title').or(page.getByLabel(/title/i)).or(page.getByPlaceholder(/title/i));
+    await FileInput(titleFieldAgain, 'Introduction to JavaScript');
+   
+    // Fill Description field
+    const descriptionFieldAgain = page.locator('#description')
+      .or(page.getByLabel(/description/i))
+      .or(page.getByPlaceholder(/description/i));
+    await FileInput(descriptionFieldAgain, 'Learn the fundamentals of JavaScript programming including variables, functions, and control structures.');
+    // Submit the form
+    await page.waitForTimeout(500);
+    await page.getByRole('button', { name: /Add|Create|Submit/i }).click();
+    await page.waitForTimeout(1000);
   });
 });
 
@@ -4117,7 +4150,7 @@ test.describe('Students', () => {
       
       await page.waitForTimeout(300); 
       await filterLevelOptions.nth(1).click();
-
+      await page.waitForTimeout(2000); // Wait for table to update/re-render
       //=========================================================================================
       // Update Course
     const courseRows = page.locator('table tbody tr, [role="row"], .course-item, div[class*="course-card"]');
@@ -4137,12 +4170,9 @@ test.describe('Students', () => {
         await courseAtIndex0.click({ force: true });
     }
     await page.waitForTimeout(1000);
-    await page.waitForTimeout(1000);
-
-    // Look for Edit button
-    const actionsMenuButton = page.locator('button[aria-haspopup="menu"]').first();
-    await actionsMenuButton.click();
-    await page.waitForTimeout(800);
+ 
+        // click on icon three dot
+        await openActionMenu(page);
     
     const editButton = page.getByRole('menuitem', { name: /Edit/i }).or(page.getByRole('button', { name: /Edit/i }));
     
@@ -4291,6 +4321,180 @@ test.describe('Students', () => {
     await updateButton.click({ force: true });
       
     }
+
+    //==============================================================================================
+    // Delete Course
+    
+    await page.waitForTimeout(2000); // Wait for update execution to finish
+    
+    // Open action menu for the first item (which we just updated)
+    await openActionMenu(page);
+    
+    // Click Delete button
+    const deleteButtonCourse = page.getByRole('menuitem', { name: /Delete|Remove/i })
+        .or(page.getByRole('button', { name: /Delete|Remove/i }));
+        
+    if (await deleteButtonCourse.isVisible({ timeout: 5000 }).catch(() => false)) {
+        await deleteButtonCourse.click();
+        await page.waitForTimeout(1000);
+        
+        // Confirm deletion
+        await deleteItem(page, 'Confirm Delete');
+    }
+
+
+//==============================================================================================
+// Create Course Again
+
+ const addButtonAgain = page.locator('#add-course-button')
+        .or(page.getByRole('button', { name: /add course/i }));
+        
+    await addButtonAgain.waitFor({ state: 'visible', timeout: 10000 });
+    await addButtonAgain.click();
+    
+    // 2. Wait for the General Info form (Title field) to appear
+    const titleFieldAgain = page.getByRole('textbox', { name: /^Title/i })
+        .or(page.getByPlaceholder('Title', { exact: true }))
+        .or(page.locator('input[name="title"]'))
+        .first();
+        
+    await expect(titleFieldAgain).toBeVisible({ timeout: 10000 });
+    await page.waitForTimeout(500); // Stability wait
+    
+    // Fill Title
+    await FileInput(titleFieldAgain, 'Introduction to Advanced Programming');
+
+    // 3. Select Subject (Dropdown)
+    // Locates the button specifically next to or under the "Subject" label
+    const subjectDropdownAgain = page.locator('label:has-text("Subject")').locator('..').locator('button[role="combobox"]')
+        .or(page.getByTestId('subject-dropdown'))
+        .first();
+
+    await expect(subjectDropdownAgain).toBeVisible(); 
+    await subjectDropdownAgain.scrollIntoViewIfNeeded();
+    await subjectDropdownAgain.click();
+    
+    await expect(subjectDropdownAgain).toHaveAttribute('aria-expanded', 'true');
+    
+    // Select the first available option
+    const subjectOptionsAgain = page.getByRole('option');
+    await expect(subjectOptionsAgain.first()).toBeVisible({ timeout: 5000 });
+    
+    if (await subjectOptionsAgain.count() > 1) {
+         await subjectOptionsAgain.nth(1).click();
+    } else {
+         await subjectOptionsAgain.first().click();
+    }
+
+    // 4. Select Level (Dropdown)
+    const levelDropdownAgain = page.locator('label:has-text("Level")').locator('..').locator('button[role="combobox"]')
+        .or(page.getByTestId('level-dropdown'))
+        .first();
+
+    await expect(levelDropdownAgain).toBeVisible();
+    await levelDropdownAgain.scrollIntoViewIfNeeded();
+    await levelDropdownAgain.click();
+    
+    await expect(levelDropdownAgain).toHaveAttribute('aria-expanded', 'true');
+    const levelOptionsAgain = page.getByRole('option');
+    await expect(levelOptionsAgain.first()).toBeVisible({ timeout: 5000 });
+    
+    // Select an option
+    await levelOptionsAgain.first().click();
+
+    // 5. Fill Duration
+    const durationFieldAgain = page.getByRole('textbox', { name: /^Duration/i })
+        .or(page.getByPlaceholder('Duration'))
+        .or(page.locator('input[name="duration"]'))
+        .first();
+        
+    await durationFieldAgain.scrollIntoViewIfNeeded();
+    await FileInput(durationFieldAgain, '50');
+
+    // 6. Fill Prerequisite (Textarea)
+    const prerequisiteFieldAgain = page.locator('textarea[name="prerequisite"]')
+        .or(page.getByRole('textbox', { name: /^Prerequisite/i }))
+        .or(page.getByPlaceholder('Prerequisite'))
+        .first();
+        
+    if (await prerequisiteFieldAgain.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await prerequisiteFieldAgain.scrollIntoViewIfNeeded();
+        await FileInput(prerequisiteFieldAgain, 'Basic JS knowledge');
+    }
+
+    // Optional: Preparation (if exists on form, not in screenshot but good to keep if dynamic)
+    const preparationFieldAgain = page.getByLabel(/preparation/i).or(page.getByPlaceholder(/preparation/i));
+    if (await preparationFieldAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await FileInput(preparationFieldAgain, 'Laptop and Internet');
+    }
+
+    // Optional: Purpose
+    const purposeFieldAgain = page.getByLabel(/purpose/i).or(page.getByPlaceholder(/purpose/i));
+    if (await purposeFieldAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await FileInput(purposeFieldAgain, 'To learn advanced coding.');
+    }
+
+    // Optional: Overview
+    const overviewFieldAgain = page.getByLabel(/overview/i).or(page.getByPlaceholder(/overview/i));
+    if (await overviewFieldAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await FileInput(overviewFieldAgain, 'Course overview content.');
+    }
+    
+    // Optional: Objective
+    const objectiveFieldAgain = page.getByLabel(/objective/i).or(page.getByPlaceholder(/objective/i));
+    if (await objectiveFieldAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await FileInput(objectiveFieldAgain, 'Course objectives.');
+    }
+
+    // Optional: Link
+    const linkFieldAgain = page.getByLabel(/link/i).or(page.getByPlaceholder(/link/i));
+    if (await linkFieldAgain.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await FileInput(linkFieldAgain, 'https://example.com');
+    }
+
+    // 7. Upload Thumbnail
+    await uploadThumbnail(page);
+    await page.waitForTimeout(1000);
+
+    // 8. Click "Next" to go to Outline tab
+    const nextButtonAgain = page.getByRole('button', { name: /next/i });
+    await expect(nextButtonAgain).toBeVisible();
+    await nextButtonAgain.scrollIntoViewIfNeeded();
+    await nextButtonAgain.click();
+
+    // --- Interacting with Module and Lessons (Tab 2) ---
+    await page.waitForTimeout(1000);
+
+    // Select Module
+    const moduleDropdownAgain = page.getByRole('combobox').filter({ hasText: /select module/i })
+        .or(page.getByText('Select module', { exact: false })).first();
+    
+    await expect(moduleDropdownAgain).toBeVisible();
+    await moduleDropdownAgain.click();
+    
+    await expect(page.getByRole('option').first()).toBeVisible();
+    await page.getByRole('option').first().click();
+    
+    await page.waitForTimeout(500);
+
+    // Select Lessons
+    const lessonsDropdownAgain = page.getByRole('combobox').filter({ hasText: /select lessons/i })
+        .or(page.getByText('Select Lessons', { exact: false })).first();
+
+    await expect(lessonsDropdownAgain).toBeVisible();
+    await lessonsDropdownAgain.click();
+    
+    await expect(page.getByRole('option').first()).toBeVisible();
+    await page.getByRole('option').first().click();
+
+    // Close the multi-select dropdown
+    await page.keyboard.press('Escape');
+    
+    // 9. Submit/Create
+    await page.waitForTimeout(500);
+    await page.getByRole('button', { name: /create|save|submit/i })
+        .or(page.locator('button[type="submit"]'))
+        .filter({ hasText: /create|save/i }).click();
       
   });
 });
@@ -4478,10 +4682,8 @@ test.describe('Students', () => {
     await classAtIndex0.click();
     await page.waitForTimeout(1500);
 
-    // Find the three-dot menu button within this specific class row
-    const actionsMenuButton = page.locator('button[aria-haspopup="menu"]').first();
-    await actionsMenuButton.click();
-    await page.waitForTimeout(800);
+    // Open the actions menu (three-dot icon)
+    await openActionMenu(page);
     
     // Click on Edit option in the menu
     const editButton = page.getByRole('menuitem', { name: /Edit/i }).or(page.getByRole('button', { name: /Edit/i }));
@@ -4500,7 +4702,6 @@ test.describe('Students', () => {
         await FileInput(titleField, titleEdit);
       }
 
-       
     // Select Course dropdown
     await page.waitForTimeout(1000);
     
@@ -4549,8 +4750,7 @@ test.describe('Students', () => {
     const endDateField = page.getByLabel(/end date/i)
       .or(page.getByPlaceholder(/end date/i))
       .or(page.locator('input[type="date"]').nth(1));
-    await FileInput(endDateField, endDateEdit);
-    
+    await FileInput(endDateField, endDateEdit);   
       
       // Edit Start Time
       const startTimeField = page.getByLabel(/start time/i)
@@ -4753,9 +4953,150 @@ test.describe('Students', () => {
     const classToDelete = classRowsToDelete.nth(indexToDelete);
     
     await deleteEntityViaActionMenu(page, classToDelete, 'Confirm Delete');
+
+//=============================================================================================
+// Create Class Again
+
+ await page.locator('#add-class-button').click();
+    
+    // Wait for the drawer form to appear
+    await expect(page.getByRole('textbox').first()).toBeVisible();
+    await page.waitForTimeout(500);
+    
+    // Fill Title field with realistic typing
+    const titleFieldAgain = page.locator('#title');
+    await FileInput(titleFieldAgain, title);
+    
+    // Click the first combobox (course dropdown)
+    const courseDropdownAgain = page.locator('button[role="combobox"]').first();
+    await courseDropdownAgain.waitFor({ state: 'visible' });
+    await courseDropdownAgain.click();
+    
+    // Select the first course option
+    await page.waitForTimeout(500);
+    const courseOptionsAgain = page.getByRole('option');
+    await courseOptionsAgain.first().waitFor({ state: 'visible' });
+    await courseOptionsAgain.first().click();
+    
+    // Scroll to ensure all form fields are visible
+    await page.evaluate(() => {
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    });
+    
+    // Fill Price field - try multiple selector strategies
+    await page.waitForTimeout(500);
+    const priceFieldAgain = page.getByLabel(/price/i)
+      .or(page.getByPlaceholder(/price/i))
+      .or(page.locator('input[type="text"]').nth(1))
+      .or(page.locator('input[type="number"]').first());
+    await FileInput(priceFieldAgain, price);
+    
+    // Fill Progress field
+    const progressFieldAgain = page.getByLabel(/progress/i)
+      .or(page.getByPlaceholder(/progress/i))
+      .or(page.locator('input[type="text"]').nth(2))
+      .or(page.locator('input[type="number"]').nth(1));
+    await FileInput(progressFieldAgain, progress);
+    
+    // Fill Start Date field (static date)
+    const startDateFieldAgain = page.getByLabel(/start date/i)
+      .or(page.getByPlaceholder(/start date/i))
+      .or(page.locator('input[type="date"]').first());
+    await FileInput(startDateFieldAgain, startDate);
+    
+    // Fill End Date field (static date)
+    const endDateFieldAgain = page.getByLabel(/end date/i)
+      .or(page.getByPlaceholder(/end date/i))
+      .or(page.locator('input[type="date"]').nth(1));
+    await FileInput(endDateFieldAgain, endDate);
+    
+    // Fill Start Time field
+    await page.waitForTimeout(500);
+    const startTimeInputAgain = page.getByLabel(/start time/i)
+      .or(page.locator('#startTime'))
+      .or(page.getByPlaceholder(/start time/i));
+    
+    await FileInput(startTimeInputAgain, startTime);
+    
+    const endTimeInputAgain = page.getByLabel(/end time/i)
+      .or(page.locator('#endTime'))
+      .or(page.getByPlaceholder(/end time/i));
+    
+    await FileInput(endTimeInputAgain, endTime);
+
+    await uploadThumbnail(page, "file-input");
+
+    // Set Publish toggle to TRUE
+    await page.locator('#isPublish')
+      .or(page.locator('[role="switch"]').filter({ hasText: /publish/i })).click();
+    
+    await page.waitForTimeout(1000);
+
+    // Set Online toggle to TRUE
+    await page.locator('#isOnline')
+      .or(page.locator('[role="switch"]').filter({ hasText: /online/i })).click();
+
+    await page.waitForTimeout(1000);
+    
+    await page.getByRole('button', { name: /next|next step/i }).click();
+    await page.waitForTimeout(500);
+
+    
+    // Step 2: Click to open the coaches dropdown
+    const coachesDropdownAgain = page.getByPlaceholder(/select coaches/i)
+      .or(page.getByText(/select coaches/i).first())
+      .or(page.locator('button[role="combobox"]').filter({ hasText: /coaches/i }))
+      .or(page.locator('button[role="combobox"]').last());
+    
+    // Click the dropdown to open it
+    if (await coachesDropdownAgain.isVisible().catch(() => false)) {
+      await coachesDropdownAgain.click();
+      
+      // Select the first coach from the dropdown
+      const coachOptions = page.locator('[role="option"], li label, .coach-item, [class*="option"]');
+      const firstCoach = coachOptions.nth(0);
+      
+      if (await firstCoach.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await firstCoach.click();
+        await page.waitForTimeout(800);
+      }
+      
+      // Close the dropdown by clicking outside or pressing Escape
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(500);
+    }
+
+    // Step 3: Click Next again to go to Students/Thumbnail tab
+    await page.waitForTimeout(500);
+    const nextButton2Again = page.getByRole('button', { name: /next|next step/i });
+       if (await nextButton2Again.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await nextButton2Again.click();
+    }
+
+    const studentsDropdownAgain = page.getByPlaceholder(/select students/i)
+      .or(page.getByText(/select students/i).first())
+      .or(page.locator('button[role="combobox"]').filter({ hasText: /students/i }))
+      .or(page.locator('button[role="combobox"]').last());
+    
+    // Click the dropdown to open it
+    if (await studentsDropdownAgain.isVisible().catch(() => false)) {
+      await studentsDropdownAgain.click();
+      // Select the first coach from the dropdown
+      const studentOptions = page.locator('[role="option"], li label, .coach-item, [class*="option"]');
+      const firstStudent = studentOptions.nth(0);
+      
+      if (await firstStudent.isVisible().catch(() => false)) {
+        await firstStudent.click();
+      }
+      await page.keyboard.press('Escape');
+    }
+    // Step 5: Click final submit button (Add/Create)
+    await page.waitForTimeout(500);
+    await page.getByRole('button', { name: /Add|Create|Submit/i }).click();
+
+
   });
 });
-
 
   // ========================================
   // 11. Attendance 
@@ -4893,10 +5234,8 @@ test.describe('Students', () => {
     // Wait for detail view
     await page.waitForTimeout(1000);
 
-    // Click Edit button
-    const actionsMenuButton = page.locator('button[aria-haspopup="menu"]').first();
-    await expect(actionsMenuButton).toBeVisible();
-    await actionsMenuButton.click();
+    // Open the actions menu (three-dot icon)
+    await openActionMenu(page);
     
     const editButton = page.getByRole('menuitem', { name: /Edit/i })
         .or(page.getByRole('button', { name: /Edit/i }));
@@ -4975,7 +5314,6 @@ test.describe('Students', () => {
   });
 });
 
-
   // ========================================
   // 12. Invoices 
   // ========================================
@@ -5005,8 +5343,6 @@ test.describe('Students', () => {
     
     //======================================================================================
     // Add new invoice
-    
-    // Click the add button using the specific CSS selector
     await page.locator('#add-invoice-button').click();
     
     // Wait for the drawer form to appear
@@ -5061,13 +5397,7 @@ test.describe('Students', () => {
     
     // Submit the form by clicking the Create button
     await page.getByRole('button', { name: /Create/i }).click();
-        // Close Dialog by clicking the X icon
-    const closeIcon = page.locator('button').filter({ has: page.locator('svg.lucide-x') }).first();
-    if (await closeIcon.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await closeIcon.click();
-      await page.waitForTimeout(1000);
-    }
-    
+
     //======================================================================================
     // Invoice List or Grid view
     await toggleViewMode(page);
@@ -5082,12 +5412,8 @@ test.describe('Students', () => {
     await invoiceAtIndex0.click();
     await page.waitForTimeout(1500);
 
-    const actionMenuBtn = page.locator('button').filter({ 
-        has: page.locator('svg.lucide-ellipsis, svg.lucide-ellipsis-vertical, svg.lucide-more-vertical, svg.lucide-more-horizontal') 
-    }).last();
-
-    await expect(actionMenuBtn).toBeVisible({ timeout: 5000 });
-    await actionMenuBtn.click();
+    // Open the actions menu (three-dot icon)
+    await openActionMenu(page);
     
     // Wait for the dropdown/menu to appear
     const editOption = page.getByRole('menuitem', { name: /Edit|Update/i }).or(page.getByText(/Edit|Update/i));
@@ -5171,7 +5497,6 @@ test.describe('Students', () => {
   });
 });
 
-
   // ========================================
   // 13. Engagements 
   // ========================================
@@ -5201,6 +5526,7 @@ test.describe('Students', () => {
 
   test('CRUD Engagement', async ({ page }) => {
     const randomSuffix = Math.floor(Math.random() * 10000);
+    const activityTitle = `Activity Title ${randomSuffix}`;
     
     const engagementDataAdd = {
       firstName: `John ${randomSuffix}`,
@@ -5273,33 +5599,32 @@ test.describe('Students', () => {
       const options = page.locator('[role="option"]');
       const count = await options.count();
       if (count > 0) {
-        const randomIndex = Math.floor(Math.random() * count);
-        await options.nth(randomIndex).click();
+        await options.nth(0).click();
       }
       await page.waitForTimeout(400);
     }
     
     // Fill Amount
-    const amountField = page.getByLabel(/Amount \(\$\)/i);
-    await FileInput(amountField, engagementDataAdd.amount);
+    const amountFieldUpdate = page.getByLabel(/Amount \(\$\)/i);
+    await FileInput(amountFieldUpdate, engagementDataAdd.amount);
     
     // Fill Email
-    const emailField = page.locator('input[name="email"]');
-    await FileInput(emailField, engagementDataAdd.email);
+    const emailFieldUpdate = page.locator('input[name="email"]');
+    await FileInput(emailFieldUpdate, engagementDataAdd.email);
     
     // Fill Phone
-    const phoneField = page.getByLabel(/Phone/i);
-    await FileInput(phoneField, engagementDataAdd.phone);
+    const phoneFieldUpdate = page.getByLabel(/Phone/i);
+    await FileInput(phoneFieldUpdate, engagementDataAdd.phone);
 
     // Priority Selection (Dropdown)
-    const priorityButton = page
+    const priorityButtonUpdate = page
       .locator('button[role="combobox"]')
       .filter({ has: page.locator("svg") })
       .or(page.locator('button[role="combobox"][aria-controls*="radix"]'))
       .nth(2);
 
-    if (await priorityButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await priorityButton.click();
+    if (await priorityButtonUpdate.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await priorityButtonUpdate.click();
       await page.waitForTimeout(500);
       const options = page.locator('[role="option"]');
       const count = await options.count();
@@ -5311,38 +5636,40 @@ test.describe('Students', () => {
     }
 
     // Fill Expect Class
-    const expectClassButton = page
+    const expectClassButtonUpdate = page
       .locator('button[role="combobox"]')
       .filter({ has: page.locator("svg") })
       .or(page.locator('button[role="combobox"][aria-controls*="radix"]'))
       .nth(3);
 
-    if (await expectClassButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await expectClassButton.click();
+    if (await expectClassButtonUpdate.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await expectClassButtonUpdate.click();
       await page.waitForTimeout(500);
       const options = page.locator('[role="option"]');
       const count = await options.count();
       if (count > 0) {
         const randomIndex = Math.floor(Math.random() * count);
         await options.nth(randomIndex).click();
+      }else{
+        await page.keyboard.press('Escape');
       }
       await page.waitForTimeout(400);
     }
 
     // Fill Probability
-    const probabilityField = page.getByLabel(/Probability/i);
-    await FileInput(probabilityField, engagementDataAdd.probability);
+    const probabilityFieldUpdate = page.getByLabel(/Probability/i);
+    await FileInput(probabilityFieldUpdate, engagementDataAdd.probability);
 
     // Fill Resource Type
-    const resourceTypeButton = page
+    const resourceTypeButtonUpdate = page
       .locator('button[role="combobox"]')
       .getByPlaceholder('Resource Type')
       .filter({ has: page.locator("svg") })
       .or(page.locator('button[role="combobox"][aria-controls*="radix"]'))
       .nth(4);
 
-    if (await resourceTypeButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await resourceTypeButton.click();
+    if (await resourceTypeButtonUpdate.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await resourceTypeButtonUpdate.click();
       await page.waitForTimeout(500);
       const options = page.locator('[role="option"]');
       const count = await options.count();
@@ -5354,17 +5681,17 @@ test.describe('Students', () => {
     }
 
     // Fill Resource Link
-    const resourceLink = page.getByLabel(/Resource Link/i);
-    await FileInput(resourceLink, engagementDataAdd.resourceLink);
+    const resourceLinkUpdate = page.getByLabel(/Resource Link/i);
+    await FileInput(resourceLinkUpdate, engagementDataAdd.resourceLink);
 
     // Assign To dropdown
-    const assignToDropdown = page.locator('button')
+    const assignToDropdownUpdate = page.locator('button')
       .filter({ hasText: 'Assign To' })
       .or(page.locator('button[data-slot="popover-trigger"]').filter({ hasText: 'Assign To' }))
       .first();
     
-    if (await assignToDropdown.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await assignToDropdown.click();
+    if (await assignToDropdownUpdate.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await assignToDropdownUpdate.click();
       await page.waitForTimeout(1200);
       
       const assignToOptions = page.locator('[role="option"], li label, .coach-item, [class*="option"]');
@@ -5380,8 +5707,8 @@ test.describe('Students', () => {
     }
     
     // Fill Note
-    const note = page.locator('textarea#note');
-    await FileInput(note, engagementDataAdd.note);
+    const noteUpdate = page.locator('textarea#note');
+    await FileInput(noteUpdate, engagementDataAdd.note);
     
     // Submit the form
     await page.waitForTimeout(800);
@@ -5396,150 +5723,160 @@ test.describe('Students', () => {
     await page.locator('span.bg-yellow-500').or(page.locator('p[title="Won"]')).or(page.locator('p[title="Lost"]')).first().click();
     await page.waitForTimeout(1000);
     
-    const actionsMenuButton = page.locator('button').filter({ 
-      has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) 
-    }).first();
-    await actionsMenuButton.click();
-    await page.waitForTimeout(500);
+            // Open the actions menu (three-dot icon)
+            await openActionMenu(page);
+        
+        // Click Edit
+        await page.getByText(/Edit/i).click();
+        
+        // Wait for drawer/form
+        await expect(page.getByRole('textbox').first()).toBeVisible({ timeout: 9000 });
+        await page.waitForTimeout(500);
     
-    // Click Edit
-    await page.getByText(/Edit/i).click();
+        // Edit First Name
+        const firstNameFieldUpdate = page.getByLabel(/First Name/i);
+        await FileInput(firstNameFieldUpdate, engagementDataEdit.firstName);
+        
+        // Edit Last Name
+        const lastNameFieldUpdate = page.getByLabel(/Last Name/i);
+        await FileInput(lastNameFieldUpdate, engagementDataEdit.lastName);
     
-    // Wait for drawer/form to be fully loaded
-    await expect(page.getByRole('textbox').first()).toBeVisible({ timeout: 9000 });
-    await page.waitForTimeout(1000);
-
-    // Edit First Name - wait for field to be visible
-    const firstNameFieldEdit = page.getByLabel(/First Name/i);
-    await expect(firstNameFieldEdit).toBeVisible({ timeout: 5000 });
-    await FileInput(firstNameFieldEdit, engagementDataEdit.firstName);
+        // Edit Gender (Dropdown)
+        const genderButtonUpdate = page.getByRole('dialog')
+          .locator('button[role="combobox"]')
+          .filter({ has: page.locator("svg") })
+          .or(page.getByRole('dialog').locator('button[role="combobox"][aria-controls*="radix"]'))
+          .first();
+        if (await genderButtonUpdate.isVisible({ timeout: 2000 })) {
+          await genderButtonUpdate.click();
+          await page.waitForTimeout(500);
+          const options = page.locator('[role="option"]');
+          const count = await options.count();
+          if (count > 0) {
+            await options.nth(1).click();
+          }
+          await page.waitForTimeout(400);
+        }
     
-    // Edit Last Name
-    const lastNameFieldEdit = page.getByLabel(/Last Name/i);
-    await expect(lastNameFieldEdit).toBeVisible({ timeout: 5000 });
-    await FileInput(lastNameFieldEdit, engagementDataEdit.lastName);
-    
-    // Wait a bit after last name input
-    await page.waitForTimeout(500);
-
-    // Edit Gender (Dropdown)
-    await page.waitForTimeout(300);
-    const genderButtonEdit = page.locator('button[role="combobox"]').filter({ has: page.locator("svg") }).first();
-    if (await genderButtonEdit.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await genderButtonEdit.scrollIntoViewIfNeeded();
-      await genderButtonEdit.click();
-      await page.waitForTimeout(500);
-      const options = page.locator('[role="option"]');
-      const count = await options.count();
-      if (count > 0) {
-        const randomIndex = Math.floor(Math.random() * count);
-        await options.nth(randomIndex).click();
+        // Edit Stage (Dropdown)
+        const stageButtonUpdate = page
+          .locator('button[role="combobox"]')
+          .filter({ has: page.locator("svg") })
+          .or(page.locator('button[role="combobox"][aria-controls*="radix"]'))
+          .nth(1);
+        if (await stageButtonUpdate.isVisible({ timeout: 2000 })) {
+          await stageButtonUpdate.click();
+          await page.waitForTimeout(500);
+          const options = page.locator('[role="option"]');
+          const count = await options.count();
+          if (count > 0) {
+        await options.nth(1).click();
       }
-      await page.waitForTimeout(400);
-    }
-
-    // Edit Stage (Dropdown)
-    const stageButtonEdit = page.locator('button[role="combobox"]').filter({ has: page.locator("svg") }).nth(1);
-    if (await stageButtonEdit.isVisible({ timeout: 2000 })) {
-      await stageButtonEdit.click();
-      await page.waitForTimeout(500);
-      const options = page.locator('[role="option"]');
-      const count = await options.count();
-      if (count > 0) {
-        const randomIndex = Math.floor(Math.random() * count);
-        await options.nth(randomIndex).click();
-      }
-      await page.waitForTimeout(400);
-    }
+          await page.waitForTimeout(400);
+        }
+        
+        // Edit Amount
+        const amountField = page.getByLabel(/Amount \(\$\)/i);
+        await FileInput(amountField, engagementDataEdit.amount);
+        
+        // Edit Email
+        const emailField = page.locator('input[name="email"]');
+        await FileInput(emailField, engagementDataEdit.email);
+        
+        // Edit Phone
+        const phoneField = page.getByLabel(/Phone/i);
+        await FileInput(phoneField, engagementDataEdit.phone);
     
-    // Edit Amount
-    const amountFieldEdit = page.getByLabel(/Amount \(\$\)/i);
-    await FileInput(amountFieldEdit, engagementDataEdit.amount);
+        // Edit Priority (Dropdown)
+        const priorityButton = page
+          .locator('button[role="combobox"]')
+          .filter({ has: page.locator("svg") })
+          .or(page.locator('button[role="combobox"][aria-controls*="radix"]'))
+          .nth(2);
+        if (await priorityButton.isVisible({ timeout: 2000 })) {
+          await priorityButton.click();
+          await page.waitForTimeout(500);
+          const options = page.locator('[role="option"]');
+          const count = await options.count();
+          if (count > 0) {
+            const randomIndex = Math.floor(Math.random() * count);
+            await options.nth(randomIndex).click();
+          }
+          await page.waitForTimeout(400);
+        }
     
-    // Edit Email
-    const emailFieldEdit = page.locator('input[name="email"]');
-    await FileInput(emailFieldEdit, engagementDataEdit.email);
+        // Edit Expect Class (Dropdown)
+        const expectClassButton = page
+          .locator('button[role="combobox"]')
+          .filter({ has: page.locator("svg") })
+          .or(page.locator('button[role="combobox"][aria-controls*="radix"]'))
+          .nth(3);
+        if (await expectClassButton.isVisible({ timeout: 2000 })) {
+          await expectClassButton.click();
+          await page.waitForTimeout(500);
+          const options = page.locator('[role="option"]');
+          const count = await options.count();
+          if (count > 0) {
+            const randomIndex = Math.floor(Math.random() * count);
+            await options.nth(randomIndex).click();
+          }else{
+            await page.keyboard.press('Escape');
+          }
+          await page.waitForTimeout(400);
+        }
     
-    // Edit Phone
-    const phoneFieldEdit = page.getByLabel(/Phone/i);
-    await FileInput(phoneFieldEdit, engagementDataEdit.phone);
-
-    // Edit Priority (Dropdown)
-    const priorityButtonEdit = page.locator('button[role="combobox"]').filter({ has: page.locator("svg") }).nth(2);
-    if (await priorityButtonEdit.isVisible({ timeout: 2000 })) {
-      await priorityButtonEdit.click();
-      await page.waitForTimeout(500);
-      const options = page.locator('[role="option"]');
-      const count = await options.count();
-      if (count > 0) {
-        const randomIndex = Math.floor(Math.random() * count);
-        await options.nth(randomIndex).click();
-      }
-      await page.waitForTimeout(400);
-    }
-
-    // Edit Expect Class (Dropdown)
-    const expectClassButtonEdit = page.locator('button[role="combobox"]').filter({ has: page.locator("svg") }).nth(3);
-    if (await expectClassButtonEdit.isVisible({ timeout: 2000 })) {
-      await expectClassButtonEdit.click();
-      await page.waitForTimeout(500);
-      const options = page.locator('[role="option"]');
-      const count = await options.count();
-      if (count > 0) {
-        const randomIndex = Math.floor(Math.random() * count);
-        await options.nth(randomIndex).click();
-      }
-      await page.waitForTimeout(400);
-    }
-
-    // Edit Probability
-    const probabilityFieldEdit = page.getByLabel(/Probability/i);
-    await FileInput(probabilityFieldEdit, engagementDataEdit.probability);
-
-    // Edit Resource Type (Dropdown)
-    const resourceTypeButtonEdit = page.locator('button[role="combobox"]').filter({ has: page.locator("svg") }).nth(4);
-    if (await resourceTypeButtonEdit.isVisible({ timeout: 2000 })) {
-      await resourceTypeButtonEdit.click();
-      await page.waitForTimeout(500);
-      const options = page.locator('[role="option"]');
-      const count = await options.count();
-      if (count > 0) {
-        const randomIndex = Math.floor(Math.random() * count);
-        await options.nth(randomIndex).click();
-      }
-      await page.waitForTimeout(400);
-    }
-
-    // Edit Resource Link
-    const resourceLinkEdit = page.getByLabel(/Resource Link/i);
-    await FileInput(resourceLinkEdit, engagementDataEdit.resourceLink);
-
-    // Edit Assign To
-    const assignToDropdownEdit = page.locator('button').filter({ hasText: 'Assign To' }).or(page.locator('button[data-slot="popover-trigger"]').filter({ hasText: 'Assign To' })).first();
-    if (await assignToDropdownEdit.isVisible({ timeout: 2000 })) {
-      await assignToDropdownEdit.click();
-      await page.waitForTimeout(1200);
-      const assignToOptions = page.locator('[role="option"], li label, .coach-item, [class*="option"]');
-      if (await assignToOptions.count() > 0) {
-        await assignToOptions.first().click();
-      }
-      await page.keyboard.press('Escape');
-      await page.waitForTimeout(500);
-    }
+        // Edit Probability
+        const probabilityField = page.getByLabel(/Probability/i);
+        await FileInput(probabilityField, engagementDataEdit.probability);
     
-    // Edit Note
-    const noteEdit = page.locator('textarea#note');
-    await FileInput(noteEdit, engagementDataEdit.note);
+        // Edit Resource Type (Dropdown)
+        const resourceTypeButton = page
+          .locator('button[role="combobox"]')
+          .filter({ has: page.locator("svg") })
+          .or(page.locator('button[role="combobox"][aria-controls*="radix"]'))
+          .nth(4);
+        if (await resourceTypeButton.isVisible({ timeout: 2000 })) {
+          await resourceTypeButton.click();
+          await page.waitForTimeout(500);
+          const options = page.locator('[role="option"]');
+          const count = await options.count();
+          if (count > 0) {
+            const randomIndex = Math.floor(Math.random() * count);
+            await options.nth(randomIndex).click();
+          }
+          await page.waitForTimeout(400);
+        }
+    
+        // Edit Resource Link
+        const resourceLink = page.getByLabel(/Resource Link/i);
+        await FileInput(resourceLink, engagementDataEdit.resourceLink);
+    
+        // Edit Assign To
+        const assignToDropdown = page.locator('button').filter({ hasText: 'Assign To' }).or(page.locator('button[data-slot="popover-trigger"]').filter({ hasText: 'Assign To' })).first();
+        if (await assignToDropdown.isVisible({ timeout: 2000 })) {
+          await assignToDropdown.click();
+          await page.waitForTimeout(1200);
+          const assignToOptions = page.locator('[role="option"], li label, .coach-item, [class*="option"]');
+          if (await assignToOptions.count() > 0) {
+               await assignToOptions.first().click();
+          }
+          await page.keyboard.press('Escape');
+          await page.waitForTimeout(500);
+        }
+        
+        // Edit Note
+        const note = page.locator('textarea#note');
+        await FileInput(note, engagementDataEdit.note);
+    
+        // Submit the form
+        await page.waitForTimeout(800);
+        await page.getByRole('button', { name: /Update|Save|Confirm/i }).click();
+        await page.waitForTimeout(1500);
 
-    // Submit the form
-    await page.waitForTimeout(800);
-    await page.getByRole('button', { name: /Update|Save|Confirm/i }).click();
-    await page.waitForTimeout(1500);
+    
 
     //======================================================================================
     // Engagements Tabs List
-
-
 
     //======================================================================================
     // Add Activity
@@ -5552,7 +5889,7 @@ test.describe('Students', () => {
 
     // Fill Activity Name
     const activityNameAdd = page.getByLabel(/Title/i);
-    await FileInput(activityNameAdd, "Activity Title");
+    await FileInput(activityNameAdd, activityTitle);
 
     // Select category
     await page.waitForTimeout(500);
@@ -5624,14 +5961,17 @@ test.describe('Students', () => {
     //======================================================================================
     // Update Activity
 
-    const activityItem = page.locator('div').filter({ hasText: 'Activity Title' }).filter({ 
-      has: page.locator('button').filter({ has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) })
-    }).last();
+ // 3. Take the .last() one to find the most specific container
+    const activityItem = page.locator('div')
+      .filter({ has: page.getByText('Activity Title') })
+      .filter({ has: page.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal') })
+      .last();
 
-    const actionsMenuButtonEdit = activityItem.locator('button').filter({ 
-      has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) 
-    }).first();
-    await actionsMenuButtonEdit.click();
+    // Click the menu icon directly (as the screenshot shows the attributes are on the SVG)
+    const actionsMenuButton = activityItem.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal').first();
+
+    await expect(actionsMenuButton).toBeVisible();
+    await actionsMenuButton.click();
     await page.waitForTimeout(500);
 
     // Click Edit
@@ -5728,16 +6068,26 @@ test.describe('Students', () => {
     await page.getByRole('button', { name: /Create/i }).click();
     await page.waitForTimeout(1500);
 
+    // Scroll to see the new comment
+    await page.mouse.wheel(0, 600);
+    await page.waitForTimeout(1000);
+
     //======================================================================================
     // Update Activity Comments
-     const commentItem = page.locator('div').filter({ 
-      has: page.locator('button').filter({ has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) })
+          // Scroll to see the list
+    await page.mouse.wheel(0, 600);
+    await page.waitForTimeout(500);
+
+    const commentItem = page.locator('div').filter({ 
+      has: page.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal')
     }).last();
 
-    const actionsMenuButtonUpdate = commentItem.locator('button').filter({ 
-      has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) 
-    }).first();
-    await actionsMenuButtonUpdate.click();
+    // Click the menu icon directly
+    const actionsMenuButtons = commentItem.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal').first();
+    
+    // Ensure the button is visible and click it
+    await actionsMenuButtons.scrollIntoViewIfNeeded();
+    await actionsMenuButtons.click();
     await page.waitForTimeout(500);
     await page.getByText(/Edit/i).click();
     await page.waitForTimeout(500);
@@ -5750,35 +6100,472 @@ test.describe('Students', () => {
     await page.getByRole('button', { name: /Update|Save/i }).click();
     await page.waitForTimeout(1500);
 
+    // Delete Comment on Activity
+    {
+       // Scroll to see the list
+    await page.mouse.wheel(0, 600);
+    await page.waitForTimeout(500);
 
+    // Delete the comment
+    const commentItem = page.locator('div').filter({ 
+        has: page.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal')
+    }).last();
+
+    const actionsMenuButton = commentItem.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal').first();
     
-
-    // Click on Emails tab
-    await page.getByText('Emails', { exact: true }).click();
+    // Ensure the button is visible and click it
+    await actionsMenuButton.scrollIntoViewIfNeeded();
+    await actionsMenuButton.click();
     await page.waitForTimeout(500);
 
-    // Click on Calls tab
-    await page.getByText('Calls', { exact: true }).click();
-    await page.waitForTimeout(500);
-
-    // Click on Notes tab
-    await page.getByText('Notes', { exact: true }).click();
-    await page.waitForTimeout(500);
-    
-    //======================================================================================
-    // Delete Engagement
-    
-    // We're already on the engagement detail page, just open the actions menu
-    const actionsMenuButtonDelete = page.locator('button').filter({ 
-      has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) 
-    }).first();
-    await actionsMenuButtonDelete.click();
-    await page.waitForTimeout(500);
-
+    // Click Delete
     await page.getByText(/Delete|Remove/i).click();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(500);
     await deleteItem(page);
     await page.waitForTimeout(1000);
+    }
+//======================================================================================
+
+
+
+
+
+    // ======================================================================================
+    // Emails
+    // ======================================================================================
+    {
+      await page.getByText('Emails', { exact: true }).click();
+      await page.waitForTimeout(500);
+      await page.getByText('Add Emails', { exact: true }).click();
+  
+      // Fill recipient
+      const recipient = page.getByLabel(/recipient/i);
+      await FileInput(recipient, "recipient.tech@email.com");
+  
+      // Fill subject
+      const subject = page.getByLabel(/subject/i);
+      await FileInput(subject, "Web development");
+     
+      // Fill Body
+      const body = page.locator('textarea#body').or(page.getByPlaceholder('Body'));
+      await FileInput(body, "body of email");
+  
+      // Submit the form  
+      await page.waitForTimeout(800);
+      await page.getByRole('button', { name: /Create/i }).click();
+      await page.waitForTimeout(1500);
+
+      // Scroll to see the new email
+      await page.mouse.wheel(0, 600);
+      await page.waitForTimeout(1000);
+    }
+
+    // Edit Email
+    {
+      const activityItem = page.locator('div')
+        .filter({ has: page.getByText('Web development') })
+        .filter({ has: page.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal') })
+        .last();
+
+      // Click the menu icon directly
+      const actionsMenuButton = activityItem.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal').first();
+      
+      await expect(actionsMenuButton).toBeVisible();
+      await actionsMenuButton.scrollIntoViewIfNeeded();
+      await actionsMenuButton.click();
+      await page.waitForTimeout(500);
+  
+      // Click Edit
+      await page.getByText(/Edit/i).click();
+      await page.waitForTimeout(500);
+  
+      // Edit recipient
+      const recipient = page.getByLabel(/recipient/i);
+      await recipient.clear();
+      await FileInput(recipient, "updated.recipient@email.com");
+  
+      // Edit subject
+      const subject = page.getByLabel(/subject/i);
+      await subject.clear();
+      await FileInput(subject, "Updated Web development");
+     
+      // Edit Body
+      const body = page.locator('textarea#body').or(page.getByPlaceholder('Body'));
+      await body.clear();
+      await FileInput(body, "Updated body of email");
+  
+      // Submit the form  
+      await page.waitForTimeout(800);
+      await page.getByRole('button', { name: /Update/i }).click();
+      await page.waitForTimeout(1500);
+    }
+//===================================================================================
+    // Comment on Email
+    {
+      // Click on Add Comment button
+      await page.getByRole('button', { name: '+ Add Comment' }).first().click();
+      await page.waitForTimeout(1000);
+  
+      // Fill Comment
+      const commentField = page.locator('textarea#comment');
+      await FileInput(commentField, "Comment on email");
+  
+      // Submit the form  
+      await page.waitForTimeout(800);
+      await page.getByRole('button', { name: /Create/i }).click();
+      await page.waitForTimeout(1500);
+
+      // Scroll to see the new comment
+      await page.mouse.wheel(0, 600);
+      await page.waitForTimeout(1000);
+    }
+//===================================================================================
+    // Edit Comment on Email
+    {
+      // Scroll to see the list
+      await page.mouse.wheel(0, 600);
+      await page.waitForTimeout(500);
+
+      const commentItem = page.locator('div').filter({ 
+        has: page.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal')
+      }).last();
+  
+      const actionsMenuButton = commentItem.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal').first();
+      
+      await actionsMenuButton.scrollIntoViewIfNeeded();
+      await actionsMenuButton.click();
+      await page.waitForTimeout(500);
+      await page.getByText(/Edit/i).click();
+      await page.waitForTimeout(500);
+  
+      // Edit comment field
+      const commentFieldUpdate = page.locator('textarea#comment');
+      await commentFieldUpdate.clear();
+      await FileInput(commentFieldUpdate, "Updated Comment on email");
+      
+      await page.getByRole('button', { name: /Update|Save/i }).click();
+      await page.waitForTimeout(1500);
+    }
+
+//===================================================================================
+    // Delete Comment on Email
+
+    {
+      // Scroll to see the list
+      await page.mouse.wheel(0, 600);
+      await page.waitForTimeout(500);
+
+      const activityItem = page.locator('div').filter({ 
+        has: page.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal')
+      }).last();
+
+      const actionsMenuButton = activityItem.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal').first();
+      
+      await actionsMenuButton.scrollIntoViewIfNeeded();
+      await actionsMenuButton.click();
+      await page.waitForTimeout(500);
+  
+      // Click Delete
+      await page.getByText(/Delete|Remove/i).click();
+      await page.waitForTimeout(500);
+      await deleteItem(page);
+      await page.waitForTimeout(1000);
+    }
+
+    // ======================================================================================
+    // Calls
+    // ======================================================================================
+    {
+      await page.getByText('Calls', { exact: true }).click();
+      await page.waitForTimeout(500);
+      await page.getByText('Call Log', { exact: true }).click();
+  
+      // Select outcome
+      await page.waitForTimeout(500);
+      const outcomeDropdown = page.locator("button[role='combobox']").filter({ hasText: 'Select outcome' });
+  
+      if (await outcomeDropdown.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await outcomeDropdown.click();
+        await page.waitForTimeout(500);
+  
+            // Select the last option
+            const lastOption = page.locator('[role="option"]').last();
+            if (await lastOption.isVisible({ timeout: 2000 }).catch(() => false)) {
+              await lastOption.click();
+              console.log("✓ Selected last outcome from dropdown");
+              await page.waitForTimeout(400);
+            }
+       }
+  
+       // Fill Call date field 
+       const today = new Date();
+       const mm = String(today.getMonth() + 1).padStart(2, '0'); 
+       const dd = String(today.getDate()).padStart(2, '0');
+       const yyyy = today.getFullYear();
+       const endDateFormatted = `${mm}-${dd}-${yyyy}`; // Format: MM-DD-YYYY
+      
+       const endDateField = page.getByLabel(/Call date/i)
+        .or(page.getByPlaceholder(/Call date/i))
+        .or(page.locator('input[type="date"]').nth(1));
+       await FileInput(endDateField, endDateFormatted);
+  
+      // Fill call note
+      const callNote = page.locator('textarea#note').or(page.getByPlaceholder('Add notes here...'));
+      await FileInput(callNote, "call note");
+  
+      // Submit the form  
+      await page.waitForTimeout(800);
+      await page.getByRole('button', { name: /Create/i }).click();
+      await page.waitForTimeout(1500);
+
+      // Scroll to see the new call
+      await page.mouse.wheel(0, 600);
+      await page.waitForTimeout(1000);
+    }
+
+  // Edit Call
+  {
+    const activityItem = page.locator('div')
+        .filter({ has: page.getByText('call note') })
+        .filter({ has: page.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal') })
+        .last();
+
+    const actionsMenuButton = activityItem.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal').first();
+    await expect(actionsMenuButton).toBeVisible();
+    await actionsMenuButton.scrollIntoViewIfNeeded();
+    await actionsMenuButton.click();
+    await page.waitForTimeout(500);
+  
+      // Click Edit
+      await page.getByText(/Edit/i).click();
+      await page.waitForTimeout(500);
+  
+      // Select outcome
+      await page.waitForTimeout(500);
+      const outcomeDropdown = page.locator("button[role='combobox']").filter({ hasText: 'Select outcome' });
+  
+      if (await outcomeDropdown.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await outcomeDropdown.click();
+        await page.waitForTimeout(500);
+  
+            // Select the last option
+            const lastOption = page.locator('[role="option"]').last();
+            if (await lastOption.isVisible({ timeout: 2000 }).catch(() => false)) {
+              await lastOption.click();
+              console.log("✓ Selected last outcome from dropdown");
+              await page.waitForTimeout(400);
+            }
+       }
+  
+      // Edit Call date field 
+      const today = new Date();
+      const mm = String(today.getMonth() + 1).padStart(2, '0'); 
+      const dd = String(today.getDate()).padStart(2, '0');
+      const yyyy = today.getFullYear();
+      const endDateFormatted = `${mm}-${dd}-${yyyy}`;
+  
+      const endDateField = page.getByLabel(/Call date/i)
+        .or(page.getByPlaceholder(/Call date/i))
+        .or(page.locator('input[type="date"]').nth(1));
+      await endDateField.clear();
+      await FileInput(endDateField, endDateFormatted);
+  
+      // Edit call note
+      const callNote = page.locator('textarea#note').or(page.getByPlaceholder('Add notes here...'));
+      await callNote.clear();
+      await FileInput(callNote, "Updated call note");
+      
+      // Submit the form  
+      await page.waitForTimeout(800);
+      await page.getByRole('button', { name: /Update|Save/i }).click();
+      await page.waitForTimeout(1500);
+    }
+
+    // Comment on Calls
+    {
+      // Click on Add Comment button
+      await page.getByRole('button', { name: '+ Add Comment' }).click();
+      await page.waitForTimeout(1000);
+  
+      // Fill Comment
+      const commentField = page.locator('textarea#comment');
+      await FileInput(commentField, "Comment on calls");
+  
+      // Submit the form  
+      await page.waitForTimeout(800);
+      await page.getByRole('button', { name: /Create/i }).click();
+      await page.waitForTimeout(1500);
+
+      // Scroll to see the new comment
+      await page.mouse.wheel(0, 600);
+      await page.waitForTimeout(1000);
+    }
+
+    // Edit Comment on Calls
+    {
+      // Scroll to see the list
+      await page.mouse.wheel(0, 600);
+      await page.waitForTimeout(500);
+
+      const commentItem = page.locator('div').filter({ 
+        has: page.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal')
+      }).last();
+  
+      const actionsMenuButton = commentItem.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal').first();
+      
+      await actionsMenuButton.scrollIntoViewIfNeeded();
+      await actionsMenuButton.click();
+      await page.waitForTimeout(500);
+      await page.getByText(/Edit/i).click();
+  
+      const commentFieldUpdate = page.locator('textarea#comment');
+      await FileInput(commentFieldUpdate, "Updated Comment on calls");
+      
+      await page.getByRole('button', { name: /Update|Save/i }).click();
+      await page.waitForTimeout(1500);
+    }
+  
+    // Delete Comment on Calls
+    {
+      // Scroll to see the list
+      await page.mouse.wheel(0, 600);
+      await page.waitForTimeout(500);
+
+      const commentItem = page.locator('div').filter({ 
+        has: page.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal')
+      }).last();
+  
+      const actionsMenuButton = commentItem.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal').first();
+      
+      await actionsMenuButton.scrollIntoViewIfNeeded();
+      await actionsMenuButton.click();
+      await page.waitForTimeout(500);
+  
+      // Click Delete
+      await page.getByText(/Delete|Remove/i).click();
+      await page.waitForTimeout(500);
+      await deleteItem(page);
+      await page.waitForTimeout(1000);
+    }
+
+    // ======================================================================================
+    // Notes
+    // ======================================================================================
+    {
+      await page.getByText('Notes', { exact: true }).click();
+      await page.waitForTimeout(500);
+      // Click on Add Note button
+      await page.getByRole('button', { name: 'Add Note' }).click();
+      await page.waitForTimeout(1000);
+  
+      // Fill Note
+      const noteField = page.locator('textarea#note');
+      await FileInput(noteField, "Note on engagement");
+  
+      // Submit the form  
+      await page.waitForTimeout(800);
+      await page.getByRole('button', { name: /Create/i }).click();
+      await page.waitForTimeout(1500);
+
+      // Scroll to see the new note
+      await page.mouse.wheel(0, 600);
+      await page.waitForTimeout(1000);
+    }
+
+    // Edit Note
+    {
+      // Scroll to see the list
+      await page.mouse.wheel(0, 600);
+      await page.waitForTimeout(500);
+      
+      const noteItem = page.locator('div')
+          .filter({ has: page.getByText('Note on engagement') })
+          .filter({ has: page.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal') })
+          .last();
+  
+      const actionsMenuButton = noteItem.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal').first();
+      
+      await expect(actionsMenuButton).toBeVisible();
+      await actionsMenuButton.scrollIntoViewIfNeeded();
+      await actionsMenuButton.click();
+      await page.waitForTimeout(500);
+  
+      // Click Edit
+      await page.getByText(/Edit/i).click();
+  
+      const noteFieldUpdate = page.locator('textarea#note');
+      await FileInput(noteFieldUpdate, "Updated Note on engagement");
+      
+      await page.getByRole('button', { name: /Update|Save/i }).click();
+      await page.waitForTimeout(1500);
+    }
+
+    // Comment on Notes
+    {
+      // Click on Add Comment button
+      await page.getByRole('button', { name: '+ Add Comment' }).click();
+      await page.waitForTimeout(1000);
+  
+      // Fill Comment
+      const commentField = page.locator('textarea#comment');
+      await FileInput(commentField, "Comment on Notes");
+  
+      // Submit the form  
+      await page.waitForTimeout(800);
+      await page.getByRole('button', { name: /Create/i }).click();
+      await page.waitForTimeout(1500);
+
+      // Scroll to see the new comment
+      await page.mouse.wheel(0, 600);
+      await page.waitForTimeout(1000);
+    }
+
+    // Edit Comment on Notes
+    {
+      // Scroll to see the list
+      await page.mouse.wheel(0, 600);
+      await page.waitForTimeout(500);
+
+      const commentItem = page.locator('div').filter({ 
+        has: page.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal')
+      }).last();
+  
+      const actionsMenuButton = commentItem.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal').first();
+      
+      await actionsMenuButton.scrollIntoViewIfNeeded();
+      await actionsMenuButton.click();
+      await page.waitForTimeout(500);
+      await page.getByText(/Edit/i).click();
+  
+      const commentFieldUpdate = page.locator('textarea#comment');
+      await FileInput(commentFieldUpdate, "Updated Comment on Notes");
+      
+      await page.getByRole('button', { name: /Update|Save/i }).click();
+      await page.waitForTimeout(1500);
+    }
+
+    // Delete Comment on Notes
+    {
+      // Scroll to see the list
+      await page.mouse.wheel(0, 600);
+      await page.waitForTimeout(500);
+
+      const commentItem = page.locator('div').filter({ 
+        has: page.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal')
+      }).last();
+  
+      const actionsMenuButton = commentItem.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal').first();
+      
+      await actionsMenuButton.scrollIntoViewIfNeeded();
+      await actionsMenuButton.click();
+      await page.waitForTimeout(500);
+  
+      // Click Delete
+      await page.getByText(/Delete|Remove/i).click();
+      await page.waitForTimeout(500);
+      await deleteItem(page);
+      await page.waitForTimeout(1000);
+    }
   });
 });
 

@@ -5,6 +5,7 @@ import { FileInput } from '../../utils/form-helper';
 import { deleteEntityViaActionMenu } from '../../utils/delete-helper';
 import { toggleViewMode } from '../../utils/view-helper';
 import { uploadThumbnail } from '../../utils/upload-thumbnail-helper';
+import { openActionMenu } from '../../utils/action-menu-helper';
 import staticData from '../../constant/static-data.json';
 
 test.describe('Courses', () => {
@@ -264,12 +265,9 @@ test.describe('Courses', () => {
         await courseAtIndex0.click({ force: true });
     }
     await page.waitForTimeout(1000);
-    await page.waitForTimeout(1000);
 
-    // Look for Edit button
-    const actionsMenuButton = page.locator('button[aria-haspopup="menu"]').first();
-    await actionsMenuButton.click();
-    await page.waitForTimeout(800);
+    // click on icon three dot
+    await openActionMenu(page);
     
     const editButton = page.getByRole('menuitem', { name: /Edit/i }).or(page.getByRole('button', { name: /Edit/i }));
     

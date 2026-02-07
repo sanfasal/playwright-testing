@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { login } from '../utils/auth-helper';
 import { FileInput } from '../utils/form-helper';
 import { deleteItem } from '../utils/delete-helper';
+import { openActionMenu } from '../utils/action-menu-helper';
 
 // Test suite for Engagement Dashboard
 const randomSuffix = Math.floor(Math.random() * 10000);
@@ -115,8 +116,7 @@ test.describe('Engagement', () => {
       const options = page.locator('[role="option"]');
       const count = await options.count();
       if (count > 0) {
-        const randomIndex = Math.floor(Math.random() * count);
-        await options.nth(randomIndex).click();
+        await options.nth(0).click();
       }
       await page.waitForTimeout(400);
     }
@@ -168,6 +168,8 @@ test.describe('Engagement', () => {
       if (count > 0) {
         const randomIndex = Math.floor(Math.random() * count);
         await options.nth(randomIndex).click();
+      } else {
+        await page.keyboard.press('Escape');
       }
       await page.waitForTimeout(400);
     }
@@ -279,12 +281,9 @@ test.describe('Engagement', () => {
     
     await page.locator('span.bg-yellow-500').or(page.locator('p[title="Won"]')).or(page.locator('p[title="Lost"]')).first().click();
     await page.waitForTimeout(1000);
-    
-    const actionsMenuButton = page.locator('button').filter({ 
-      has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) 
-    }).first();
-    await actionsMenuButton.click();
-    await page.waitForTimeout(500);
+  
+        // Open the actions menu (three-dot icon)
+        await openActionMenu(page);
     
     // Click Edit
     await page.getByText(/Edit/i).click();
@@ -302,29 +301,35 @@ test.describe('Engagement', () => {
     await FileInput(lastNameField, engagementDataEdit.lastName);
 
     // Edit Gender (Dropdown)
-    const genderButton = page.locator('button[role="combobox"]').filter({ has: page.locator("svg") }).first();
+    const genderButton = page
+      .locator('button[role="combobox"]')
+      .filter({ has: page.locator("svg") })
+      .or(page.locator('button[role="combobox"][aria-controls*="radix"]'))
+      .first();
     if (await genderButton.isVisible({ timeout: 2000 })) {
       await genderButton.click();
       await page.waitForTimeout(500);
       const options = page.locator('[role="option"]');
       const count = await options.count();
       if (count > 0) {
-          const randomIndex = Math.floor(Math.random() * count);
-          await options.nth(randomIndex).click();
+        await options.nth(1).click();
       }
       await page.waitForTimeout(400);
     }
 
     // Edit Stage (Dropdown)
-    const stageButton = page.locator('button[role="combobox"]').filter({ has: page.locator("svg") }).nth(1);
+    const stageButton = page
+      .locator('button[role="combobox"]')
+      .filter({ has: page.locator("svg") })
+      .or(page.locator('button[role="combobox"][aria-controls*="radix"]'))
+      .nth(1);
     if (await stageButton.isVisible({ timeout: 2000 })) {
       await stageButton.click();
       await page.waitForTimeout(500);
       const options = page.locator('[role="option"]');
       const count = await options.count();
       if (count > 0) {
-          const randomIndex = Math.floor(Math.random() * count);
-          await options.nth(randomIndex).click();
+          await options.nth(1).click();
       }
       await page.waitForTimeout(400);
     }
@@ -342,7 +347,11 @@ test.describe('Engagement', () => {
     await FileInput(phoneField, engagementDataEdit.phone);
 
     // Edit Priority (Dropdown)
-    const priorityButton = page.locator('button[role="combobox"]').filter({ has: page.locator("svg") }).nth(2);
+    const priorityButton = page
+      .locator('button[role="combobox"]')
+      .filter({ has: page.locator("svg") })
+      .or(page.locator('button[role="combobox"][aria-controls*="radix"]'))
+      .nth(2);
     if (await priorityButton.isVisible({ timeout: 2000 })) {
       await priorityButton.click();
       await page.waitForTimeout(500);
@@ -356,7 +365,11 @@ test.describe('Engagement', () => {
     }
 
     // Edit Expect Class (Dropdown)
-    const expectClassButton = page.locator('button[role="combobox"]').filter({ has: page.locator("svg") }).nth(3);
+    const expectClassButton = page
+      .locator('button[role="combobox"]')
+      .filter({ has: page.locator("svg") })
+      .or(page.locator('button[role="combobox"][aria-controls*="radix"]'))
+      .nth(3);
     if (await expectClassButton.isVisible({ timeout: 2000 })) {
       await expectClassButton.click();
       await page.waitForTimeout(500);
@@ -365,6 +378,8 @@ test.describe('Engagement', () => {
       if (count > 0) {
         const randomIndex = Math.floor(Math.random() * count);
         await options.nth(randomIndex).click();
+      }else{
+        await page.keyboard.press('Escape');
       }
       await page.waitForTimeout(400);
     }
@@ -374,7 +389,11 @@ test.describe('Engagement', () => {
     await FileInput(probabilityField, engagementDataEdit.probability);
 
     // Edit Resource Type (Dropdown)
-    const resourceTypeButton = page.locator('button[role="combobox"]').filter({ has: page.locator("svg") }).nth(4);
+    const resourceTypeButton = page
+      .locator('button[role="combobox"]')
+      .filter({ has: page.locator("svg") })
+      .or(page.locator('button[role="combobox"][aria-controls*="radix"]'))
+      .nth(4);
     if (await resourceTypeButton.isVisible({ timeout: 2000 })) {
       await resourceTypeButton.click();
       await page.waitForTimeout(500);
@@ -424,11 +443,8 @@ test.describe('Engagement', () => {
     await page.locator('span.bg-yellow-500').or(page.locator('p[title="Won"]')).or(page.locator('p[title="Lost"]')).first().click();
     await page.waitForTimeout(1000);
     
-    const actionsMenuButton = page.locator('button').filter({ 
-      has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) 
-    }).first();
-    await actionsMenuButton.click();
-    await page.waitForTimeout(500);
+        // Open the actions menu (three-dot icon)
+        await openActionMenu(page);
 
     await page.getByText(/Delete|Remove/i).click();
     await page.waitForTimeout(1000);
@@ -556,13 +572,20 @@ test.describe('Engagement Tabs List', () => {
     
     // Click on Activities tab
     await page.getByText('Activities', { exact: true }).click();
-    const activityItem = page.locator('div').filter({ hasText: 'Activity Title' }).filter({ 
-      has: page.locator('button').filter({ has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) })
-    }).last();
+    
+    // Wait for the activity text to ensure the list is loaded
+    await expect(page.getByText('Activity Title').first()).toBeVisible();
+    
+    // 3. Take the .last() one to find the most specific container
+    const activityItem = page.locator('div')
+      .filter({ has: page.getByText('Activity Title') })
+      .filter({ has: page.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal') })
+      .last();
 
-    const actionsMenuButton = activityItem.locator('button').filter({ 
-      has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) 
-    }).first();
+    // Click the menu icon directly (as the screenshot shows the attributes are on the SVG)
+    const actionsMenuButton = activityItem.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal').first();
+
+    await expect(actionsMenuButton).toBeVisible();
     await actionsMenuButton.click();
     await page.waitForTimeout(500);
 
@@ -670,6 +693,10 @@ test.describe('Engagement Tabs List', () => {
     await page.waitForTimeout(800);
     await page.getByRole('button', { name: /Create/i }).click();
     await page.waitForTimeout(1500);
+
+    // Scroll to see the new comment
+    await page.mouse.wheel(0, 600);
+    await page.waitForTimeout(1000);
   });
 
   // Edit Comment
@@ -685,15 +712,23 @@ test.describe('Engagement Tabs List', () => {
     await page.getByText('Activities', { exact: true }).click();
     await page.waitForTimeout(500);
 
+        // Scroll to see the list
+    await page.mouse.wheel(0, 600);
+    await page.waitForTimeout(500);
+
     const commentItem = page.locator('div').filter({ 
-      has: page.locator('button').filter({ has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) })
+      has: page.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal')
     }).last();
 
-    const actionsMenuButton = commentItem.locator('button').filter({ 
-      has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) 
-    }).first();
+    // Click the menu icon directly
+    const actionsMenuButton = commentItem.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal').first();
+    
+    // Ensure the button is visible and click it
+    await actionsMenuButton.scrollIntoViewIfNeeded();
     await actionsMenuButton.click();
     await page.waitForTimeout(500);
+
+    
     await page.getByText(/Edit/i).click();
     await page.waitForTimeout(500);
 
@@ -718,15 +753,20 @@ test.describe('Engagement Tabs List', () => {
     // Click on Activities tab
     await page.getByText('Activities', { exact: true }).click();
     await page.waitForTimeout(500);
+    
+    // Scroll to see the list
+    await page.mouse.wheel(0, 600);
+    await page.waitForTimeout(500);
 
     // Delete the comment
     const commentItem = page.locator('div').filter({ 
-      has: page.locator('button').filter({ has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) })
+        has: page.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal')
     }).last();
 
-    const actionsMenuButton = commentItem.locator('button').filter({ 
-      has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) 
-    }).first();
+    const actionsMenuButton = commentItem.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal').first();
+    
+    // Ensure the button is visible and click it
+    await actionsMenuButton.scrollIntoViewIfNeeded();
     await actionsMenuButton.click();
     await page.waitForTimeout(500);
 
@@ -749,13 +789,16 @@ test.describe('Engagement Tabs List', () => {
     // Click on Activities tab
     await page.getByText('Activities', { exact: true }).click();
   
-    const activityItem = page.locator('div').filter({ hasText: 'Activity Title' }).filter({ 
-      has: page.locator('button').filter({ has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) })
-    }).last();
+     // 3. Take the .last() one to find the most specific container
+    const activityItem = page.locator('div')
+      .filter({ has: page.getByText('Activity Title') })
+      .filter({ has: page.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal') })
+      .last();
 
-    const actionsMenuButton = activityItem.locator('button').filter({ 
-      has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) 
-    }).first();
+    // Click the menu icon directly (as the screenshot shows the attributes are on the SVG)
+    const actionsMenuButton = activityItem.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal').first();
+
+    await expect(actionsMenuButton).toBeVisible();
     await actionsMenuButton.click();
     await page.waitForTimeout(500);
 
@@ -798,6 +841,10 @@ test.describe('Engagement Tabs List', () => {
     await page.getByRole('button', { name: /Create/i }).click();
     await page.waitForTimeout(1500);
 
+    // Scroll to see the new email
+    await page.mouse.wheel(0, 600);
+    await page.waitForTimeout(1000);
+
   });
 
   // Edit Email
@@ -810,14 +857,19 @@ test.describe('Engagement Tabs List', () => {
     await page.getByText('Emails', { exact: true }).click();
 
 
-        // Click on Activities tab
+    // Click on Activities tab
     await page.getByText('Emails', { exact: true }).click();
-    const activityItem = page.locator('div').filter({ 
-      has: page.locator('button').filter({ has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) })
-    }).last();
-        const actionsMenuButton = activityItem.locator('button').filter({ 
-      has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) 
-    }).first();
+    
+    const activityItem = page.locator('div')
+        .filter({ has: page.getByText('Web development') })
+        .filter({ has: page.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal') })
+        .last();
+
+    // Click the menu icon directly
+    const actionsMenuButton = activityItem.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal').first();
+
+    await expect(actionsMenuButton).toBeVisible();
+    await actionsMenuButton.scrollIntoViewIfNeeded();
     await actionsMenuButton.click();
     await page.waitForTimeout(500);
 
@@ -871,6 +923,10 @@ test.describe('Engagement Tabs List', () => {
     await page.waitForTimeout(800);
     await page.getByRole('button', { name: /Create/i }).click();
     await page.waitForTimeout(1500);
+
+    // Scroll to see the new comment
+    await page.mouse.wheel(0, 600);
+    await page.waitForTimeout(1000);
   });
 
   // Edit Comment
@@ -886,13 +942,17 @@ test.describe('Engagement Tabs List', () => {
     await page.getByText('Emails', { exact: true }).click();
     await page.waitForTimeout(500);
 
+    // Scroll to see the list
+    await page.mouse.wheel(0, 600);
+    await page.waitForTimeout(500);
+
     const commentItem = page.locator('div').filter({ 
-      has: page.locator('button').filter({ has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) })
+      has: page.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal')
     }).last();
 
-    const actionsMenuButton = commentItem.locator('button').filter({ 
-      has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) 
-    }).first();
+    const actionsMenuButton = commentItem.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal').first();
+    
+    await actionsMenuButton.scrollIntoViewIfNeeded();
     await actionsMenuButton.click();
     await page.waitForTimeout(500);
     await page.getByText(/Edit/i).click();
@@ -920,14 +980,18 @@ test.describe('Engagement Tabs List', () => {
     await page.getByText('Emails', { exact: true }).click();
     await page.waitForTimeout(500);
 
+    // Scroll to see the list
+    await page.mouse.wheel(0, 600);
+    await page.waitForTimeout(500);
+
     // Delete the comment
     const commentItem = page.locator('div').filter({ 
-      has: page.locator('button').filter({ has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) })
+      has: page.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal')
     }).last();
 
-    const actionsMenuButton = commentItem.locator('button').filter({ 
-      has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) 
-    }).first();
+    const actionsMenuButton = commentItem.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal').first();
+    
+    await actionsMenuButton.scrollIntoViewIfNeeded();
     await actionsMenuButton.click();
     await page.waitForTimeout(500);
 
@@ -947,11 +1011,12 @@ test.describe('Engagement Tabs List', () => {
     
     await page.getByText('Emails', { exact: true }).click();
     const activityItem = page.locator('div').filter({ 
-      has: page.locator('button').filter({ has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) })
-    }).nth(0);
-    const actionsMenuButton = activityItem.locator('button').filter({ 
-      has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) 
-    }).last();
+      has: page.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal')
+    }).last(); // Use .last() or specific text like "Web development"
+
+    const actionsMenuButton = activityItem.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal').first();
+    
+    await actionsMenuButton.scrollIntoViewIfNeeded();
     await actionsMenuButton.click();
     await page.waitForTimeout(500);
 
@@ -1013,6 +1078,10 @@ test.describe('Engagement Tabs List', () => {
     await page.getByRole('button', { name: /Create/i }).click();
     await page.waitForTimeout(1500);
 
+    // Scroll to see the new call
+    await page.mouse.wheel(0, 600);
+    await page.waitForTimeout(1000);
+
   });
 
   // Edit Calls
@@ -1023,12 +1092,14 @@ test.describe('Engagement Tabs List', () => {
     await page.waitForTimeout(1000);
     await page.getByText('Calls', { exact: true }).click();
 
-    const activityItem = page.locator('div').filter({ 
-      has: page.locator('button').filter({ has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) })
-    }).nth(0);
-        const actionsMenuButton = activityItem.locator('button').filter({ 
-      has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) 
-    }).last();
+    const activityItem = page.locator('div')
+        .filter({ has: page.getByText('call note') })
+        .filter({ has: page.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal') })
+        .last();
+
+    const actionsMenuButton = activityItem.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal').first();
+    await expect(actionsMenuButton).toBeVisible();
+    await actionsMenuButton.scrollIntoViewIfNeeded();
     await actionsMenuButton.click();
     await page.waitForTimeout(500);
 
@@ -1175,12 +1246,17 @@ test.describe('Engagement Tabs List', () => {
     await page.waitForTimeout(1000);
     await page.getByText('Calls', { exact: true }).click();
 
+    // Scroll into view
+    await page.mouse.wheel(0, 600);
+    await page.waitForTimeout(500);
+
     const activityItem = page.locator('div').filter({ 
-      has: page.locator('button').filter({ has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) })
+      has: page.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal')
     }).last();
-    const actionsMenuButton = activityItem.locator('button').filter({ 
-      has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) 
-    }).first();
+
+    const actionsMenuButton = activityItem.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal').first();
+    
+    await actionsMenuButton.scrollIntoViewIfNeeded();
     await actionsMenuButton.click();
     await page.waitForTimeout(500);
 
@@ -1196,6 +1272,7 @@ test.describe('Engagement Tabs List', () => {
   // ============================
 
   // Create Note
+    // Create Note
   test('Create Note', async ({ page }) => {
     await expect(page).toHaveTitle(/Engagement/i);
     await page.waitForTimeout(1000);
@@ -1218,6 +1295,10 @@ test.describe('Engagement Tabs List', () => {
     await page.waitForTimeout(800);
     await page.getByRole('button', { name: /Create/i }).click();
     await page.waitForTimeout(1500);
+
+    // Scroll to see the new note
+    await page.mouse.wheel(0, 600);
+    await page.waitForTimeout(1000);
   });
 
   // Edit Note
@@ -1231,18 +1312,21 @@ test.describe('Engagement Tabs List', () => {
     
     // Click on Activities tab
     await page.getByText('Notes', { exact: true }).click();
+    
+    // Scroll to see the list
+    await page.mouse.wheel(0, 600);
     await page.waitForTimeout(500);
 
-
-
     // Edit Note locator
-    const noteItem = page.locator('div').filter({ 
-      has: page.locator('button').filter({ has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) })
-    }).last();
+    const noteItem = page.locator('div')
+        .filter({ has: page.getByText('Note on engagement') })
+        .filter({ has: page.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal') })
+        .last();
 
-    const actionsMenuButton = noteItem.locator('button').filter({ 
-      has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) 
-    }).first();
+    const actionsMenuButton = noteItem.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal').first();
+    
+    await expect(actionsMenuButton).toBeVisible();
+    await actionsMenuButton.scrollIntoViewIfNeeded();
     await actionsMenuButton.click();
     await page.waitForTimeout(500);
 
@@ -1281,9 +1365,14 @@ test.describe('Engagement Tabs List', () => {
     await page.waitForTimeout(800);
     await page.getByRole('button', { name: /Create/i }).click();
     await page.waitForTimeout(1500);
+
+    // Scroll to see the new comment
+    await page.mouse.wheel(0, 600);
+    await page.waitForTimeout(1000);
   });
 
   // Edit Comment
+    // Edit Comment on Notes
   test('Edit Comment on Notes', async ({ page }) => {
     await expect(page).toHaveTitle(/Engagement/i);
     await page.waitForTimeout(1000);
@@ -1294,15 +1383,18 @@ test.describe('Engagement Tabs List', () => {
     
     // Click on Activities tab
     await page.getByText('Notes', { exact: true }).click();
+    
+    // Scroll to see the list
+    await page.mouse.wheel(0, 600);
     await page.waitForTimeout(500);
 
     const commentItem = page.locator('div').filter({ 
-      has: page.locator('button').filter({ has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) })
+      has: page.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal')
     }).last();
 
-    const actionsMenuButton = commentItem.locator('button').filter({ 
-      has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) 
-    }).first();
+    const actionsMenuButton = commentItem.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal').first();
+    
+    await actionsMenuButton.scrollIntoViewIfNeeded();
     await actionsMenuButton.click();
     await page.waitForTimeout(500);
     await page.getByText(/Edit/i).click();
@@ -1328,13 +1420,17 @@ test.describe('Engagement Tabs List', () => {
     await page.waitForTimeout(500);
 
     // Delete the comment
+    // Scroll to see the list
+    await page.mouse.wheel(0, 600);
+    await page.waitForTimeout(500);
+
     const commentItem = page.locator('div').filter({ 
-      has: page.locator('button').filter({ has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) })
+      has: page.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal')
     }).last();
 
-    const actionsMenuButton = commentItem.locator('button').filter({ 
-      has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) 
-    }).first();
+    const actionsMenuButton = commentItem.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal').first();
+    
+    await actionsMenuButton.scrollIntoViewIfNeeded();
     await actionsMenuButton.click();
     await page.waitForTimeout(500);
 
@@ -1356,16 +1452,20 @@ test.describe('Engagement Tabs List', () => {
     
     // Click on Activities tab
     await page.getByText('Notes', { exact: true }).click();
+    
+    // Scroll to see the list
+    await page.mouse.wheel(0, 600);
     await page.waitForTimeout(500);
 
     // Delete the note
-    const noteItem = page.locator('div').filter({ 
-      has: page.locator('button').filter({ has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) })
-    }).last();
+    const noteItem = page.locator('div')
+      .filter({ has: page.getByText('Note on engagement') })
+      .filter({ has: page.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal') })
+      .last();
 
-    const actionsMenuButton = noteItem.locator('button').filter({ 
-      has: page.locator('svg.lucide-ellipsis-vertical').or(page.locator('svg.lucide-ellipsis-horizontal')) 
-    }).first();
+    const actionsMenuButton = noteItem.locator('svg.lucide-ellipsis-vertical, svg.lucide-ellipsis-horizontal').first();
+    
+    await actionsMenuButton.scrollIntoViewIfNeeded();
     await actionsMenuButton.click();
     await page.waitForTimeout(500);
 

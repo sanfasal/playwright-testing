@@ -4,6 +4,7 @@ import { addCursorTracking } from '../utils/cursor-helper';
 import { FileInput } from '../utils/form-helper';
 import { toggleViewMode } from '../utils/view-helper';
 import { deleteItem } from '../utils/delete-helper';
+import { openActionMenu } from '../utils/action-menu-helper';
 
 test.describe('Invoices Page', () => {
   
@@ -103,15 +104,10 @@ test('Edit invoice', async ({ page }) => {
     // Get the invoice at index 1 (second invoice)
     const invoiceAtIndex1 = invoiceRows.nth(0);
     await invoiceAtIndex1.click();
-    await page.waitForTimeout(1500);
-
-    const actionMenuBtn = page.locator('button').filter({ 
-        has: page.locator('svg.lucide-ellipsis, svg.lucide-ellipsis-vertical, svg.lucide-more-vertical, svg.lucide-more-horizontal') 
-    }).last();
-
-    await expect(actionMenuBtn).toBeVisible({ timeout: 5000 });
-    await actionMenuBtn.click();
+    await page.waitForTimeout(1000);
     
+        // Open the actions menu (three-dot icon)
+        await openActionMenu(page);
     // Wait for the dropdown/menu to appear
     const editOption = page.getByRole('menuitem', { name: /Edit|Update/i }).or(page.getByText(/Edit|Update/i));
     await expect(editOption.first()).toBeVisible();

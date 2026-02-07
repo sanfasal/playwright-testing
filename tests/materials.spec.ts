@@ -5,6 +5,7 @@ import { toggleViewMode } from '../utils/view-helper';
 import { deleteItem, deleteEntityViaActionMenu } from '../utils/delete-helper';
 import { uploadThumbnail } from '../utils/upload-thumbnail-helper';
 import path from 'path';
+import { openActionMenu } from '../utils/action-menu-helper';
 
 test.describe('Materials Page', () => {
   
@@ -106,12 +107,7 @@ test.describe('Materials Page', () => {
     await selectMaterial(page, 0);
     
     // Open the actions menu (three-dot icon)
-    const actionsMenuButton = page.getByRole('button', { name: /more options|actions|menu/i })
-      .or(page.locator('button[aria-haspopup="menu"]'))
-      .or(page.locator('svg.lucide-ellipsis-vertical'))
-      .first();
-    await actionsMenuButton.click();
-    await page.waitForTimeout(500);
+    await openActionMenu(page);
     
     // Look for Edit button in the dropdown menu
     const editButton = page.getByRole('menuitem', { name: /Edit/i }).or(page.getByRole('button', { name: /Edit/i }));
