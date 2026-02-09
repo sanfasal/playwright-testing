@@ -1,6 +1,6 @@
 import { Page, expect } from '@playwright/test';
-import { FileInput } from '../../../utils/form-helper';
-import { uploadThumbnail } from '../../../utils/upload-thumbnail-helper';
+import { FileInput } from '../utils/form-helper';
+import { uploadThumbnail } from '../utils/upload-thumbnail-helper';
 import path from 'path';
 
 /**
@@ -14,7 +14,7 @@ export async function createStudent(page: Page, studentData: any) {
 
     // Upload Profile Image
     await uploadThumbnail(page, "file-input-profile || selected-exist-profile", {
-      imagePath: path.join(__dirname, '../../..', 'public', 'images', 'profile-create.png')
+      imagePath: path.join(__dirname, '..', 'public', 'images', 'profile-create.png')
     });
     
     // Fill First Name
@@ -393,7 +393,7 @@ export async function updateStudent(page: Page, studentData: any) {
 
     // Update Profile Image
     await uploadThumbnail(page, "file-input-profile || selected-exist-profile", {
-      imagePath: path.join(__dirname, '../../..', 'public', 'images', 'profile-create.png')
+      imagePath: path.join(__dirname, '..', 'public', 'images', 'profile-create.png')
     });
     
     // Update First Name

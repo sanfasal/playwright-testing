@@ -236,6 +236,20 @@ export async function getOTPFromEmail(
     throw new Error("Could not extract OTP from email");
   }
 
+  // ... existing code ...
   console.log(`🔑 Extracted OTP: ${otp}`);
   return otp;
+}
+
+/**
+ * Generates a test email address based on configuration (Gmail alias or Testmail).
+ * @param firstName - First name for Gmail alias construction
+ * @param lastName - Last name for Gmail alias construction
+ * @returns The generated email address
+ */
+export function getTestEmail(firstName: string, lastName: string): string {
+  const useGmail = (process.env.TESTMAIL_USE_GMAIL || '').toLowerCase() === 'true';
+  return useGmail
+    ? `${firstName.toLowerCase()}.${lastName.toLowerCase()}+${Date.now()}@gmail.com`
+    : generateTestmailAddress(process.env.TESTMAIL_NAMESPACE || 'username', String(Date.now()));
 }

@@ -1,9 +1,9 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { login } from '../utils/auth-helper';
 import { addCursorTracking } from '../utils/cursor-helper';
 import { toggleViewMode } from '../utils/view-helper';
-import { deleteItem, deleteEntityViaActionMenu } from '../utils/delete-helper';
-import { uploadThumbnail } from '../utils/upload-thumbnail-helper';
+import { deleteEntityViaActionMenu } from '../utils/delete-helper';
+import { createMaterial, updateMaterial } from '../components/materials';
 import path from 'path';
 import { openActionMenu } from '../utils/action-menu-helper';
 
@@ -50,24 +50,14 @@ test.describe('Materials Page', () => {
     await page.waitForTimeout(1500);
   }
 
-
-
   // ===================================
   // Add new material with documents
   // ===================================
 
   test('Add new material with documents', async ({ page }) => {
     await page.locator('#add-material-button').click();
-    await expect(page.getByRole('textbox').first()).toBeVisible({ timeout: 9000 });
-    await uploadThumbnail(page, "materialFile", {
-      imagePath: path.join(__dirname, '..', 'public', 'images', 'thumbnial-create.pdf')
-    });
-    await page.waitForTimeout(500);
-    const submitButton = page.getByRole('button', { name: /Create|Save|Submit/i });
-    await submitButton.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(500); // Brief pause for smooth scroll animation
-    await submitButton.click();
-    await page.waitForTimeout(1200);
+    const filePath = path.join(__dirname, '..', 'public', 'images', 'thumbnail-create.pdf');
+    await createMaterial(page, filePath);
   });
 
   // ===================================
@@ -76,16 +66,8 @@ test.describe('Materials Page', () => {
 
   test('Add new material with video', async ({ page }) => {
     await page.locator('#add-material-button').click();
-    await expect(page.getByRole('textbox').first()).toBeVisible({ timeout: 9000 });
-    await uploadThumbnail(page, "materialFile", {
-      imagePath: path.join(__dirname, '..', 'public', 'video', 'seksaa-vdo.mp4')
-    });
-    await page.waitForTimeout(500);
-    const submitButton = page.getByRole('button', { name: /Create|Save|Submit/i });
-    await submitButton.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(500); // Brief pause for smooth scroll animation
-    await submitButton.click();
-    await page.waitForTimeout(1200);
+    const filePath = path.join(__dirname, '..', 'public', 'video', 'seksaa-vdo.mp4');
+    await createMaterial(page, filePath);
   });
 
   // ===================================
@@ -115,31 +97,8 @@ test.describe('Materials Page', () => {
     if (await editButton.isVisible({ timeout: 3000 }).catch(() => false)) {
       await editButton.click();
       
-      // Wait for edit form to appear
-      await page.waitForTimeout(1000);
-
-        // Click "Remove file" button first to remove existing file
-        const removeFileButton = page.getByRole('button', { name: /Remove file/i })
-          .or(page.locator('button[aria-label*="Remove file"]'))
-          .or(page.locator('button:has-text("Remove file")'));
-        
-        if (await removeFileButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-          console.log('Clicking Remove file button...');
-          await removeFileButton.click();
-          await page.waitForTimeout(500);
-        }
-      // Update Thumbnail (using the same ID as Add)
-      await uploadThumbnail(page, "materialFile",{
-        imagePath: path.join(__dirname, '..', 'public', 'images', 'thumbnial-update.pdf')
-      });
-      await page.waitForTimeout(500);
-      
-      
-      // Save changes
-      await page.getByRole('button', { name: /Save|Update/i }).click();
-      
-      // Wait for update to complete
-      await page.waitForTimeout(2000);
+      const updateFilePath = path.join(__dirname, '..', 'public', 'images', 'thumbnail-update.pdf');
+      await updateMaterial(page, updateFilePath);
     } else {
       console.log('Edit functionality not found');
     }

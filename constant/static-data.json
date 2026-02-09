@@ -77,6 +77,46 @@
             "commune": "Prek leab",
             "district": "Phnom Penh",
             "city": "Phnom Penh"
+        },
+        "workHistory": [
+            {
+                "position": "Senior Developer",
+                "organization": "Tech Company Ltd",
+                "startDate": "2020-01-15",
+                "endDate": "2023-12-31"
+            }
+        ],
+        "educationBackground": [
+            {
+                "schoolName": "Royal University of Phnom Penh",
+                "major": "Computer Science",
+                "startDate": "2016-01-15",
+                "endDate": "2020-12-31"
+            }
+        ],
+        "guardian": {
+            "name": "Dara Sok",
+            "phone": "0987654321",
+            "relation": "Father",
+            "email": "darasok@gmail.com",
+            "address": {
+                "village": "Toul Kork",
+                "commune": "Toul Kork",
+                "district": "Phnom Penh",
+                "city": "Phnom Penh"
+            }
+        },
+        "emergency": {
+            "name": "Heng Leakana",
+            "phone": "0123456789",
+            "relation": "Mother",
+            "email": "leakana.heng@gmail.com",
+            "address": {
+                "village": "Toul Kork",
+                "commune": "Toul Kork",
+                "district": "Phnom Penh",
+                "city": "Phnom Penh"
+            }
         }
     },
     "coachDataEdit": {
@@ -96,6 +136,46 @@
             "commune": "Boeung Keng Kang",
             "district": "Chamkar Mon",
             "city": "Phnom Penh"
+        },
+        "workHistory": [
+            {
+                "position": "Lead Instructor",
+                "organization": "Education First",
+                "startDate": "2021-06-01",
+                "endDate": "2024-01-01"
+            }
+        ],
+        "educationBackground": [
+            {
+                "schoolName": "Institute of Technology",
+                "major": "Mathematics",
+                "startDate": "2015-09-01",
+                "endDate": "2019-06-30"
+            }
+        ],
+        "guardian": {
+            "name": "Sokha Chan",
+            "phone": "011223344",
+            "relation": "Mother",
+            "email": "sokha.chan@gmail.com",
+            "address": {
+                "village": "Tuol Tompoung",
+                "commune": "Tuol Tompoung",
+                "district": "Chamkar Mon",
+                "city": "Phnom Penh"
+            }
+        },
+        "emergency": {
+            "name": "Vibol Chan",
+            "phone": "012334455",
+            "relation": "Brother",
+            "email": "vibol.chan@gmail.com",
+            "address": {
+                "village": "Tuol Tompoung",
+                "commune": "Tuol Tompoung",
+                "district": "Chamkar Mon",
+                "city": "Phnom Penh"
+            }
         }
     },
     "studentDataAdd": {
@@ -215,5 +295,26 @@
         "overview": "Updated description with new content and objectives.",
         "objective": "Updated Objective: Master advanced concepts.",
         "link": "https://www.youtube.com/results?search_query=playwright"
+    },
+    "lessonDataAdd": {
+        "title": "React js",
+        "duration": "45",
+        "objective": "objective",
+        "description": "In this lesson, you will learn about React js",
+        "publish": true
+    },
+    "lessonDataEdit": {
+        "title": "Updated React js Advanced",
+        "duration": "60",
+        "objective": "Updated objective for advanced React",
+        "description": "Updated lesson covering advanced React concepts including hooks and state management."
+    },
+    "moduleDataAdd": {
+        "title": "Introduction to JavaScript",
+        "description": "Learn the fundamentals of JavaScript programming including variables, functions, and control structures."
+    },
+    "moduleDataEdit": {
+        "title": "Advanced JavaScript Concepts",
+        "description": "Deep dive into advanced JavaScript topics including closures, promises, and async/await."
     }
 }
