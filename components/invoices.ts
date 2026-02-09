@@ -171,7 +171,6 @@ export async function printInvoice(page: Page) {
     await expect(printButton).toBeVisible({ timeout: 10000 });
     
     // Prepare for the print action verification
-    // Mocking window.print to set a flag we can verify
     await page.evaluate(() => {
         // @ts-ignore
         window.printCalled = false;

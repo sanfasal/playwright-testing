@@ -316,5 +316,95 @@
     "moduleDataEdit": {
         "title": "Advanced JavaScript Concepts",
         "description": "Deep dive into advanced JavaScript topics including closures, promises, and async/await."
+    },
+    "engagementDataAdd": {
+        "firstName": "John",
+        "lastName": "Doe",
+        "amount": "800",
+        "email": "john.doe@example.com",
+        "phone": "1234567890",
+        "probability": "50",
+        "resourceLink": "https://example.com",
+        "note": "This is a note"
+    },
+    "engagementDataEdit": {
+        "firstName": "Sok",
+        "lastName": "Heng",
+        "amount": "700",
+        "email": "sok.heng@example.com",
+        "phone": "0987654321",
+        "probability": "75",
+        "resourceLink": "https://updated-example.com",
+        "note": "Note has Updated"
+    },
+    "activityDataAdd": {
+        "title": "Activity Title",
+        "startDate": "12-12-2025",
+        "endDate": "01-16-2026",
+        "startTime": "08:30AM",
+        "endTime": "11:30AM",
+        "description": "Activity Description"
+    },
+    "activityDataEdit": {
+        "originalTitle": "Activity Title",
+        "title": "Update Activity Title",
+        "startDate": "12-12-2025",
+        "endDate": "01-16-2026",
+        "startTime": "09:30AM",
+        "endTime": "12:30PM",
+        "description": "Updated Activity Description"
+    },
+    "emailDataAdd": {
+        "recipient": "recipient.tech@email.com",
+        "subject": "Web development",
+        "body": "body of email"
+    },
+    "emailDataEdit": {
+        "originalSubject": "Web development",
+        "recipient": "updated.recipient@email.com",
+        "subject": "Updated Web development",
+        "body": "Updated body of email"
+    },
+    "callDataAdd": {
+        "note": "call note"
+    },
+    "callDataEdit": {
+        "originalNote": "call note",
+        "note": "Updated call note"
+    },
+    "noteDataAdd": {
+        "note": "Note on engagement"
+    },
+    "noteDataEdit": {
+        "originalNote": "Note on engagement",
+        "note": "Updated Note on engagement"
+    },
+    "activityCommentDataAdd": {
+        "comment": "Comment on activity"
+    },
+    "activityCommentDataEdit": {
+        "originalComment": "Comment on activity",
+        "comment": "Updated Comment on activity"
+    },
+    "emailCommentDataAdd": {
+        "comment": "Comment on email"
+    },
+    "emailCommentDataEdit": {
+        "originalComment": "Comment on email",
+        "comment": "Updated Comment on email"
+    },
+    "callCommentDataAdd": {
+        "comment": "Comment on calls"
+    },
+    "callCommentDataEdit": {
+        "originalComment": "Comment on calls",
+        "comment": "Updated Comment on calls"
+    },
+    "noteCommentDataAdd": {
+        "comment": "Comment on Notes"
+    },
+    "noteCommentDataEdit": {
+        "originalComment": "Comment on Notes",
+        "comment": "Updated Comment on Notes"
     }
 }

@@ -1,6 +1,5 @@
 import { Page, expect } from '@playwright/test';
 import { uploadThumbnail } from '../utils/upload-thumbnail-helper';
-import path from 'path';
 
 /**
  * Creates a new material with an optional image upload.

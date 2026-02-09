@@ -1,7 +1,6 @@
 import { Page, expect } from '@playwright/test';
 import { FileInput } from '../utils/form-helper';
 import { uploadThumbnail } from '../utils/upload-thumbnail-helper';
-import path from 'path';
 
 export interface LessonData {
   title: string;
