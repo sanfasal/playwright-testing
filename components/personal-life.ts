@@ -3,6 +3,7 @@ import { FileInput } from '../utils/form-helper';
 import { uploadThumbnail } from '../utils/upload-thumbnail-helper';
 import { getOTPFromEmail } from '../utils/email-helper';
 import { updateUserEmail, updateUserPassword } from '../utils/data-store';
+import path from 'path';
 
 const ICONS = {
   eyeOff: '.lucide-eye-off',
@@ -28,7 +29,9 @@ export async function editProfile(page: Page, personalDataEdit: any) {
     }
     }
     // Upload profile picture
-    await uploadThumbnail(page, "file-input-profile || selected-exist-profile");  
+    await uploadThumbnail(page, "file-input-profile || selected-exist-profile", {
+          imagePath: path.join(__dirname, '..', 'public', 'images', 'profile-update.png')
+        });  
     // First / Last name
     const firstNameField = page.getByLabel(/First Name/i).or(page.locator('#firstName, input[name="firstName"]'));
     if (await firstNameField.isVisible({ timeout: 2000 }).catch(() => false)) {

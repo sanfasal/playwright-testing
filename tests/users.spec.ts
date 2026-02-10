@@ -1,44 +1,14 @@
 import { test, expect } from "@playwright/test";
 import { login } from "../utils/auth-helper";
 import { addCursorTracking } from "../utils/cursor-helper";
-import { FileInput } from "../utils/form-helper";
 import { deleteItem } from "../utils/delete-helper";
 import { toggleViewMode } from "../utils/view-helper";
-import { uploadThumbnail } from "../utils/upload-thumbnail-helper";
 import { getTestEmail } from '../utils/email-helper';
 import { createUser, updateUser } from '../components/users';
 
-// Test data for adding a new user
-const userDataAdd = {
-  firstName: "John",
-  lastName: "Doe",
-  email: "johndoe@gmail.com",
-  phone: "0123456789",
-  role: "Admin",
-  dob: new Date().toISOString().split("T")[0],
-  address: {
-    village: "Chamkar Mon",
-    commune: "BKK1",
-    district: "Chamkar Mon",
-    city: "Phnom Penh",
-  },
-};
+import staticData from '../constant/static-data.json';
 
-// Test data for editing a user
-const userDataEdit = {
-  firstName: "Jane",
-  lastName: "Smith",
-  phone: "0987654321",
-  role: "Manager",
-  dob: "1995-05-15",
-  gender: "Female",
-  address: {
-    village: "Boeung Keng Kang",
-    commune: "Boeung Keng Kang",
-    district: "Chamkar Mon",
-    city: "Phnom Penh",
-  },
-};
+const { userDataAdd, userDataEdit } = staticData;
 
 test.describe("Users", () => {
   test.beforeEach(async ({ page }) => {
@@ -68,10 +38,7 @@ test.describe("Users", () => {
       .click();
     await page.waitForTimeout(200);
 
-
     const testEmail = getTestEmail(userDataAdd.firstName, userDataAdd.lastName);
-    console.log('Using test email for new user:', testEmail);
-
     const userToAdd = {
         ...userDataAdd,
         email: testEmail

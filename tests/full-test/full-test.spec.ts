@@ -490,7 +490,7 @@ test.describe.serial('Full Test', () => {
   
     // Add new coach
     test('CRUD Coach', async ({ page }) => {
-      test.setTimeout(300000); // 5 minutes timeout
+      // test.setTimeout(300000); // 5 minutes timeout
       await page.getByRole('button').filter({ has: page.locator('svg.lucide-plus') }).click();
       await createCoach(page, coachDataAdd);
       await page.waitForTimeout(1000);
