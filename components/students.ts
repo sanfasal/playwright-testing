@@ -3,12 +3,47 @@ import { FileInput } from '../utils/form-helper';
 import { uploadThumbnail } from '../utils/upload-thumbnail-helper';
 import path from 'path';
 
+export interface AddressData {
+    village?: string;
+    commune?: string;
+    district?: string;
+    city?: string;
+}
+
+export interface GuardianData {
+    name: string;
+    phone: string;
+    relation: string;
+    email: string;
+    address: AddressData;
+}
+
+export interface EmergencyData {
+    name: string;
+    phone: string;
+    relation: string;
+    email: string;
+    address: AddressData;
+}
+
+export interface StudentData {
+    firstName: string;
+    lastName: string;
+    email: string;
+    dob: string;
+    phone: string;
+    telegram: string;
+    address: AddressData;
+    guardian?: GuardianData;
+    emergency?: EmergencyData;
+}
+
 /**
  * Creates a student by filling out the multi-step form.
  * @param page - Playwright Page object
  * @param studentData - Object containing student data (including address, guardian, emergency)
  */
-export async function createStudent(page: Page, studentData: any) {
+export async function createStudent(page: Page, studentData: StudentData) {
     // Wait for the form to appear
     await expect(page.getByRole('textbox').first()).toBeVisible({ timeout: 5000 });
 
@@ -76,7 +111,7 @@ export async function createStudent(page: Page, studentData: any) {
       .or(page.locator('input[name="address.village"]'))
       .or(page.getByLabel(/Village/i));
     if (await villageField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await FileInput(villageField, studentData.address.village);
+      await FileInput(villageField, studentData.address?.village || "");
       await villageField.press('Tab'); 
       await page.waitForTimeout(1000);
     }
@@ -103,7 +138,7 @@ export async function createStudent(page: Page, studentData: any) {
 
       await targetCommune.click();
       await page.waitForTimeout(300);
-      await FileInput(targetCommune, studentData.address.commune);
+      await FileInput(targetCommune, studentData.address?.commune || "");
       await targetCommune.blur();
       await page.waitForTimeout(500);
     }
@@ -118,7 +153,7 @@ export async function createStudent(page: Page, studentData: any) {
       const isDisabled = await districtField.isDisabled().catch(() => false);
       if (!isDisabled) {
         await page.waitForTimeout(300);
-        await FileInput(districtField, studentData.address.district);
+        await FileInput(districtField, studentData.address?.district || "");
       }
     }
 
@@ -132,7 +167,7 @@ export async function createStudent(page: Page, studentData: any) {
       const isDisabled = await cityField.isDisabled().catch(() => false);
       if (!isDisabled) {
         await page.waitForTimeout(300);
-        await FileInput(cityField, studentData.address.city);
+        await FileInput(cityField, studentData.address?.city || "");
       }
     }
     
@@ -151,7 +186,7 @@ export async function createStudent(page: Page, studentData: any) {
     if (await guardianNameField.isVisible({ timeout: 2000 }).catch(() => false)) {
       await guardianNameField.scrollIntoViewIfNeeded();
       await page.waitForTimeout(200);
-      await FileInput(guardianNameField, studentData.guardian.name);
+      await FileInput(guardianNameField, studentData.guardian?.name || "");
     }
 
     // Guardian Phone
@@ -161,7 +196,7 @@ export async function createStudent(page: Page, studentData: any) {
     if (await guardianPhoneField.isVisible({ timeout: 2000 }).catch(() => false)) {
       await guardianPhoneField.scrollIntoViewIfNeeded();
       await page.waitForTimeout(200);
-      await FileInput(guardianPhoneField, studentData.guardian.phone);
+      await FileInput(guardianPhoneField, studentData.guardian?.phone || "");
     }
 
     // Guardian Relation
@@ -171,7 +206,7 @@ export async function createStudent(page: Page, studentData: any) {
     if (await guardianRelationField.isVisible({ timeout: 2000 }).catch(() => false)) {
       await guardianRelationField.scrollIntoViewIfNeeded();
       await page.waitForTimeout(200);
-      await FileInput(guardianRelationField, studentData.guardian.relation);
+      await FileInput(guardianRelationField, studentData.guardian?.relation || "");
     }
 
     // Guardian Email
@@ -181,7 +216,7 @@ export async function createStudent(page: Page, studentData: any) {
     if (await guardianEmailField.isVisible({ timeout: 2000 }).catch(() => false)) {
       await guardianEmailField.scrollIntoViewIfNeeded();
       await page.waitForTimeout(200);
-      await FileInput(guardianEmailField, studentData.guardian.email);
+      await FileInput(guardianEmailField, studentData.guardian?.email || "");
     }
 
     // Guardian Village
@@ -191,7 +226,7 @@ export async function createStudent(page: Page, studentData: any) {
     if (await guardianVillageField.isVisible({ timeout: 2000 }).catch(() => false)) {
       await guardianVillageField.scrollIntoViewIfNeeded();
       await page.waitForTimeout(200);
-      await FileInput(guardianVillageField, studentData.guardian.address.village);
+      await FileInput(guardianVillageField, studentData.guardian?.address?.village || "");
       await guardianVillageField.press('Tab'); 
       await page.waitForTimeout(1000);
     }
@@ -211,7 +246,7 @@ export async function createStudent(page: Page, studentData: any) {
       
       await finalGuardianCommune.click();
       await page.waitForTimeout(200);
-      await FileInput(finalGuardianCommune, studentData.guardian.address.commune);
+      await FileInput(finalGuardianCommune, studentData.guardian?.address?.commune || "");
       await finalGuardianCommune.blur();
       await page.waitForTimeout(500);
     }
@@ -231,7 +266,7 @@ export async function createStudent(page: Page, studentData: any) {
       const isDisabled = await guardianDistrictField.isDisabled().catch(() => false);
       if (!isDisabled) {
         await page.waitForTimeout(200);
-        await FileInput(guardianDistrictField, studentData.guardian.address.district);
+        await FileInput(guardianDistrictField, studentData.guardian?.address?.district || "");
       }
     }
 
@@ -250,7 +285,7 @@ export async function createStudent(page: Page, studentData: any) {
       const isDisabled = await guardianCityField.isDisabled().catch(() => false);
       if (!isDisabled) {
         await page.waitForTimeout(200);
-        await FileInput(guardianCityField, studentData.guardian.address.city);
+        await FileInput(guardianCityField, studentData.guardian?.address?.city || "");
       }
     }
 
@@ -270,7 +305,7 @@ export async function createStudent(page: Page, studentData: any) {
       await emergencyNameField.scrollIntoViewIfNeeded();
       await emergencyNameField.click();
       await page.waitForTimeout(200);
-      await FileInput(emergencyNameField, studentData.emergency.name);
+      await FileInput(emergencyNameField, studentData.emergency?.name || "");
     }
 
     // Emergency Phone
@@ -281,7 +316,7 @@ export async function createStudent(page: Page, studentData: any) {
       await emergencyPhoneField.scrollIntoViewIfNeeded();
       await emergencyPhoneField.click();
       await page.waitForTimeout(200);
-      await FileInput(emergencyPhoneField, studentData.emergency.phone);
+      await FileInput(emergencyPhoneField, studentData.emergency?.phone || "");
     }
 
     // Emergency Relation
@@ -292,7 +327,7 @@ export async function createStudent(page: Page, studentData: any) {
       await emergencyRelationField.scrollIntoViewIfNeeded();
       await emergencyRelationField.click();
       await page.waitForTimeout(200);
-      await FileInput(emergencyRelationField, studentData.emergency.relation);
+      await FileInput(emergencyRelationField, studentData.emergency?.relation || "");
     }
 
     // Emergency Email
@@ -303,7 +338,7 @@ export async function createStudent(page: Page, studentData: any) {
       await emergencyEmailField.scrollIntoViewIfNeeded();
       await emergencyEmailField.click();
       await page.waitForTimeout(200);
-      await FileInput(emergencyEmailField, studentData.emergency.email);
+      await FileInput(emergencyEmailField, studentData.emergency?.email || "");
     }
 
     // Emergency Village
@@ -314,7 +349,7 @@ export async function createStudent(page: Page, studentData: any) {
       await emergencyVillageField.scrollIntoViewIfNeeded();
       await emergencyVillageField.click();
       await page.waitForTimeout(200);
-      await FileInput(emergencyVillageField, studentData.emergency.address.village);
+      await FileInput(emergencyVillageField, studentData.emergency?.address?.village || "");
       await emergencyVillageField.press('Tab'); 
       await page.waitForTimeout(1000);
     }
@@ -333,7 +368,7 @@ export async function createStudent(page: Page, studentData: any) {
       
       await emergencyCommune.click();
       await page.waitForTimeout(200);
-      await FileInput(emergencyCommune, studentData.emergency.address.commune);
+      await FileInput(emergencyCommune, studentData.emergency?.address?.commune || "");
       await emergencyCommune.blur();
       await page.waitForTimeout(500);
     }
@@ -352,7 +387,7 @@ export async function createStudent(page: Page, studentData: any) {
       const isDisabled = await emergencyDistrictField.isDisabled().catch(() => false);
       if (!isDisabled) {
         await page.waitForTimeout(200);
-        await FileInput(emergencyDistrictField, studentData.emergency.address.district);
+        await FileInput(emergencyDistrictField, studentData.emergency?.address?.district || "");
       }
     }
 
@@ -370,7 +405,7 @@ export async function createStudent(page: Page, studentData: any) {
       const isDisabled = await emergencyCityField.isDisabled().catch(() => false);
       if (!isDisabled) {
         await page.waitForTimeout(200);
-        await FileInput(emergencyCityField, studentData.emergency.address.city);
+        await FileInput(emergencyCityField, studentData.emergency?.address?.city || "");
       }
     }
 
@@ -387,7 +422,7 @@ export async function createStudent(page: Page, studentData: any) {
  * @param page - Playwright Page object
  * @param studentData - Object containing student data (including address, guardian, emergency)
  */
-export async function updateStudent(page: Page, studentData: any) {
+export async function updateStudent(page: Page, studentData: StudentData) {
     // Wait for the form to appear (Edit mode)
     await expect(page.getByRole('textbox').first()).toBeVisible({ timeout: 5000 });
 
@@ -450,7 +485,7 @@ export async function updateStudent(page: Page, studentData: any) {
       .or(page.getByLabel(/Village/i));
     if (await villageField.isVisible({ timeout: 2000 }).catch(() => false)) {
       await villageField.clear();
-      await FileInput(villageField, studentData.address.village);
+      await FileInput(villageField, studentData.address?.village || "");
       await villageField.press('Tab'); 
       await page.waitForTimeout(1000);
     }
@@ -478,7 +513,7 @@ export async function updateStudent(page: Page, studentData: any) {
       await targetCommune.click();
       await page.waitForTimeout(300);
       await targetCommune.clear(); // Clear before filling
-      await FileInput(targetCommune, studentData.address.commune);
+      await FileInput(targetCommune, studentData.address?.commune || "");
       await targetCommune.blur();
       await page.waitForTimeout(500);
     }
@@ -494,7 +529,7 @@ export async function updateStudent(page: Page, studentData: any) {
       if (!isDisabled) {
         await page.waitForTimeout(300);
         await districtField.clear();
-        await FileInput(districtField, studentData.address.district);
+        await FileInput(districtField, studentData.address?.district || "");
       }
     }
 
@@ -509,7 +544,7 @@ export async function updateStudent(page: Page, studentData: any) {
       if (!isDisabled) {
         await page.waitForTimeout(300);
         await cityField.clear();
-        await FileInput(cityField, studentData.address.city);
+        await FileInput(cityField, studentData.address?.city || "");
       }
     }
     
@@ -531,7 +566,7 @@ export async function updateStudent(page: Page, studentData: any) {
       await guardianNameField.scrollIntoViewIfNeeded();
       await guardianNameField.clear();
       await page.waitForTimeout(200);
-      await FileInput(guardianNameField, studentData.guardian.name);
+      await FileInput(guardianNameField, studentData.guardian?.name || "");
     }
 
     // Update Guardian Phone
@@ -542,7 +577,7 @@ export async function updateStudent(page: Page, studentData: any) {
       await guardianPhoneField.scrollIntoViewIfNeeded();
       await guardianPhoneField.clear();
       await page.waitForTimeout(200);
-      await FileInput(guardianPhoneField, studentData.guardian.phone);
+      await FileInput(guardianPhoneField, studentData.guardian?.phone || "");
     }
 
     // Update Guardian Relation
@@ -553,7 +588,7 @@ export async function updateStudent(page: Page, studentData: any) {
       await guardianRelationField.scrollIntoViewIfNeeded();
       await guardianRelationField.clear();
       await page.waitForTimeout(200);
-      await FileInput(guardianRelationField, studentData.guardian.relation);
+      await FileInput(guardianRelationField, studentData.guardian?.relation || "");
     }
 
     // Update Guardian Email
@@ -564,7 +599,7 @@ export async function updateStudent(page: Page, studentData: any) {
       await guardianEmailField.scrollIntoViewIfNeeded();
       await guardianEmailField.clear();
       await page.waitForTimeout(200);
-      await FileInput(guardianEmailField, studentData.guardian.email);
+      await FileInput(guardianEmailField, studentData.guardian?.email || "");
     }
 
     // Update Guardian Village
@@ -575,7 +610,7 @@ export async function updateStudent(page: Page, studentData: any) {
       await guardianVillageField.scrollIntoViewIfNeeded();
       await guardianVillageField.clear();
       await page.waitForTimeout(200);
-      await FileInput(guardianVillageField, studentData.guardian.address.village);
+      await FileInput(guardianVillageField, studentData.guardian?.address?.village || "");
       await guardianVillageField.press('Tab'); 
       await page.waitForTimeout(1000);
     }
@@ -596,7 +631,7 @@ export async function updateStudent(page: Page, studentData: any) {
       await guardianCommuneField.click();
       await page.waitForTimeout(200);
       await guardianCommuneField.clear();
-      await FileInput(guardianCommuneField, studentData.guardian.address.commune);
+      await FileInput(guardianCommuneField, studentData.guardian?.address?.commune || "");
       await guardianCommuneField.blur();
       await page.waitForTimeout(500);
     }
@@ -617,7 +652,7 @@ export async function updateStudent(page: Page, studentData: any) {
       if (!isDisabled) {
         await page.waitForTimeout(200);
         await guardianDistrictField.clear();
-        await FileInput(guardianDistrictField, studentData.guardian.address.district);
+        await FileInput(guardianDistrictField, studentData.guardian?.address?.district || "");
       }
     }
 
@@ -637,7 +672,7 @@ export async function updateStudent(page: Page, studentData: any) {
       if (!isDisabled) {
         await page.waitForTimeout(200);
         await guardianCityField.clear();
-        await FileInput(guardianCityField, studentData.guardian.address.city);
+        await FileInput(guardianCityField, studentData.guardian?.address?.city || "");
       }
     }
 
@@ -659,7 +694,7 @@ export async function updateStudent(page: Page, studentData: any) {
       await emergencyNameField.scrollIntoViewIfNeeded();
       await emergencyNameField.clear();
       await page.waitForTimeout(200);
-      await FileInput(emergencyNameField, studentData.emergency.name);
+      await FileInput(emergencyNameField, studentData.emergency?.name || "");
     }
 
     // Update Emergency Phone
@@ -670,7 +705,7 @@ export async function updateStudent(page: Page, studentData: any) {
       await emergencyPhoneField.scrollIntoViewIfNeeded();
       await emergencyPhoneField.clear();
       await page.waitForTimeout(200);
-      await FileInput(emergencyPhoneField, studentData.emergency.phone);
+      await FileInput(emergencyPhoneField, studentData.emergency?.phone || "");
     }
 
     // Update Emergency Relation
@@ -681,7 +716,7 @@ export async function updateStudent(page: Page, studentData: any) {
       await emergencyRelationField.scrollIntoViewIfNeeded();
       await emergencyRelationField.clear();
       await page.waitForTimeout(200);
-      await FileInput(emergencyRelationField, studentData.emergency.relation);
+      await FileInput(emergencyRelationField, studentData.emergency?.relation || "");
     }
 
     // Update Emergency Email
@@ -692,7 +727,7 @@ export async function updateStudent(page: Page, studentData: any) {
       await emergencyEmailField.scrollIntoViewIfNeeded();
       await emergencyEmailField.clear();
       await page.waitForTimeout(200);
-      await FileInput(emergencyEmailField, studentData.emergency.email);
+      await FileInput(emergencyEmailField, studentData.emergency?.email || "");
     }
 
     // Update Emergency Village
@@ -703,7 +738,7 @@ export async function updateStudent(page: Page, studentData: any) {
       await emergencyVillageField.scrollIntoViewIfNeeded();
       await emergencyVillageField.clear();
       await page.waitForTimeout(200);
-      await FileInput(emergencyVillageField, studentData.emergency.address.village);
+      await FileInput(emergencyVillageField, studentData.emergency?.address?.village || "");
       await emergencyVillageField.press('Tab'); 
       await page.waitForTimeout(1000);
     }
@@ -723,7 +758,7 @@ export async function updateStudent(page: Page, studentData: any) {
       await emergencyCommune.click();
       await page.waitForTimeout(200);
       await emergencyCommune.clear();
-      await FileInput(emergencyCommune, studentData.emergency.address.commune);
+      await FileInput(emergencyCommune, studentData.emergency?.address?.commune || "");
       await emergencyCommune.blur();
       await page.waitForTimeout(500);
     }
@@ -743,7 +778,7 @@ export async function updateStudent(page: Page, studentData: any) {
       if (!isDisabled) {
         await page.waitForTimeout(200);
         await emergencyDistrictField.clear();
-        await FileInput(emergencyDistrictField, studentData.emergency.address.district);
+        await FileInput(emergencyDistrictField, studentData.emergency?.address?.district || "");
       }
     }
 
@@ -762,7 +797,7 @@ export async function updateStudent(page: Page, studentData: any) {
       if (!isDisabled) {
         await page.waitForTimeout(200);
         await emergencyCityField.clear();
-        await FileInput(emergencyCityField, studentData.emergency.address.city);
+        await FileInput(emergencyCityField, studentData.emergency?.address?.city || "");
       }
     }
 

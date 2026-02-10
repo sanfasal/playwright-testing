@@ -36,7 +36,7 @@ test.describe('Attendances', () => {
     await createAttendance(page);
   });
 
-  //   ======================================
+//   ======================================
 // Attendances List
 //   ======================================
   test('Attendances List', async ({ page }) => {

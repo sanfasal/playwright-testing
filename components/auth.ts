@@ -11,17 +11,25 @@ const ICONS = {
   eye: '.lucide-eye',
 } as const;
 
+export interface SignUpProps {
+    firstName: string;
+    lastName: string;
+    company: string;
+    email: string;
+    password: string;
+    timestamp: string;
+    apiKey?: string;
+    namespace?: string;
+}
+
 /**
  * Signs up a new user.
  * @param page - Playwright Page object
- * @param testUser - Object containing user profile data
- * @param email - Email to sign up with
- * @param password - Password to sign up with
- * @param timestamp - Timestamp used in email generation (for OTP)
- * @param apiKey - Testmail API key for OTP
- * @param namespace - Testmail namespace for OTP
+ * @param props - Object containing user profile data and credentials
  */
-export async function signUp(page: Page, testUser: any, email: string, password: string, timestamp: string, apiKey?: string, namespace?: string) {
+export async function signUp(page: Page, props: SignUpProps) {
+    const { firstName, lastName, company, email, password, timestamp, apiKey, namespace } = props;
+
     await page.goto("/signup");
 
     // Wait for page to load
@@ -31,15 +39,15 @@ export async function signUp(page: Page, testUser: any, email: string, password:
     // Fill form like a real user
     await FileInput(
       page.getByRole("textbox", { name: /first name/i }),
-      testUser.firstName
+      firstName
     );
     await FileInput(
       page.getByRole("textbox", { name: /last name/i }),
-      testUser.lastName
+      lastName
     );
     await FileInput(
       page.getByRole("textbox", { name: /company/i }),
-      testUser.company
+      company
     );
     await FileInput(
       page.getByRole("textbox", { name: /email/i }),
@@ -90,13 +98,19 @@ export async function signUp(page: Page, testUser: any, email: string, password:
     }
 }
 
+export interface SignInProps {
+    email: string;
+    password: string;
+}
+
 /**
  * Signs in a user.
  * @param page - Playwright Page object
- * @param email - Email to sign in with
- * @param password - Password to sign in with
+ * @param props - Object containing email and password
  */
-export async function signIn(page: Page, email: string, password: string) {
+export async function signIn(page: Page, props: SignInProps) {
+      const { email, password } = props;
+      
       await page.goto('/signin');
       await expect(page).toHaveTitle(/signin|login/i);
       await page.waitForTimeout(50);

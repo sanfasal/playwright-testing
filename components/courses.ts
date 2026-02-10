@@ -11,6 +11,8 @@ export interface CourseData {
   overview?: string;
   objective?: string;
   link?: string;
+  subject?: string;
+  level?: string;
 }
 
 /**
@@ -189,9 +191,11 @@ export async function createCourse(page: Page, data: CourseData) {
 }
 
 /**
- * Updates an existing course.
+ * Updates a course by filling out the form.
+ * @param page - Playwright Page object
+ * @param courseData - Object containing course data
  */
-export async function updateCourse(page: Page, data: CourseData) {
+export async function updateCourse(page: Page, courseData: CourseData) {
       await page.waitForTimeout(1000);
       
       // Edit Title field
@@ -200,7 +204,7 @@ export async function updateCourse(page: Page, data: CourseData) {
       
       if (await titleField.isVisible().catch(() => false)) {
         await titleField.clear();
-        await FileInput(titleField, data.title);
+        await FileInput(titleField, courseData.title);
       }
 
       // Edit Subject (Dropdown) - Try to pick another option if available
@@ -239,28 +243,28 @@ export async function updateCourse(page: Page, data: CourseData) {
       const durationField = page.getByLabel(/duration/i).or(page.getByPlaceholder(/duration/i));
       if (await durationField.isVisible()) {
            await durationField.clear();
-           if (data.duration) await FileInput(durationField, data.duration);
+           if (courseData.duration) await FileInput(durationField, courseData.duration);
       }
 
       // Edit Prerequisite
       const prerequisiteField = page.getByLabel(/prerequisite/i).or(page.getByPlaceholder(/prerequisite/i));
       if (await prerequisiteField.isVisible()) {
           await prerequisiteField.clear();
-          if (data.prerequisite) await FileInput(prerequisiteField, data.prerequisite);
+          if (courseData.prerequisite) await FileInput(prerequisiteField, courseData.prerequisite);
       }
 
       // Edit Preparation
       const preparationField = page.getByLabel(/preparation/i).or(page.getByPlaceholder(/preparation/i));
       if (await preparationField.isVisible()) {
           await preparationField.clear();
-          if (data.preparation) await FileInput(preparationField, data.preparation);
+          if (courseData.preparation) await FileInput(preparationField, courseData.preparation);
       }
 
       // Edit Purpose
       const purposeField = page.getByLabel(/purpose/i).or(page.getByPlaceholder(/purpose/i));
       if (await purposeField.isVisible()) {
           await purposeField.clear();
-          if (data.purpose) await FileInput(purposeField, data.purpose);
+          if (courseData.purpose) await FileInput(purposeField, courseData.purpose);
       }
 
       // Edit Overview/Description field
@@ -271,21 +275,21 @@ export async function updateCourse(page: Page, data: CourseData) {
 
       if (await overviewField.isVisible({ timeout: 3000 }).catch(() => false)) {
         await overviewField.clear();
-        if (data.overview) await FileInput(overviewField, data.overview);
+        if (courseData.overview) await FileInput(overviewField, courseData.overview);
       }
 
     // Edit Objective
       const objectiveField = page.getByLabel(/objective/i).or(page.getByPlaceholder(/objective/i));
       if (await objectiveField.isVisible()) {
           await objectiveField.clear();
-          if (data.objective) await FileInput(objectiveField, data.objective);
+          if (courseData.objective) await FileInput(objectiveField, courseData.objective);
       }
       
       // Edit Link
       const linkField = page.getByLabel(/link/i).or(page.getByPlaceholder(/link/i));
       if (await linkField.isVisible()) {
            await linkField.clear();
-           if (data.link) await FileInput(linkField, data.link);
+           if (courseData.link) await FileInput(linkField, courseData.link);
       }
 
     const nextButton = page.getByRole('button', { name: /next/i });

@@ -69,9 +69,12 @@ test.describe('Reset Password', () => {
 
     await expect(passwordField).toBeVisible({ timeout: 10000 });
     await FileInput(passwordField, newPassword);
+    await page.locator('.lucide-eye-off').first().click();
+    await page.waitForTimeout(1000);
     
     await expect(confirmPasswordField).toBeVisible({ timeout: 5000 });
     await FileInput(confirmPasswordField, newPassword);
+    await page.locator('.lucide-eye-off').first().click();
     
     await page.waitForTimeout(1000);
     

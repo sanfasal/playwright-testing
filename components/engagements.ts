@@ -11,7 +11,7 @@ export interface EngagementData {
     email: string;
     phone: string;
     probability: string;
-    resourceLink: string;
+    resourceLink?: string;
     note: string;
 }
 
@@ -185,7 +185,7 @@ export async function createEngagement(page: Page, data: EngagementData) {
 
     // Fill Resource Link
     const resourceLink = page.getByLabel(/Resource Link/i);
-    await FileInput(resourceLink, data.resourceLink);
+    await FileInput(resourceLink, data.resourceLink || '');
 
     // Step 2: Click to open the assign to dropdown
     const assignToDropdown = page.locator('button')
@@ -350,7 +350,7 @@ export async function editEngagement(page: Page, data: EngagementData) {
 
     // Edit Resource Link
     const resourceLink = page.getByLabel(/Resource Link/i);
-    await FileInput(resourceLink, data.resourceLink);
+    await FileInput(resourceLink, data.resourceLink || '');
 
     // Edit Assign To
     const assignToDropdown = page.locator('button').filter({ hasText: 'Assign To' }).or(page.locator('button[data-slot="popover-trigger"]').filter({ hasText: 'Assign To' })).first();

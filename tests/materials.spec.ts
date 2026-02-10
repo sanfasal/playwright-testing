@@ -57,7 +57,7 @@ test.describe('Materials Page', () => {
   test('Add new material with documents', async ({ page }) => {
     await page.locator('#add-material-button').click();
     const filePath = path.join(__dirname, '..', 'public', 'images', 'thumbnail-create.pdf');
-    await createMaterial(page, filePath);
+    await createMaterial(page, { filePath });
   });
 
   // ===================================
@@ -67,7 +67,7 @@ test.describe('Materials Page', () => {
   test('Add new material with video', async ({ page }) => {
     await page.locator('#add-material-button').click();
     const filePath = path.join(__dirname, '..', 'public', 'video', 'seksaa-vdo.mp4');
-    await createMaterial(page, filePath);
+    await createMaterial(page, { filePath });
   });
 
   // ===================================
@@ -96,9 +96,8 @@ test.describe('Materials Page', () => {
     
     if (await editButton.isVisible({ timeout: 3000 }).catch(() => false)) {
       await editButton.click();
-      
       const updateFilePath = path.join(__dirname, '..', 'public', 'images', 'thumbnail-update.pdf');
-      await updateMaterial(page, updateFilePath);
+      await updateMaterial(page, { filePath: updateFilePath });
     } else {
       console.log('Edit functionality not found');
     }

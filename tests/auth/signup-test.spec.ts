@@ -7,6 +7,7 @@ import {
   FileInput,
   verifyPasswordToggle,
 } from "../../utils/form-helper";
+import { signUp } from "../../components/auth";
 
 dotenv.config();
 
@@ -23,7 +24,7 @@ const TEST_USER = {
 test.describe("Sign Up", () => {
   test.setTimeout(60000);
 
-  test("Sign up", async ({ page }) => {
+  test("Sign up with valid mail", async ({ page }) => {
     await addCursorTracking(page);
 
     const apiKey = process.env.TESTMAIL_API_KEY;
@@ -34,79 +35,56 @@ test.describe("Sign Up", () => {
         "TESTMAIL_API_KEY and TESTMAIL_NAMESPACE must be defined in .env"
       );
     }
-    // Generate dynamic email + password and save credentials
-    const timestamp = Date.now().toString();
-    const { generateTestmailAddress, generateRandomPassword } = await import("../../utils/email-helper");
-    const email = generateTestmailAddress(namespace, timestamp);
-    const password = generateRandomPassword(12);
+    // Generate fresh emails before starting
+    const { generateVerifiedEmails } = await import("../../utils/email-generator");
+    generateVerifiedEmails();
 
-    await page.goto("/signup");
-
-    // Wait for page to load
-    await expect(page).toHaveTitle(/Sign Up/i);
-    await page.waitForTimeout(50);
-
-    // Fill form like a real user
-    await FileInput(
-      page.getByRole("textbox", { name: /first name/i }),
-      TEST_USER.firstName
-    );
-    await FileInput(
-      page.getByRole("textbox", { name: /last name/i }),
-      TEST_USER.lastName
-    );
-    await FileInput(
-      page.getByRole("textbox", { name: /company/i }),
-      TEST_USER.company
-    );
-    await FileInput(
-      page.getByRole("textbox", { name: /email/i }),
-      email
-    );
-    await FileInput(
-      page.getByRole("textbox", { name: /^password$/i }),
-      password
-    );
-    await FileInput(
-      page.getByRole("textbox", { name: /confirm password/i }),
-      password
-    );
-
-    // Verify password toggle works for both fields
-    const passwordField = page.getByRole("textbox", { name: /^password$/i });
-    const confirmPasswordField = page.getByRole("textbox", {
-      name: /confirm password/i,
-    });
-
-    await verifyPasswordToggle(passwordField);
-    await verifyPasswordToggle(confirmPasswordField);
-
-    await page.getByRole("button", { name: /sign up/i }).click();
-    await page.waitForURL(/signup-verify/i, { timeout: 50000 });
-
-    if (apiKey && namespace) {
-      const otp = await getOTPFromEmail({
-        apiKey,
-        namespace,
-        timestamp: timestamp,
-      });
-      await FileInput(
-        page.getByRole("textbox", { name: /code/i }),
-        otp,
-        { typingDelay: 50, afterTypingDelay: 50 }
-      );
-      await page
-        .getByRole("button", { name: /verify|submit|confirm/i })
-        .click();
-
-      // Save data for other tests
-      // console.log("Saving user data for reset password test...");
-      // addUser({ 
-      //   email, 
-      //   password, 
-      //   signupTimestamp: timestamp 
-      // });
+    // Read generated emails
+    const fs = await import("fs");
+    const path = await import("path");
+    const emailsPath = path.resolve(__dirname, "../../generated-emails.json");
+    
+    if (!fs.existsSync(emailsPath)) {
+        throw new Error(`Generated emails file not found at ${emailsPath}`);
     }
+
+    const emails = JSON.parse(fs.readFileSync(emailsPath, "utf-8"));
+    if (!emails || emails.length === 0) {
+        throw new Error("No generated emails found in file");
+    }
+
+    // Use the first email (index 0)
+    const emailObj = emails[0];
+    const email = emailObj.email;
+    
+    // Extract timestamp from email (format: namespace.timestamp@inbox.testmail.app)
+    // The timestamp is the part between the dot and the @
+    const match = email.match(/\.(\d+)@/);
+    if (!match) {
+        throw new Error(`Could not extract timestamp from email: ${email}`);
+    }
+    const timestamp = match[1];
+
+    // Use the password from the generated email if available, otherwise generate a new one
+    const { generateRandomPassword } = await import("../../utils/email-helper");
+    const password = emailObj.password || generateRandomPassword(12);
+    
+    if (emailObj.password) {
+        console.log(`Using password from generated-emails.json: ${password}`);
+    } else {
+        console.log(`No password found in generated-emails.json, generated new one: ${password}`);
+    }
+
+    await signUp(page, {
+        firstName: TEST_USER.firstName,
+        lastName: TEST_USER.lastName,
+        company: TEST_USER.company,
+        email, 
+        password, 
+        timestamp, 
+        apiKey, 
+        namespace
+    });
   });
 
   test("Sign up with existing email", async ({ page }) => {

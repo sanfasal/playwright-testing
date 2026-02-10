@@ -28,7 +28,6 @@ test.describe('Invoices Page', () => {
     await expect(page).toHaveURL(/invoice/);
   });
 
-
 // =======================================
 // Add new invoice
 // =======================================

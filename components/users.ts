@@ -1,15 +1,33 @@
 import { Page, expect } from '@playwright/test';
 import { FileInput } from '../utils/form-helper';
 import { uploadThumbnail } from '../utils/upload-thumbnail-helper';
-import { generateTestmailAddress } from '../utils/email-helper';
 import path from 'path';
+
+export interface AddressData {
+    village: string;
+    commune: string;
+    district: string;
+    city: string;
+}
+
+export interface UserData {
+    firstName: string;
+    lastName: string;
+    email?: string;
+    gender?: string;
+    dob: string;
+    phone: string;
+    role?: string;
+    address: AddressData;
+    isActive?: boolean;
+}
 
 /**
  * Creates a user by filling out the form.
  * @param page - Playwright Page object
  * @param userData - Object containing user data
  */
-export async function createUser(page: Page, userData: any) {
+export async function createUser(page: Page, userData: UserData) {
     // Wait for the form to appear
     await expect(page.getByRole('textbox').first()).toBeVisible({ timeout: 5000 });
 
@@ -35,7 +53,7 @@ export async function createUser(page: Page, userData: any) {
       .or(page.locator('input[type="email"]'));
     
     if (await emailField.isVisible({ timeout: 2000 }).catch(() => false)) {
-        let emailToUse = userData.email;
+        let emailToUse = userData.email || "";
         // If email is not provided or looks like a template, we might want to generate one
         // But usually userData passed from full-test should be ready. 
         // We'll trust userData.email first.
@@ -52,7 +70,7 @@ export async function createUser(page: Page, userData: any) {
           await genderButton.click();
           await page.waitForTimeout(500);
           // Try to match text, otherwise pick first
-          const option = page.locator('[role="option"]').filter({ hasText: userData.gender }).first();
+          const option = page.locator('[role="option"]').filter({ hasText: userData.gender as string }).first();
           if (await option.isVisible({ timeout: 1000 }).catch(() => false)) {
               await option.click();
           } else {
@@ -169,9 +187,6 @@ export async function createUser(page: Page, userData: any) {
     const activeToggle = page.locator("#isActive").or(page.getByLabel("Active User"));
     if (await activeToggle.isVisible({ timeout: 2000 }).catch(() => false)) {
       const isChecked = await activeToggle.getAttribute("aria-checked").catch(() => "false");
-      // If we want it active (default) and it's false, click it.
-      // If user passed explicit isActive=false, we might want to uncheck it.
-      // For now, let's assume we want to ensure it is Active for creation unless specified otherwise
       const shouldBeActive = userData.isActive !== false; // default true
       
       if (shouldBeActive && isChecked === "false") {
@@ -196,7 +211,7 @@ export async function createUser(page: Page, userData: any) {
  * @param page - Playwright Page object
  * @param userData - Object containing user data
  */
-export async function updateUser(page: Page, userData: any) {
+export async function updateUser(page: Page, userData: UserData) {
      // Wait for the form to appear
     await expect(page.getByRole('textbox').first()).toBeVisible({ timeout: 5000 });
 
@@ -230,7 +245,7 @@ export async function updateUser(page: Page, userData: any) {
         if (await genderButton.isVisible({ timeout: 2000 }).catch(() => false)) {
           await genderButton.click();
           await page.waitForTimeout(500);
-          const option = page.locator('[role="option"]').filter({ hasText: userData.gender }).first();
+          const option = page.locator('[role="option"]').filter({ hasText: userData.gender as string }).first();
           if (await option.isVisible({ timeout: 1000 }).catch(() => false)) {
              await option.click();
           } else {

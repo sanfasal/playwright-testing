@@ -4,7 +4,20 @@ import { FileInput } from '../utils/form-helper';
 import { uploadThumbnail } from '../utils/upload-thumbnail-helper';
 import path from 'path';
 
-export async function createClass(page: Page, data: any) {
+
+export interface ClassData {
+    title: string;
+    price: string;
+    progress: string;
+    startDate: string;
+    endDate: string;
+    startTime: string;
+    endTime: string;
+    publish?: boolean;
+    online?: boolean;
+}
+
+export async function createClass(page: Page, data: ClassData) {
     const { title, price, progress, startDate, endDate, startTime, endTime } = data;
 
     // 1. Click Add Class button
@@ -154,7 +167,7 @@ export async function createClass(page: Page, data: any) {
     await page.getByRole('button', { name: /Add|Create|Submit/i }).click();
 }
 
-export async function updateClass(page: Page, data: any) {
+export async function updateClass(page: Page, data: ClassData) {
     const { title, price, progress, startDate, endDate, startTime, endTime } = data;
 
     // Wait for the edit drawer/form to appear
@@ -166,10 +179,6 @@ export async function updateClass(page: Page, data: any) {
     await titleField.clear();
     await FileInput(titleField, title);
     }
-
-    // Edit Course dropdown (optional, keeping selection logic similar to add but maybe checking visibility)
-    // For now, let's assume we might want to change it or just leave it. 
-    // The previous test logic tried to click it and select option 1.
 
     // Select Course dropdown
     await page.waitForTimeout(500);

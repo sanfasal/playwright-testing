@@ -1,18 +1,22 @@
 import { Page, expect } from '@playwright/test';
 import { uploadThumbnail } from '../utils/upload-thumbnail-helper';
 
+export interface MaterialData {
+    filePath?: string;
+}
+
 /**
  * Creates a new material with an optional image upload.
  * @param page - Playwright Page object
- * @param imagePath - Optional path to the image/file to upload
+ * @param materialData - Object containing material data
  */
-export async function createMaterial(page: Page, imagePath?: string) {
+export async function createMaterial(page: Page, materialData: MaterialData) {
     // Wait for the form to appear
     await expect(page.getByRole('textbox').first()).toBeVisible();
 
-    if (imagePath) {
+    if (materialData.filePath) {
         await uploadThumbnail(page, "materialFile", {
-            imagePath: imagePath
+            imagePath: materialData.filePath
         });
     }
     
@@ -27,9 +31,9 @@ export async function createMaterial(page: Page, imagePath?: string) {
 /**
  * Updates an existing material, optionally replacing the file.
  * @param page - Playwright Page object
- * @param newImagePath - Optional path to the new image/file to upload
+ * @param materialData - Object containing material data
  */
-export async function updateMaterial(page: Page, newImagePath?: string) {
+export async function updateMaterial(page: Page, materialData: MaterialData) {
     // Wait for edit form to appear
     await page.waitForTimeout(1500);
     
@@ -45,9 +49,9 @@ export async function updateMaterial(page: Page, newImagePath?: string) {
     }
 
     // Now upload the new thumbnail if provided
-    if (newImagePath) {
+    if (materialData.filePath) {
         await uploadThumbnail(page, "materialFile", {
-            imagePath: newImagePath
+            imagePath: materialData.filePath
         });
         await page.waitForTimeout(500);
     }

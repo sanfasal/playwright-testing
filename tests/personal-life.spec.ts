@@ -12,7 +12,7 @@ import { uploadThumbnail } from '../utils/upload-thumbnail-helper';
 
 dotenv.config();
 
-const userDataPath = path.resolve(__dirname, '..', 'user-data.json');
+const userDataPath = path.resolve(__dirname, '..', 'user-signin.json');
 let secondUserEmail = 'test@example.com'; 
 
 try {
@@ -196,7 +196,7 @@ test.describe('Change Email', () => {
     }
 
     // Read current user data to find who is currently signed up/in
-    const userDataPath = path.resolve(__dirname, '..', 'user-data.json');
+    const userDataPath = path.resolve(__dirname, '..', 'user-signin.json');
     let currentEmail = '';
     
     if (fs.existsSync(userDataPath)) {
@@ -327,7 +327,6 @@ test.describe('Change Email', () => {
   });
 })
 
-
 //Update Password
 test.describe('Update Password', () => {
 
@@ -344,7 +343,6 @@ test.describe('Update Password', () => {
     test('Update Password', async ({ page }) => {
         test.setTimeout(120000);
 
-        // Prefer page-level update button (Update Settings / Update Profile), fallback to edit controls
         const updatePwdBtn = page.getByRole('button', { name: /^(Update Password|Change Password)$/i });
         await updatePwdBtn.scrollIntoViewIfNeeded().catch(() => null);
         await updatePwdBtn.click().catch(() => null);
@@ -352,7 +350,7 @@ test.describe('Update Password', () => {
         // Current Password
         let currentPassword = 'Test@123'; // Fallback
         let currentEmail = '';
-        const userDataPath = path.resolve(__dirname, '..', 'user-data.json');
+        const userDataPath = path.resolve(__dirname, '..', 'user-signin.json');
         try {
             if (fs.existsSync(userDataPath)) {
                 const userData = JSON.parse(fs.readFileSync(userDataPath, 'utf-8'));

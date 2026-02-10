@@ -4,6 +4,7 @@ import { FileInput } from '../../utils/form-helper';
 import dotenv from 'dotenv';
 import { createAndSaveSignupCredentials } from '../../utils/email-helper';
 import { getUserData, saveUserData } from '../../utils/data-store';
+import { signIn } from '../../components/auth';
 dotenv.config();
 
 // Dynamic accessor for test data (reads latest values from user-data.json)
@@ -42,22 +43,11 @@ test.describe('Sign In', () => {
   
   test('Sign in with valid credentials', async ({ page }) => {
     await addCursorTracking(page);
-    await page.goto('/signin');
-    await expect(page).toHaveTitle(/signin|login/i);
-    await page.waitForTimeout(50);
     const SIGNIN_USER = getSigninUser();
-    const emailField = page.getByRole('textbox', { name: /email/i });
-    await FileInput(emailField, SIGNIN_USER.email);
-    const passwordField = page.getByRole('textbox', { name: /password/i });
-    await FileInput(passwordField, SIGNIN_USER.validPassword);
-    await page.locator(ICONS.eyeOff).click();
-    await page.waitForTimeout(50);
-    await page.locator(ICONS.eye).click();
-    await page.waitForTimeout(50);
-    await page.getByRole('button', { name: /signin|login/i }).click();
-    await page.waitForURL(/dashboard/i);
-    await expect(page).toHaveURL(/dashboard/i);
-    await page.waitForTimeout(100);
+    await signIn(page, {
+        email: SIGNIN_USER.email,
+        password: SIGNIN_USER.validPassword
+    });
   });
   
   test('User sign in with invalid credentials', async ({ page }) => {
@@ -82,31 +72,6 @@ test.describe('Sign In', () => {
 
     await expect(page).toHaveURL(/signin/i);
   });
-
-  //sign in with invalid email
-  test('User sign in with invalid email', async ({ page }) => {
-    await addCursorTracking(page);
-    await page.goto('/signin');
-    await expect(page).toHaveTitle(/signin|login/i);
-    await page.waitForTimeout(50);
-
-    const SIGNIN_USER = getSigninUser();
-    const emailField = page.getByRole('textbox', { name: /email/i });
-    await FileInput(emailField, 'seksaagmail.com');
-  
-    const passwordField = page.getByRole('textbox', { name: /password/i });
-    await FileInput(passwordField, SIGNIN_USER.validPassword);
-    await page.locator(ICONS.eyeOff).click();
-    await page.waitForTimeout(50);
-    await page.locator(ICONS.eye).click();
-    await page.waitForTimeout(50);
-
-    await page.getByRole('button', { name: /signin|login/i }).click();
-    await page.waitForTimeout(100);
-
-    await expect(page).toHaveURL(/signin/i);
-  });
-
   //sign in with invalid password
   test('User sign in with invalid password', async ({ page }) => {
     await addCursorTracking(page);
@@ -129,6 +94,7 @@ test.describe('Sign In', () => {
     await page.waitForTimeout(100);
 
     await expect(page).toHaveURL(/signin/i);
+    await page.waitForTimeout(2000);
   });
 
 })

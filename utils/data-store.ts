@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-const DATA_FILE = path.join(__dirname, '..', 'user-data.json');
+const DATA_FILE = path.join(__dirname, '..', 'user-signin.json');
 const GENERATED_EMAILS_FILE = path.join(__dirname, '..', 'generated-emails.json');
 
 /**

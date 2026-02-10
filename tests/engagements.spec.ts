@@ -62,7 +62,6 @@ const engagementDataEdit = {
   email: `sok.heng.${randomSuffix}@example.com`,
 };
 
-
 test.describe('Engagement Dashboard', () => {
   
   test.beforeEach(async ({ page }) => {
@@ -81,7 +80,6 @@ test.describe('Engagement Dashboard', () => {
     await expect(page).toHaveTitle(/Engagement/i);
   });
 });
-
 
 // Test suite for Engagement List
 test.describe('Engagement', () => {
@@ -167,10 +165,9 @@ test.describe('Engagement Tabs List', () => {
     await page.waitForTimeout(1000);
   });
 
-
-  // ============================
+  // ====================================================================================
   //  Activity
-  // ============================
+  // ====================================================================================
 
   // Create Activity
   test('Create Activity', async ({ page }) => {
@@ -203,9 +200,9 @@ test.describe('Engagement Tabs List', () => {
   });
 
 
-  // ============================
+  // ====================================================================================
   //  Emails
-  // ============================
+  // ====================================================================================
 
   // Create Email
     test('Create Email', async ({ page }) => {
@@ -237,9 +234,9 @@ test.describe('Engagement Tabs List', () => {
     await deleteEmail(page, emailDataAdd.subject); 
   });
 
-  // ============================
+  // ====================================================================================
   //  Calls
-  // ============================
+  // ====================================================================================
 
   // Create Calls
   test('Create Calls', async ({ page }) => {
@@ -289,12 +286,11 @@ test.describe('Engagement Tabs List', () => {
     await deleteCall(page);
   });
 
-  // ============================
+  // ====================================================================================
   //  Notes
-  // ============================
+  // ====================================================================================
 
   // Create Note
-    // Create Note
   test('Create Note', async ({ page }) => {
     await createNote(page, noteDataAdd);
   });
@@ -309,8 +305,7 @@ test.describe('Engagement Tabs List', () => {
     await createComment(page, 'Notes', noteCommentDataAdd.comment);
   });
 
-  // Edit Comment
-    // Edit Comment on Notes
+  // Edit Comment on Notes
   test('Edit Comment on Notes', async ({ page }) => {
     await editComment(page, 'Notes', noteCommentDataEdit.comment);
   });

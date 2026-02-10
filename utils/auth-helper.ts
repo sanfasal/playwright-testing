@@ -11,7 +11,7 @@ export async function login(page: Page, email?: string, password?: string) {
   
   // Read user data dynamically if credentials are not provided
   if (!email || !password) {
-    const userDataPath = path.resolve(__dirname, '..', 'user-data.json');
+    const userDataPath = path.resolve(__dirname, '..', 'user-signin.json');
     
     try {
       if (fs.existsSync(userDataPath)) {

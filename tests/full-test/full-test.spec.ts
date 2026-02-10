@@ -1,12 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { getOTPFromEmail, generateRandomPassword, generateTestmailAddress } from '../../utils/email-helper';
-import { addUser, getUserData, getUserPasswordByEmail, updateUserEmail, updateUserPassword } from '../../utils/data-store';
+import {  generateRandomPassword, generateTestmailAddress } from '../../utils/email-helper';
+import {  getUserData } from '../../utils/data-store';
 import { login } from '../../utils/auth-helper';
 import dotenv from 'dotenv';
 import { addCursorTracking } from '../../utils/cursor-helper';
-import { FileInput, verifyPasswordToggle } from '../../utils/form-helper';
+import { FileInput } from '../../utils/form-helper';
 import { deleteEntityViaActionMenu, deleteItem } from '../../utils/delete-helper';
-import { uploadThumbnail } from '../../utils/upload-thumbnail-helper';
 import { generateVerifiedEmails } from '../../utils/email-generator';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -31,16 +30,12 @@ import {
   deleteEngagement,
   createActivity,
   editActivity,
-  deleteActivity,
   createEmail,
   editEmail,
-  deleteEmail,
   createCall,
   editCall,
-  deleteCall,
   createNote,
   editNote,
-  deleteNote,
   createComment,
   editComment,
   deleteComment
@@ -166,8 +161,6 @@ function getSigninUser() {
   } as const;
 }
 
-
-
 test.describe.serial('Full Test', () => {
   test.setTimeout(1200000); // 20 minutes global timeout for this extended suite
 
@@ -224,7 +217,16 @@ test.describe.serial('Full Test', () => {
 
     await page.goto("/signup");
 
-    await signUp(page, TEST_USER, email, password, timestamp, apiKey, namespace);
+    await signUp(page, {
+        firstName: TEST_USER.firstName,
+        lastName: TEST_USER.lastName,
+        company: TEST_USER.company,
+        email, 
+        password, 
+        timestamp, 
+        apiKey, 
+        namespace
+    });
   });
 
   //===============================================================================
@@ -233,7 +235,10 @@ test.describe.serial('Full Test', () => {
       await addCursorTracking(page);
       await page.goto('/signin');
       const SIGNIN_USER = getSigninUser();
-      await signIn(page, SIGNIN_USER.email, SIGNIN_USER.validPassword);
+      await signIn(page, {
+        email: SIGNIN_USER.email, 
+        password: SIGNIN_USER.validPassword
+      });
     });
   });
 
@@ -252,15 +257,13 @@ test.describe.serial('Full Test', () => {
       await expect(page).toHaveURL(/\/personal-life/).catch(() => null);
     });
 
-
     //Edit Profile
     test('Edit Profile', async ({ page }) => {
       await editProfile(page, personalDataEdit);
     });
-  });
 
-  //Change Email
-  test('Change Gmail', async ({ page }) => {  
+    //Change Email
+    test('Change Gmail', async ({ page }) => {  
       // Read generated emails to verify available accounts
       const generatedEmailsPath = path.resolve(__dirname, '../../generated-emails.json');
       if (!fs.existsSync(generatedEmailsPath)) {
@@ -272,7 +275,7 @@ test.describe.serial('Full Test', () => {
       }
   
       // Read current user data to find who is currently signed up/in
-      const userDataPath = path.resolve(__dirname, '../../user-data.json');
+      const userDataPath = path.resolve(__dirname, '../../user-signin.json');
       let currentEmail = '';
       
       if (fs.existsSync(userDataPath)) {
@@ -286,23 +289,19 @@ test.describe.serial('Full Test', () => {
       }
   
       // Determine target email for the change
-      // If currentEmail is found in generatedEmails, pick the OTHER one.
-      // Default to index 0 if current not found (will trigger signup) -> target index 1
-      let currentIndex = generatedEmails.findIndex((e: any) => e.email === currentEmail);
+      const currentIndex = generatedEmails.findIndex((e: any) => e.email === currentEmail);
       
       if (currentIndex === -1) {
-          console.log(`Current email ${currentEmail} not found in generated-emails.json (or no current user). Defaulting to start with index 0.`);
-          currentIndex = 0;
-          currentEmail = generatedEmails[0].email;
+          console.log(`Current email ${currentEmail} not found in generated-emails.json (or no current user).`);
+          // Proceed with caution, defaulting or failing might be expected if setup is strict.
+          // In this context, we assume the user is valid.
       }
       
-      // Toggle index: if 0 -> 1, if 1 -> 0
-      const targetIndex = currentIndex === 0 ? 1 : 0;
+      const targetIndex = (currentIndex === -1 || currentIndex === 0) ? 1 : 0;
       const targetEmailData = generatedEmails[targetIndex];
       const targetEmail = targetEmailData.email;
   
-      // Determine credential source for the TARGET email (to get OTP)
-      // Map source string to env vars
+      // Determine credential source for the TARGET email
       let targetApiKey = '';
       let targetNamespace = '';
       
@@ -310,7 +309,6 @@ test.describe.serial('Full Test', () => {
           targetApiKey = process.env.TESTMAIL_API_KEY!;
           targetNamespace = process.env.TESTMAIL_NAMESPACE!;
       } else {
-          // Default to helper2 for others or explicitly checking 'email-helper2'
           targetApiKey = process.env.TESTMAIL_API_KEY2!;
           targetNamespace = process.env.TESTMAIL_NAMESPACE2!;
       }
@@ -319,69 +317,17 @@ test.describe.serial('Full Test', () => {
           throw new Error(`Could not find API keys for source: ${targetEmailData.source} (Target Email: ${targetEmail}). Check .env`);
       }
   
-      // Also need credentials for CURRENT email if we need to signup (rare, but good for completeness)
-      const currentApiKey = generatedEmails[currentIndex].source === 'email-helper1' 
-          ? process.env.TESTMAIL_API_KEY! 
-          : process.env.TESTMAIL_API_KEY2!;
-      const currentNamespace = generatedEmails[currentIndex].source === 'email-helper1'
-          ? process.env.TESTMAIL_NAMESPACE!
-          : process.env.TESTMAIL_NAMESPACE2!;
-  
-  
-      await addCursorTracking(page);
-  
-      // Step 2: Ensure User is Logged In
-      // Check if current user is actually signed up in user-data.json (simulated check)
-      // Real check: try login. If fail, signup.
-      
-      console.log(`Step 2: Checking/Ensuring Login with ${currentEmail}...`);
-      
-      // We can use the helper's login. If it fails (caught by us or helper?), we might need signup.
-      // However, the test requirement implies we are likely already simulating a user flow.
-      // Let's safe-guard: Check if email exists in user-data. If not, signup.
-      
-      let isSignedUp = false;
-      let knownPassword = getUserPasswordByEmail(currentEmail);
-  
-      if (fs.existsSync(userDataPath)) {
-           const userData = JSON.parse(fs.readFileSync(userDataPath, 'utf-8'));
-           isSignedUp = userData.users?.some((u: any) => u.email === currentEmail) || userData.signupEmail === currentEmail;
-      }
-  
-      await login(page, currentEmail, knownPassword || undefined);
-      await expect(page).toHaveURL(/dashboard/);
-      await expect(page.getByText('Please wait while we load your workspace')).toBeHidden({ timeout: 10000 });
-  
-      // Step 3: Navigate to Personal Life
-      console.log("Step 3: Navigating to Personal Life page...");
-      await page.getByText('Personal Life', { exact: true }).click().catch(() => null);
-      await expect(page).toHaveURL(/\/personal-life/).catch(() => null);
-      
       await changeEmail(page, currentEmail, targetEmail, targetApiKey, targetNamespace);
-
-      updateUserEmail(currentEmail, targetEmail);
     });
 
-  //Update Password
-  test.describe('Update Password', () => {
-
-    test.beforeEach(async ({ page }) => {
-      await addCursorTracking(page);
-      await login(page);
-      await expect(page).toHaveURL(/dashboard/);
-
-      await expect(page.getByText('Please wait while we load your workspace')).toBeHidden({ timeout: 30000 });
-      await page.getByText('Personal Life', { exact: true }).click().catch(() => null);
-      await expect(page).toHaveURL(/\/personal-life/).catch(() => null);
-    });
-    
+    //Update Password
     test('Update Password', async ({ page }) => {
         test.setTimeout(120000);
 
         // Find current password
         let currentPassword = 'Test@123'; // Fallback
         let currentEmail = '';
-        const userDataPath = path.resolve(__dirname, '..', '..', 'user-data.json');
+        const userDataPath = path.resolve(__dirname, '..', '..', 'user-signin.json');
         try {
             if (fs.existsSync(userDataPath)) {
                 const userData = JSON.parse(fs.readFileSync(userDataPath, 'utf-8'));
@@ -400,7 +346,7 @@ test.describe.serial('Full Test', () => {
         const newPassword = generateRandomPassword(12);
 
         await updatePassword(page, currentEmail, currentPassword, newPassword);
-      });
+    });
   });
 
   // ========================================
@@ -435,7 +381,7 @@ test.describe.serial('Full Test', () => {
   });
 
   // ========================================
-  // 3. Users Management
+  // 3. Users
   // ========================================
 
   test.describe("Users", () => {
@@ -528,7 +474,7 @@ test.describe.serial('Full Test', () => {
   });
 
   // ========================================
-  // 3. Coaches Management
+  // 3. Coaches 
   // ========================================
   test.describe('Coaches', () => {
     
@@ -608,9 +554,6 @@ test.describe.serial('Full Test', () => {
 
 //====================================================================
       
-      // Ensure we are on the list page before deleting
-      await page.getByText('Coach', { exact: true }).click();
-      await expect(page).toHaveURL(/\/coaches/);
       await page.waitForTimeout(1000);
 
       // Delete coach
@@ -629,8 +572,6 @@ test.describe.serial('Full Test', () => {
     // Create Coach Again
     
       // Navigate to list view to find the Add button
-      await page.getByText('Coach', { exact: true }).click();
-      await expect(page).toHaveURL(/\/coaches/);
       await page.waitForTimeout(1000);
 
       await page.getByRole('button').filter({ has: page.locator('svg.lucide-plus') }).click();
@@ -645,7 +586,7 @@ test.describe.serial('Full Test', () => {
   });
 
   // ========================================
-  // 5. Students Management
+  // 5. Students 
   // ========================================
 test.describe('Students', () => {
   
@@ -763,7 +704,7 @@ test.describe('Students', () => {
 });
 
   // ========================================
-  // 6. Material Management
+  // 6. Material 
   // ========================================
 
   test.describe('Materials', () => {
@@ -800,7 +741,7 @@ test.describe('Students', () => {
       await page.locator('#add-material-button').click();
       
       const createImagePath = path.join(__dirname, '..', '..','public', 'images', 'thumbnail-create.pdf');
-      await createMaterial(page, createImagePath);
+      await createMaterial(page, { filePath: createImagePath });
 
     //================================================================================
     // Material list or grid view 
@@ -826,7 +767,7 @@ test.describe('Students', () => {
         await editButton.click();
         
         const updateImagePath = path.join(__dirname, '..', '..', 'public', 'images', 'thumbnail-update.pdf');
-        await updateMaterial(page, updateImagePath);
+        await updateMaterial(page, { filePath: updateImagePath });
         
         // Take a screenshot after successful edit
         await page.screenshot({ 

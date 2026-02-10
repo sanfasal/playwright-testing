@@ -3,12 +3,70 @@ import { FileInput } from '../utils/form-helper';
 import { uploadThumbnail } from '../utils/upload-thumbnail-helper';
 import path from 'path';
 
+export interface AddressData {
+    village?: string;
+    commune?: string;
+    district?: string;
+    city?: string;
+}
+
+export interface WorkHistoryData {
+    position: string;
+    organization: string;
+    startDate: string;
+    endDate: string;
+}
+
+export interface EducationBackgroundData {
+    schoolName: string;
+    major: string;
+    startDate: string;
+    endDate: string;
+}
+
+export interface GuardianData {
+    name: string;
+    phone: string;
+    relation: string;
+    email: string;
+    address: AddressData;
+}
+
+export interface EmergencyData {
+    name: string;
+    phone: string;
+    relation: string;
+    email: string;
+    address: AddressData;
+}
+
+export interface CoachData {
+    firstName: string;
+    lastName: string;
+    gender?: string;
+    dob?: string;
+    email: string;
+    phone: string;
+    telegram: string;
+    idNumber: string;
+    abaAccountName: string;
+    abaAccountNumber: string;
+    joinDate?: string;
+    major: string;
+    costPerHour: string;
+    address: AddressData;
+    workHistory?: WorkHistoryData[];
+    educationBackground?: EducationBackgroundData[];
+    guardian?: GuardianData;
+    emergency?: EmergencyData;
+}
+
 /**
  * Creates a coach by filling out the multi-tab form.
  * @param page - Playwright Page object
  * @param coachData - Object containing coach data
  */
-export async function createCoach(page: Page, coachData: any) {
+export async function createCoach(page: Page, coachData: CoachData) {
     // Wait for the form to appear
     await expect(page.getByRole('textbox').first()).toBeVisible({ timeout: 5000 });
 
@@ -123,7 +181,7 @@ export async function createCoach(page: Page, coachData: any) {
       .or(page.locator('input[name="address.village"]'))
       .or(page.getByLabel(/Village/i));
     if (await villageField.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await FileInput(villageField, coachData.address.village);
+      await FileInput(villageField, coachData.address?.village || "");
       await villageField.press('Tab'); 
       await page.waitForTimeout(1000);
     }
@@ -150,7 +208,7 @@ export async function createCoach(page: Page, coachData: any) {
 
       await targetCommune.click();
       await page.waitForTimeout(300);
-      await FileInput(targetCommune, coachData.address.commune);
+      await FileInput(targetCommune, coachData.address?.commune || "");
       await targetCommune.blur();
       await page.waitForTimeout(500);
     }
@@ -165,7 +223,7 @@ export async function createCoach(page: Page, coachData: any) {
       const isDisabled = await districtField.isDisabled().catch(() => false);
       if (!isDisabled) {
         await page.waitForTimeout(300);
-        await FileInput(districtField, coachData.address.district);
+        await FileInput(districtField, coachData.address?.district || "");
       }
     }
 
@@ -179,7 +237,7 @@ export async function createCoach(page: Page, coachData: any) {
       const isDisabled = await cityField.isDisabled().catch(() => false);
       if (!isDisabled) {
         await page.waitForTimeout(300);
-        await FileInput(cityField, coachData.address.city);
+        await FileInput(cityField, coachData.address?.city || "");
       }
     }
 
@@ -323,7 +381,7 @@ export async function createCoach(page: Page, coachData: any) {
             if (await guardianVillageField.isVisible({ timeout: 2000 }).catch(() => false)) {
               await guardianVillageField.scrollIntoViewIfNeeded();
               await page.waitForTimeout(200);
-              await FileInput(guardianVillageField, coachData.guardian.address.village);
+              await FileInput(guardianVillageField, coachData.guardian?.address?.village || "");
               await guardianVillageField.press('Tab'); 
               await page.waitForTimeout(1000);
             }
@@ -342,7 +400,7 @@ export async function createCoach(page: Page, coachData: any) {
               
               await finalGuardianCommune.click();
               await page.waitForTimeout(200);
-              await FileInput(finalGuardianCommune, coachData.guardian.address.commune);
+              await FileInput(finalGuardianCommune, coachData.guardian?.address?.commune || "");
               await finalGuardianCommune.blur();
               await page.waitForTimeout(500);
             }
@@ -361,7 +419,7 @@ export async function createCoach(page: Page, coachData: any) {
               const isDisabled = await guardianDistrictField.isDisabled().catch(() => false);
               if (!isDisabled) {
                 await page.waitForTimeout(200);
-                await FileInput(guardianDistrictField, coachData.guardian.address.district);
+                await FileInput(guardianDistrictField, coachData.guardian?.address?.district || "");
               }
             }
 
@@ -379,7 +437,7 @@ export async function createCoach(page: Page, coachData: any) {
               const isDisabled = await guardianCityField.isDisabled().catch(() => false);
               if (!isDisabled) {
                 await page.waitForTimeout(200);
-                await FileInput(guardianCityField, coachData.guardian.address.city);
+                await FileInput(guardianCityField, coachData.guardian?.address?.city || "");
               }
             }
         }
@@ -442,7 +500,7 @@ export async function createCoach(page: Page, coachData: any) {
               await emergencyVillageField.scrollIntoViewIfNeeded();
               await emergencyVillageField.click();
               await page.waitForTimeout(200);
-              await FileInput(emergencyVillageField, coachData.emergency.address.village);
+              await FileInput(emergencyVillageField, coachData.emergency?.address?.village || "");
               await emergencyVillageField.press('Tab'); 
               await page.waitForTimeout(1000);
             }
@@ -460,7 +518,7 @@ export async function createCoach(page: Page, coachData: any) {
               
               await emergencyCommune.click();
               await page.waitForTimeout(200);
-              await FileInput(emergencyCommune, coachData.emergency.address.commune);
+              await FileInput(emergencyCommune, coachData.emergency?.address?.commune || "");
               await emergencyCommune.blur();
               await page.waitForTimeout(500);
             }
@@ -479,7 +537,7 @@ export async function createCoach(page: Page, coachData: any) {
               const isDisabled = await emergencyDistrictField.isDisabled().catch(() => false);
               if (!isDisabled) {
                 await page.waitForTimeout(200);
-                await FileInput(emergencyDistrictField, coachData.emergency.address.district);
+                await FileInput(emergencyDistrictField, coachData.emergency?.address?.district || "");
               }
             }
 
@@ -497,7 +555,7 @@ export async function createCoach(page: Page, coachData: any) {
               const isDisabled = await emergencyCityField.isDisabled().catch(() => false);
               if (!isDisabled) {
                 await page.waitForTimeout(200);
-                await FileInput(emergencyCityField, coachData.emergency.address.city);
+                await FileInput(emergencyCityField, coachData.emergency?.address?.city || "");
               }
             }
         }
@@ -514,7 +572,7 @@ export async function createCoach(page: Page, coachData: any) {
  * @param page - Playwright Page object
  * @param coachData - Object containing coach data
  */
-export async function updateCoach(page: Page, coachData: any) {
+export async function updateCoach(page: Page, coachData: CoachData) {
     // Wait for edit form to appear
     await page.waitForTimeout(1000);
     await expect(page.getByRole('textbox').first()).toBeVisible({ timeout: 5000 });
@@ -675,7 +733,7 @@ export async function updateCoach(page: Page, coachData: any) {
       .or(page.getByLabel(/Village/i));
     if (await villageField.isVisible({ timeout: 2000 }).catch(() => false)) {
       await villageField.clear();
-      await FileInput(villageField, coachData.address?.village);
+      await FileInput(villageField, coachData.address?.village || "");
       await villageField.press('Tab'); 
       await page.waitForTimeout(1000);
     }
@@ -705,7 +763,7 @@ export async function updateCoach(page: Page, coachData: any) {
       await targetCommune.click();
       await page.waitForTimeout(300);
       await targetCommune.clear(); // Clear existing value
-      await FileInput(targetCommune, coachData.address?.commune);
+      await FileInput(targetCommune, coachData.address?.commune || "");
       await targetCommune.blur();
       await page.waitForTimeout(500);
     }
@@ -721,7 +779,7 @@ export async function updateCoach(page: Page, coachData: any) {
       if (!isDisabled) {
         await page.waitForTimeout(300);
         await districtField.clear();
-        await FileInput(districtField, coachData.address?.district);
+        await FileInput(districtField, coachData.address?.district || "");
       }
     }
 
@@ -736,7 +794,7 @@ export async function updateCoach(page: Page, coachData: any) {
       if (!isDisabled) {
         await page.waitForTimeout(300);
         await cityField.clear();
-        await FileInput(cityField, coachData.address?.city);
+        await FileInput(cityField, coachData.address?.city || "");
       }
     }
 
@@ -902,7 +960,7 @@ export async function updateCoach(page: Page, coachData: any) {
           await guardianVillageField.scrollIntoViewIfNeeded();
           await guardianVillageField.clear();
           await page.waitForTimeout(200);
-          await FileInput(guardianVillageField, coachData.guardian.address.village);
+          await FileInput(guardianVillageField, coachData.guardian?.address?.village || '');
           await guardianVillageField.press('Tab');
           await page.waitForTimeout(1000);
         }
@@ -921,7 +979,7 @@ export async function updateCoach(page: Page, coachData: any) {
           await guardianCommuneField.clear();
           await guardianCommuneField.click();
           await page.waitForTimeout(200);
-          await FileInput(guardianCommuneField, coachData.guardian.address.commune);
+          await FileInput(guardianCommuneField, coachData.guardian?.address?.commune || "");
           await guardianCommuneField.blur();
           await page.waitForTimeout(500);
         }
@@ -935,7 +993,7 @@ export async function updateCoach(page: Page, coachData: any) {
             await guardianDistrictField.scrollIntoViewIfNeeded();
             await guardianDistrictField.clear();
             await page.waitForTimeout(200);
-            await FileInput(guardianDistrictField, coachData.guardian.address.district);
+            await FileInput(guardianDistrictField, coachData.guardian?.address?.district || "");
           }
         }
         
@@ -948,7 +1006,7 @@ export async function updateCoach(page: Page, coachData: any) {
             await guardianCityField.scrollIntoViewIfNeeded();
             await guardianCityField.clear();
             await page.waitForTimeout(200);
-            await FileInput(guardianCityField, coachData.guardian.address.city);
+            await FileInput(guardianCityField, coachData.guardian?.address?.city || "");
           }
         }
       }
@@ -1006,7 +1064,7 @@ export async function updateCoach(page: Page, coachData: any) {
           await emergencyVillageField.scrollIntoViewIfNeeded();
           await emergencyVillageField.clear();
           await page.waitForTimeout(200);
-          await FileInput(emergencyVillageField, coachData.emergency.address.village);
+          await FileInput(emergencyVillageField, coachData.emergency?.address?.village || "");
           await emergencyVillageField.press('Tab');
           await page.waitForTimeout(1000);
         }
@@ -1025,7 +1083,7 @@ export async function updateCoach(page: Page, coachData: any) {
           await emergencyCommuneField.clear();
           await emergencyCommuneField.click();
           await page.waitForTimeout(200);
-          await FileInput(emergencyCommuneField, coachData.emergency.address.commune);
+          await FileInput(emergencyCommuneField, coachData.emergency?.address?.commune || "");
           await emergencyCommuneField.blur();
           await page.waitForTimeout(500);
         }
@@ -1039,7 +1097,7 @@ export async function updateCoach(page: Page, coachData: any) {
             await emergencyDistrictField.scrollIntoViewIfNeeded();
             await emergencyDistrictField.clear();
             await page.waitForTimeout(200);
-            await FileInput(emergencyDistrictField, coachData.emergency.address.district);
+            await FileInput(emergencyDistrictField, coachData.emergency?.address?.district || '');
           }
         }
         
@@ -1052,7 +1110,7 @@ export async function updateCoach(page: Page, coachData: any) {
             await emergencyCityField.scrollIntoViewIfNeeded();
             await emergencyCityField.clear();
             await page.waitForTimeout(200);
-            await FileInput(emergencyCityField, coachData.emergency.address.city);
+            await FileInput(emergencyCityField, coachData.emergency?.address?.city || '');
           }
         }
       }
